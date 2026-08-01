@@ -24,4 +24,6 @@ dist-ssr
 *.sw?
 
 # environment
-.env
+# .env는 의도적으로 커밋한다 — 여기 들어가는 값(OAuth Client ID류)은 브라우저 번들에
+# 그대로 노출되는 값이라 애초에 비밀이 아니고, 커밋해야 Vercel이 배포 시 자동으로
+# 읽는다(대시보드에 따로 등록 안 해도 됨). 진짜 비밀값이 생기면 .env.local(git 무시)에.

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { AuthShell } from "@/common/components/Auth/AuthShell"
 import {
@@ -10,6 +10,7 @@ import {
 import { SocialLoginButton } from "@/features/auth/components/SocialLoginButton"
 import { SOCIAL_PROVIDERS } from "@/features/auth/constants/socialProviders"
 import { useSocialLogin } from "@/features/auth/hooks/useSocialLogin"
+import { preloadNaverWidget } from "@/features/auth/utils/socialProviders/naverWebLogin"
 import {
   authService,
   type SocialProvider,
@@ -43,6 +44,14 @@ export default function LoginPage() {
     null
   )
   const [result, setResult] = useState<LoginResult | null>(null)
+
+  // 네이버 공식 SDK는 버튼 클릭 시점에야 초기화하면 스크립트 로딩 대기 때문에
+  // "클릭 → 팝업" 사이에 시간차가 생겨 브라우저 팝업 차단에 걸린다. 페이지 진입 시
+  // 미리 준비해 둔다(실패해도 조용히 넘어간다 — 실제 클릭 시 getNaverAccessToken이
+  // "아직 준비되지 않았습니다" 에러로 알려준다).
+  useEffect(() => {
+    preloadNaverWidget().catch(() => {})
+  }, [])
 
   const handleLogin = async (provider: SocialProvider) => {
     setPendingProvider(provider)
