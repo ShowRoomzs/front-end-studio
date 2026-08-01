@@ -1,0 +1,147 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── SHOWROOMZ 디자인시스템 v1.1 토큰 (--sz- 접두사) ──
+     기존 shadcn 토큰과 이름 충돌 없음. 순수 additive. */
+  --color-sz-n-50: var(--sz-n-50);
+  --color-sz-n-100: var(--sz-n-100);
+  --color-sz-n-200: var(--sz-n-200);
+  --color-sz-n-300: var(--sz-n-300);
+  --color-sz-n-400: var(--sz-n-400);
+  --color-sz-n-500: var(--sz-n-500);
+  --color-sz-n-600: var(--sz-n-600);
+  --color-sz-n-700: var(--sz-n-700);
+  --color-sz-n-900: var(--sz-n-900);
+  --color-sz-accent-50: var(--sz-accent-50);
+  --color-sz-accent-100: var(--sz-accent-100);
+  --color-sz-accent-500: var(--sz-accent-500);
+  --color-sz-accent-600: var(--sz-accent-600);
+  --color-sz-info-bg: var(--sz-info-bg);
+  --color-sz-info-text: var(--sz-info-text);
+  --color-sz-success-bg: var(--sz-success-bg);
+  --color-sz-success-text: var(--sz-success-text);
+  --color-sz-warning-bg: var(--sz-warning-bg);
+  --color-sz-warning-text: var(--sz-warning-text);
+  --color-sz-danger-bg: var(--sz-danger-bg);
+  --color-sz-danger-text: var(--sz-danger-text);
+  --color-sz-auth-action: var(--sz-auth-action);
+  --color-sz-auth-action-hover: var(--sz-auth-action-hover);
+
+  /* 스튜디오 전용 — ui-studio-01-login §3 / §4 */
+  --color-sz-logo-studio: var(--sz-logo-studio);
+  --color-sz-social-kakao: var(--sz-social-kakao);
+  --color-sz-social-kakao-fg: var(--sz-social-kakao-fg);
+  --color-sz-social-naver: var(--sz-social-naver);
+  --color-sz-social-apple: var(--sz-social-apple);
+  --color-sz-social-google-fg: var(--sz-social-google-fg);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+
+  /* ── SHOWROOMZ 디자인시스템 v1.1 원시 토큰 ── */
+  /* Neutral ramp (cool) */
+  --sz-n-50: #fafafb;
+  --sz-n-100: #f1f2f4;
+  --sz-n-200: #e4e5e9;
+  --sz-n-300: #c7c9d1;
+  --sz-n-400: #a8acb4;
+  --sz-n-500: #7b7f89;
+  --sz-n-600: #5b5f68;
+  --sz-n-700: #3a3d45;
+  --sz-n-900: #1a1b1f;
+  /* Accent (indigo) */
+  --sz-accent-50: #eef1fc;
+  --sz-accent-100: #dce2f8;
+  --sz-accent-500: #3b5bdb;
+  --sz-accent-600: #2e48b0;
+  /* Status */
+  --sz-info-bg: #e9eaf6;
+  --sz-info-text: #3b5bdb;
+  --sz-success-bg: #e4f1ea;
+  --sz-success-text: #1f7a54;
+  --sz-warning-bg: #f3e7d2;
+  --sz-warning-text: #8f6620;
+  --sz-danger-bg: #fbe6e6;
+  --sz-danger-text: #b23434;
+  /* Auth 전용 주 액션 (accent-500이 아닌 검정 — 로그인·가입 화면 확정 예외) */
+  --sz-auth-action: #1a1b1f;
+  --sz-auth-action-hover: #3a3d45;
+
+  /* ── 스튜디오 전용 예외 ──
+     ui-studio-01-login §3: 다른 인증 화면(가입·온보딩)은 워드마크가 검정이지만
+     로그인 화면만 브랜드 로즈레드를 쓴다. 대표 확인을 거친 의도적 예외이며
+     다른 화면에 일반화하지 않는다. */
+  --sz-logo-studio: #f2456e;
+
+  /* ui-studio-01-login §4 / §8-2: 각 사 공식 브랜드 색. 지금 값은 임시 확정본이라
+     소비자 앱 UI가 나오면 일괄 교체한다 — 컴포넌트에 하드코딩하지 말 것. */
+  --sz-social-kakao: #fee500;
+  --sz-social-kakao-fg: #191919;
+  --sz-social-naver: #03c75a;
+  --sz-social-apple: #000000;
+  --sz-social-google-fg: #1f1f1f;
+
+  /* 치수 토큰 (컴포넌트에서 var()로 직접 참조, 유틸리티 미생성) */
+  --sz-auth-control-h: 48px; /* 로그인 소셜 버튼 (.sbtn) */
+  --sz-form-control-h: 44px; /* 신청 폼 컨트롤·버튼 (.inp/.btn) */
+  --sz-auth-card-w: 400px; /* .auth-card */
+  --sz-form-card-w: 520px; /* .form-card */
+  --sz-r-sm: 6px;
+  --sz-r-md: 8px;
+  --sz-shadow-popover:
+    0 8px 24px rgba(26, 27, 31, 0.12), 0 2px 6px rgba(26, 27, 31, 0.08);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
