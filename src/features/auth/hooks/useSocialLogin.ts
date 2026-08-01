@@ -1,5 +1,9 @@
 import { useCallback } from "react"
 import type { SocialProvider } from "@/features/auth/services/authService"
+import { getKakaoAccessToken } from "@/features/auth/utils/socialProviders/kakaoWebLogin"
+import { getNaverAccessToken } from "@/features/auth/utils/socialProviders/naverWebLogin"
+import { getGoogleAccessToken } from "@/features/auth/utils/socialProviders/googleWebLogin"
+import { getAppleIdentityToken } from "@/features/auth/utils/socialProviders/appleWebLogin"
 
 export type SocialLoginResult = {
   providerType: SocialProvider
@@ -10,39 +14,38 @@ export type SocialLoginResult = {
 }
 
 /**
- * provider별 토큰 획득 어댑터.
+ * provider별 웹 SDK 어댑터.
  *
- * ⚠️ 현재는 **목 구현**이다. 백엔드는 프론트가 각 사에서 이미 받아온 토큰을 넘겨주길
- * 기대하는데(POST /v1/creator/auth/social/login 의 `token` 필드), 실제 웹 SDK를 붙이려면
- * 각 사 JavaScript 앱 키와 등록된 리다이렉트 도메인이 필요하다. 확보되면 아래
- * getProviderToken() 하나만 교체하면 되고, 호출부(LoginPage)는 손대지 않아도 된다.
+ * 각 로더 파일(utils/socialProviders/*)이 필요한 env var(VITE_KAKAO_JS_KEY 등)가
+ * 비어 있으면 각자 명확한 한국어 에러를 던진다 — 개발자센터에 도메인을 등록하고
+ * 키를 발급받아 .env.local을 채우면 이 파일은 손댈 필요 없이 그대로 동작한다.
  *
- * 소비자 앱(front-end)의 useSocialLogin과 같은 시그니처를 유지해 이식 비용을 낮췄다.
- *
- * 교체 지점:
- *   KAKAO  → Kakao.init(JS키) 후 Kakao.Auth.authorize / login → accessToken
- *   NAVER  → naver.LoginWithNaverId → accessToken
- *   GOOGLE → Google Identity Services (google.accounts.oauth2) → access_token
- *   APPLE  → AppleID.auth.signIn → authorization.id_token (+ user.name 최초 1회)
+ * 소비자 앱(front-end)의 useSocialLogin과 같은 반환 시그니처를 유지해 호출부
+ * (LoginPage)가 provider별 차이를 몰라도 되게 했다.
  */
-async function getProviderToken(provider: SocialProvider): Promise<string> {
-  // TODO: 실제 SDK 연동으로 교체
-  if (!import.meta.env.DEV) {
-    throw new Error(
-      `${provider} 로그인이 아직 연동되지 않았습니다. 소셜 SDK 설정이 필요합니다.`
-    )
+async function resolveProviderToken(
+  provider: SocialProvider
+): Promise<{ token: string; name?: string }> {
+  switch (provider) {
+    case "KAKAO":
+      return { token: await getKakaoAccessToken() }
+    case "NAVER":
+      return { token: await getNaverAccessToken() }
+    case "GOOGLE":
+      return { token: await getGoogleAccessToken() }
+    case "APPLE":
+      return getAppleIdentityToken()
   }
-  return `mock-${provider.toLowerCase()}-token`
 }
 
 export function useSocialLogin() {
   const login = useCallback(
     async (provider: SocialProvider): Promise<SocialLoginResult> => {
-      const token = await getProviderToken(provider)
+      const { token, name } = await resolveProviderToken(provider)
       if (!token) {
         throw new Error(`${provider} 로그인에 실패했습니다.`)
       }
-      return { providerType: provider, token }
+      return { providerType: provider, token, name }
     },
     []
   )
