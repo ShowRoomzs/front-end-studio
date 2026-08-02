@@ -1,10 +1,11 @@
 import { apiInstance } from "@/common/lib/apiInstance"
 import { authInstance } from "@/common/lib/authInstance"
 
-export type SocialProvider = "KAKAO" | "NAVER" | "APPLE" | "GOOGLE"
+// 앱(front-end)의 SocialType과 같은 이름·같은 값.
+export type SocialType = "KAKAO" | "NAVER" | "APPLE" | "GOOGLE"
 
 export type SocialLoginRequest = {
-  providerType: SocialProvider
+  providerType: SocialType
   token: string
   /** Apple 최초 로그인 시에만 내려오는 이름 */
   name?: string

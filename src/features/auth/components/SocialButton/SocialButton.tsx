@@ -1,13 +1,20 @@
-import type { ReactNode } from "react"
+import { useCallback, useState, type ReactNode } from "react"
+
 import { cn } from "@/lib/utils"
-import type { SocialProvider } from "@/features/auth/services/authService"
+import type { SocialType } from "@/features/auth/services/authService"
+import {
+  useSocialLogin,
+  type SocialLoginResponse,
+} from "@/features/auth/hooks/useSocialLogin"
 
 /**
- * 시안 `.sbtn` — 48px, radius 6px, 14px/600, letter-spacing -.1px,
- * 아이콘은 absolute left:16px(20×20)이라 라벨은 버튼 정중앙에 남는다.
+ * 앱(front-end)의 SocialButton과 같은 구조 —
+ * 버튼이 useSocialLogin(socialType)을 직접 들고 있고, 로그인 결과만 onPress로 올려보낸다.
+ * 부모(LoginPage)는 provider별 SDK 차이를 전혀 모른다.
  *
- * 색은 §8-2 지시대로 하드코딩하지 않고 --sz-social-* 토큰을 쓴다
- * (소비자 앱 UI 확정 시 index.css 한 곳만 고치면 됨).
+ * 디자인은 시안 `.sbtn` 그대로: 48px, radius 6px, 14px/600, letter-spacing -.1px,
+ * 아이콘은 absolute left:16px(20×20)이라 라벨이 버튼 정중앙에 남는다.
+ * 색은 §8-2 지시대로 하드코딩하지 않고 --sz-social-* 토큰을 쓴다.
  */
 
 const KakaoIcon = () => (
@@ -59,14 +66,14 @@ const GoogleIcon = () => (
   </svg>
 )
 
-type ProviderStyle = {
+type SocialStyle = {
   label: string
   icon: ReactNode
   className: string
   style?: React.CSSProperties
 }
 
-const PROVIDER_STYLES: Record<SocialProvider, ProviderStyle> = {
+const SOCIAL_STYLES: Record<SocialType, SocialStyle> = {
   KAKAO: {
     label: "카카오로 로그인",
     icon: <KakaoIcon />,
@@ -99,26 +106,47 @@ const PROVIDER_STYLES: Record<SocialProvider, ProviderStyle> = {
   },
 }
 
-type SocialLoginButtonProps = {
-  provider: SocialProvider
-  onClick: (provider: SocialProvider) => void
+export interface SocialButtonProps {
+  socialType: SocialType
+  onPress: (response: SocialLoginResponse) => void
+  /** provider별 SDK 실패(설정 누락·팝업 차단·사용자 취소)를 화면에 알린다 */
+  onError: (message: string) => void
   disabled?: boolean
-  loading?: boolean
 }
 
-export function SocialLoginButton({
-  provider,
-  onClick,
+export default function SocialButton({
+  socialType,
+  onPress,
+  onError,
   disabled,
-  loading,
-}: SocialLoginButtonProps) {
-  const { label, icon, className, style } = PROVIDER_STYLES[provider]
+}: SocialButtonProps) {
+  const { login } = useSocialLogin(socialType)
+  const [loading, setLoading] = useState(false)
+  const { label, icon, className, style } = SOCIAL_STYLES[socialType]
+
+  const handleClick = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await login()
+
+      if (!res) {
+        return
+      }
+      onPress(res)
+    } catch (err) {
+      onError(
+        err instanceof Error ? err.message : "로그인 중 오류가 발생했습니다."
+      )
+    } finally {
+      setLoading(false)
+    }
+  }, [login, onPress, onError])
 
   return (
     <button
       type="button"
-      onClick={() => onClick(provider)}
-      disabled={disabled}
+      onClick={handleClick}
+      disabled={disabled || loading}
       style={style}
       className={cn(
         "relative flex h-12 w-full cursor-pointer items-center justify-center gap-2.5",
