@@ -7,6 +7,8 @@ export type Term = {
   required?: boolean
   /** "보기" 클릭 시 약관 원문 노출 */
   onView?: () => void
+  /** 약관 원문(임시 문안) — onView 모달에 표시 */
+  content?: string
 }
 
 /** 동의 항목이 아니라 고지(보기)만 하는 행 — 개인정보처리방침이 여기 해당한다. */
@@ -14,6 +16,8 @@ export type TermNotice = {
   key: string
   label: string
   onView?: () => void
+  /** 약관 원문(임시 문안) — onView 모달에 표시 */
+  content?: string
 }
 
 type TermsAgreementProps = {
