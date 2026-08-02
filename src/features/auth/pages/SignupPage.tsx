@@ -81,6 +81,10 @@ export default function SignupPage() {
 
   // Step3
   const [agreements, setAgreements] = useState<Record<string, boolean>>({})
+  const [viewingTerm, setViewingTerm] = useState<{
+    label: string
+    content: string
+  } | null>(null)
 
   // 완료(H) — 제출 시점에 고정해 둔다
   const [submittedAt, setSubmittedAt] = useState<Date | null>(null)
@@ -149,6 +153,20 @@ export default function SignupPage() {
   }
 
   const allRequiredTermsChecked = REQUIRED_TERM_KEYS.every(k => agreements[k])
+
+  // "보기" 버튼 → 약관 원문 모달 노출 (front-end-partners RegisterPage와 동일한 패턴)
+  const termsWithView = SIGNUP_TERMS.map(t => ({
+    ...t,
+    onView: t.content
+      ? () => setViewingTerm({ label: t.label, content: t.content! })
+      : undefined,
+  }))
+  const noticesWithView = SIGNUP_TERM_NOTICES.map(n => ({
+    ...n,
+    onView: n.content
+      ? () => setViewingTerm({ label: n.label, content: n.content! })
+      : undefined,
+  }))
 
   const onSubmit = async (values: ChannelForm) => {
     setServerError(null)
@@ -469,8 +487,8 @@ export default function SignupPage() {
               약관 동의
             </h2>
             <TermsAgreement
-              terms={SIGNUP_TERMS}
-              notices={SIGNUP_TERM_NOTICES}
+              terms={termsWithView}
+              notices={noticesWithView}
               checked={agreements}
               onChange={setAgreements}
             />
@@ -566,6 +584,45 @@ export default function SignupPage() {
           <br />
           신청할 수 있습니다.
         </AlertModal>
+      )}
+
+      {/* 약관 원문 보기 모달 (front-end-partners RegisterPage와 동일한 패턴) */}
+      {viewingTerm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.4)] p-4"
+          onClick={() => setViewingTerm(null)}
+        >
+          <div
+            className="flex max-h-[80vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-white shadow-lg"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-sz-n-200 px-5 py-3.5">
+              <h3 className="text-[14px] font-semibold text-sz-n-900">
+                {viewingTerm.label}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setViewingTerm(null)}
+                aria-label="닫기"
+                className="flex h-7 w-7 items-center justify-center rounded text-sz-n-500 hover:bg-sz-n-100 hover:text-sz-n-900"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto whitespace-pre-line px-5 py-4 text-[13px] leading-relaxed text-sz-n-700">
+              {viewingTerm.content}
+            </div>
+            <div className="border-t border-sz-n-200 px-5 py-3">
+              <button
+                type="button"
+                onClick={() => setViewingTerm(null)}
+                className={authButtonClass("primary", "w-full")}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </AuthShell>
   )
