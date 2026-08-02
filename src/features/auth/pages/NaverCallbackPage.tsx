@@ -6,8 +6,6 @@ import {
   type NaverCallbackMessage,
 } from "@/features/auth/hooks/useNaverLogin"
 
-const CALLBACK_WIDGET_CONTAINER_ID = "naverIdLoginCallback"
-
 /**
  * 네이버 로그인 팝업이 인증 완료 후 도착하는 콜백 페이지.
  *
@@ -29,7 +27,8 @@ export default function NaverCallbackPage() {
       window.close()
     }
 
-    initNaverWidget(CALLBACK_WIDGET_CONTAINER_ID)
+    // 여기선 토큰만 읽으므로 버튼은 렌더링하지 않는다(renderButton=false).
+    initNaverWidget(false)
       .then(widget => {
         widget.getLoginStatus(status => {
           if (status && widget.accessToken?.accessToken) {
