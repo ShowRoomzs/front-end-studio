@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { useNavigate } from "react-router-dom"
+
 import { AuthShell } from "@/common/components/Auth/AuthShell"
 import {
   AlertModal,
@@ -7,14 +8,10 @@ import {
   EmptyInboxIcon,
   ModalButton,
 } from "@/features/auth/components/AlertModal"
-import { SocialLoginButton } from "@/features/auth/components/SocialLoginButton"
-import { SOCIAL_PROVIDERS } from "@/features/auth/constants/socialProviders"
-import { useSocialLogin } from "@/features/auth/hooks/useSocialLogin"
-import { preloadNaverWidget } from "@/features/auth/utils/socialProviders/naverWebLogin"
-import {
-  authService,
-  type SocialProvider,
-} from "@/features/auth/services/authService"
+import SocialButton from "@/features/auth/components/SocialButton/SocialButton"
+import { SOCIAL_TYPES } from "@/features/auth/constants/socialProviders"
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import type { SocialLoginResponse } from "@/features/auth/hooks/useSocialLogin"
 import {
   resolveLoginError,
   resolveLoginResult,
@@ -32,6 +29,9 @@ import { COOKIE_NAME } from "@/common/constants/cookie"
  *
  * 화면 하단의 "스튜디오 신청하기" 링크는 §7-4에서 **삭제 확정**됐다.
  * 신청 진입은 오직 모달 D의 [신청하기]뿐이다.
+ *
+ * 구조는 앱(front-end)의 AuthHomeView와 같다 — SocialButton이 소셜 SDK 호출까지 끝내고
+ * 결과만 handlePressSocialButton으로 올려주면, 여기서 백엔드 로그인 mutation을 태운다.
  */
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -39,69 +39,56 @@ export default function LoginPage() {
   const [, setRefreshToken] = useCookie<string>(COOKIE_NAME.REFRESH_TOKEN)
   const [, setRole] = useCookie<string>(COOKIE_NAME.ROLE)
 
-  const { login } = useSocialLogin()
-  const [pendingProvider, setPendingProvider] = useState<SocialProvider | null>(
-    null
-  )
+  const { socialLoginMutation } = useAuth()
+  const { mutateAsync: socialLoginAsync, isPending } = socialLoginMutation
   const [result, setResult] = useState<LoginResult | null>(null)
 
-  // 네이버 공식 SDK는 버튼 클릭 시점에야 초기화하면 스크립트 로딩 대기 때문에
-  // "클릭 → 팝업" 사이에 시간차가 생겨 브라우저 팝업 차단에 걸린다. 페이지 진입 시
-  // 미리 준비해 둔다(실패해도 조용히 넘어간다 — 실제 클릭 시 getNaverAccessToken이
-  // "아직 준비되지 않았습니다" 에러로 알려준다).
-  useEffect(() => {
-    preloadNaverWidget().catch(() => {})
-  }, [])
+  const handlePressSocialButton = useCallback(
+    async (response: SocialLoginResponse) => {
+      const { providerType, token, name } = response
 
-  const handleLogin = async (provider: SocialProvider) => {
-    setPendingProvider(provider)
-    setResult(null)
-    try {
-      const social = await login(provider)
-      const res = await authService.socialLogin({
-        providerType: social.providerType,
-        token: social.token,
-        name: social.name,
-      })
-      const next = resolveLoginResult(res)
+      setResult(null)
+      try {
+        const res = await socialLoginAsync({ providerType, token, name })
+        const next = resolveLoginResult(res)
 
-      if (next.kind === "approved") {
-        setAccessToken(next.accessToken)
-        setRefreshToken(next.refreshToken)
-        setRole("CREATOR")
-        navigate("/")
-        return
-      }
-
-      if (next.kind === "onboarding") {
-        navigate("/onboarding", {
-          state: { registerToken: next.registerToken },
-        })
-        return
-      }
-
-      // 모달 D에서 [신청하기]를 누르면 곧바로 신청 API를 호출해야 하는데
-      // 그 API는 로그인 상태를 요구한다. 모달을 띄우기 전에 토큰을 저장해 둔다.
-      if (next.kind === "noApplication") {
-        setAccessToken(next.accessToken)
-        if (next.refreshToken) {
+        if (next.kind === "approved") {
+          setAccessToken(next.accessToken)
           setRefreshToken(next.refreshToken)
+          setRole("CREATOR")
+          navigate("/")
+          return
         }
-        setRole("USER")
-      }
 
-      setResult(next)
-    } catch (err) {
-      // 소셜 SDK 자체가 실패한 경우(미연동 포함)는 axios 에러가 아니다
-      if (err instanceof Error && !("isAxiosError" in err)) {
-        setResult({ kind: "error", message: err.message })
-        return
+        if (next.kind === "onboarding") {
+          navigate("/onboarding", {
+            state: { registerToken: next.registerToken },
+          })
+          return
+        }
+
+        // 모달 D에서 [신청하기]를 누르면 곧바로 신청 API를 호출해야 하는데
+        // 그 API는 로그인 상태를 요구한다. 모달을 띄우기 전에 토큰을 저장해 둔다.
+        if (next.kind === "noApplication") {
+          setAccessToken(next.accessToken)
+          if (next.refreshToken) {
+            setRefreshToken(next.refreshToken)
+          }
+          setRole("USER")
+        }
+
+        setResult(next)
+      } catch (err) {
+        setResult(resolveLoginError(err))
       }
-      setResult(resolveLoginError(err))
-    } finally {
-      setPendingProvider(null)
-    }
-  }
+    },
+    [navigate, setAccessToken, setRefreshToken, setRole, socialLoginAsync]
+  )
+
+  // provider SDK 단계의 실패(설정 누락·팝업 차단·사용자 취소)는 백엔드까지 가지 않는다.
+  const handleSocialError = useCallback((message: string) => {
+    setResult({ kind: "error", message })
+  }, [])
 
   const closeModal = () => setResult(null)
 
@@ -123,13 +110,13 @@ export default function LoginPage() {
       )}
 
       <div className="mb-5 flex flex-col gap-2.5">
-        {SOCIAL_PROVIDERS.map(provider => (
-          <SocialLoginButton
-            key={provider}
-            provider={provider}
-            onClick={handleLogin}
-            disabled={pendingProvider !== null}
-            loading={pendingProvider === provider}
+        {SOCIAL_TYPES.map(socialType => (
+          <SocialButton
+            key={socialType}
+            socialType={socialType}
+            onPress={handlePressSocialButton}
+            onError={handleSocialError}
+            disabled={isPending}
           />
         ))}
       </div>
