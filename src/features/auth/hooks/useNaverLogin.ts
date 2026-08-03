@@ -131,19 +131,21 @@ export function useNaverLogin() {
     }
 
     const accessToken = await new Promise<string>((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
+      let settled = false
+      let popupRef: Window | null = null
+
+      const cleanup = () => {
+        settled = true
         window.removeEventListener("message", handleMessage)
-        reject(
-          new Error("네이버 로그인 시간이 초과되었습니다. 다시 시도해 주세요.")
-        )
-      }, RESPONSE_TIMEOUT_MS)
+        clearTimeout(timeoutId)
+        clearInterval(closedCheck)
+      }
 
       const handleMessage = (event: MessageEvent<NaverCallbackMessage>) => {
         if (event.origin !== window.location.origin) return
         if (event.data?.source !== NAVER_CALLBACK_MESSAGE_SOURCE) return
 
-        clearTimeout(timeoutId)
-        window.removeEventListener("message", handleMessage)
+        cleanup()
 
         if (!event.data.accessToken) {
           reject(new Error(event.data.error ?? "네이버 로그인에 실패했습니다."))
@@ -153,8 +155,36 @@ export function useNaverLogin() {
       }
 
       window.addEventListener("message", handleMessage)
+
+      // SDK가 anchor.click() 내부에서 동기적으로 여는 팝업이라 참조를 직접 받을 수 없다.
+      // window.open을 호출 직후에만 잠깐 가로채 그 팝업의 핸들을 얻는다.
+      const originalOpen = window.open.bind(window)
+      window.open = (...args: Parameters<typeof window.open>) => {
+        popupRef = originalOpen(...args)
+        window.open = originalOpen
+        return popupRef
+      }
       // 동기 호출 — 원래 버튼 클릭과 같은 호출 스택이어야 팝업이 차단되지 않는다.
       anchor.click()
+      window.open = originalOpen
+
+      // 로그인하지 않고 팝업만 닫은 경우 무한 대기하지 않도록 감지
+      const closedCheck = setInterval(() => {
+        if (!settled && popupRef?.closed) {
+          cleanup()
+          reject(new Error("네이버 로그인이 취소되었습니다."))
+        }
+      }, 500)
+
+      // 팝업 참조를 못 얻은 경우 등을 대비한 안전망
+      const timeoutId = setTimeout(() => {
+        if (!settled) {
+          cleanup()
+          reject(
+            new Error("네이버 로그인 시간이 초과되었습니다. 다시 시도해 주세요.")
+          )
+        }
+      }, RESPONSE_TIMEOUT_MS)
     })
 
     return { accessToken }
