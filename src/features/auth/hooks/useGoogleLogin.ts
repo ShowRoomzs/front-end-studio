@@ -29,6 +29,8 @@ declare global {
             client_id: string
             scope: string
             callback: (res: TokenResponse) => void
+            /** 팝업 닫힘 등 callback이 호출되지 않는 실패를 알려준다 */
+            error_callback?: (err: { type?: string }) => void
           }) => TokenClient
         }
       }
@@ -84,6 +86,13 @@ export function useGoogleLogin() {
             return
           }
           pending.resolve({ accessToken: res.access_token })
+        },
+        // 팝업을 로그인 없이 닫으면 callback이 아예 오지 않는다 — 여기서 풀어줘야 한다.
+        error_callback: () => {
+          const pending = pendingPromiseRef.current
+          if (!pending) return
+          pendingPromiseRef.current = null
+          pending.reject(new Error("Google 로그인이 취소되었습니다."))
         },
       })
     }
