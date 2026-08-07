@@ -149,9 +149,14 @@ export default function OnboardingPage() {
   }, [registrationInfoError, registrationInfoErrorObj, navigate])
 
   // 쇼룸명 중복 확인 — 형식이 통과한 값만, 입력이 멎은 뒤에 물어본다.
+  //
+  // ⚠️ 빈 값 가드가 반드시 먼저다. validateShowroomName은 빈 값에 true를 돌려주는데
+  // (미입력은 문구 없이 버튼 비활성만으로 표현하므로 required가 처리한다), 그대로 통과시키면
+  // 진입하자마자 빈 문자열로 조회가 나가고 서버가 "쇼룸명은 필수 입력값입니다."를 돌려줘
+  // 아무것도 안 건드린 화면에 에러가 뜬다.
   useEffect(() => {
     const name = showroomName?.trim() ?? ""
-    if (validateShowroomName(name) !== true) {
+    if (!name || validateShowroomName(name) !== true) {
       setNameCheck(null)
       return
     }
@@ -185,7 +190,9 @@ export default function OnboardingPage() {
     return null
   }
 
-  const nameDuplicated =
+  // 중복 외에 서버가 다른 사유로 거절할 수도 있어 "사용 불가"로 넓게 잡는다.
+  // 조회 시점의 값과 현재 값이 같을 때만 유효한 판정이다(입력이 바뀌면 이전 결과는 버린다).
+  const nameUnavailable =
     !!nameCheck &&
     nameCheck.checked === showroomName?.trim() &&
     !nameCheck.available
@@ -193,7 +200,7 @@ export default function OnboardingPage() {
   // 사업자 필드는 Controller에 shouldUnregister를 걸어, 개인으로 되돌리면
   // 등록 자체가 해제되도록 했다(안 그러면 required가 남아 isValid가 영영 false).
   const canSubmit =
-    isValid && !nameDuplicated && !isSubmitting && !!registrationInfo
+    isValid && !nameUnavailable && !isSubmitting && !!registrationInfo
 
   const onSubmit = async (values: OnboardingForm) => {
     setServerError(null)
@@ -285,7 +292,7 @@ export default function OnboardingPage() {
               // 형식 에러 + 중복 에러를 함께 노출. 미입력은 문구 없이 버튼 비활성만.
               error={
                 errors.showroomName?.message ||
-                (nameDuplicated ? nameCheck?.message : undefined)
+                (nameUnavailable ? nameCheck?.message : undefined)
               }
               help="중복 불가 · 소비자에게 노출되는 이름 · 쇼룸 관리에서 변경 가능"
             >
@@ -294,7 +301,7 @@ export default function OnboardingPage() {
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
-                hasError={!!errors.showroomName || nameDuplicated}
+                hasError={!!errors.showroomName || nameUnavailable}
                 placeholder="한글·영문·숫자·공백 2~20자"
                 disabled={isSubmitting}
               />
