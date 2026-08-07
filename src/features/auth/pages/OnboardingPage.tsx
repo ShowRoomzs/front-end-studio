@@ -224,7 +224,18 @@ export default function OnboardingPage() {
         setAccessToken(res.accessToken)
         setRefreshToken(res.refreshToken)
         setRole("CREATOR")
-        navigate("/")
+
+        // ⚠️ navigate("/")를 쓰면 안 된다.
+        // navigate는 "지금" 마운트된 라우터에서 동기로 실행되는데, 그 시점의 라우터는
+        // 아직 authRoutes다(role 쿠키 반영은 다음 렌더). authRoutes에서 "/"는 catch-all
+        // `*` → LoginPage에만 걸려 로그인 화면으로 떨어진다.
+        //
+        // role이 바뀌면 createRouter가 라우트 트리를 통째로 갈아끼우므로(router.ts),
+        // 같은 라우터 안에서 이동시키지 말고 문서 자체를 새로 띄운다. 그러면 앱이
+        // role=CREATOR 상태로 부팅해 곧장 mainRoutes의 홈으로 들어간다.
+        // replace를 쓰는 이유: 뒤로 가기로 온보딩에 돌아오면 registerToken이 이미
+        // 소진돼 아무것도 할 수 없다.
+        window.location.replace("/")
         return
       }
       setServerError(SERVER_ERROR_MESSAGE)
