@@ -66,6 +66,48 @@ export type MyCreatorApplication = {
   canReapply: boolean
 }
 
+/** 온보딩 진입 시 registerToken으로 조회 — 쇼룸 주소·예금주를 자동으로 채운다 */
+export type CreatorRegistrationInfo = {
+  /** SNS 계정 아이디. 쇼룸 주소(showroomz.com/@{accountId})의 근거 값 */
+  accountId: string
+  /** 본인확인 실명 — 예금주로 표시(읽기전용) */
+  realName: string
+}
+
+export type ShowroomNameCheckResponse = {
+  isAvailable: boolean
+  /** AVAILABLE | DUPLICATE | INVALID_FORMAT */
+  code: string
+  message: string
+}
+
+export type CreatorBusinessType = "INDIVIDUAL" | "BUSINESS"
+
+/** 백엔드 CreatorCompleteRegistrationRequest와 1:1 대응 */
+export type CompleteRegistrationRequest = {
+  showroomName: string
+  businessType: CreatorBusinessType
+  /** BUSINESS일 때만 (000-00-00000) */
+  businessRegistrationNumber?: string
+  /** BUSINESS일 때만 */
+  businessLicenseImageUrl?: string
+  /** 은행명이 아니라 금융결제원 표준 3자리 코드 */
+  bankCode: string
+  /** 하이픈 없이 숫자 10~16자리 */
+  accountNumber: string
+  bankBookImageUrl: string
+}
+
+export type ImageUploadResponse = {
+  imageUrl: string
+}
+
+/** registerToken은 정식 토큰이 아니라 헤더에 직접 실어야 한다(인터셉터가 붙여주지 않음) */
+const withRegisterToken = (registerToken: string) => ({
+  headers: { Authorization: `Bearer ${registerToken}` },
+  suppressErrorToast: true,
+})
+
 export const authService = {
   /** 상태 4종 분기의 출발점. 에러는 화면에서 모달로 표현하므로 토스트를 끈다. */
   socialLogin: async (data: SocialLoginRequest) => {
@@ -93,6 +135,55 @@ export const authService = {
     const { data } = await apiInstance.get<MyCreatorApplication>(
       "/creator/application",
       { suppressErrorToast: true }
+    )
+    return data
+  },
+
+  /* ── 온보딩(승인 후 필수 정보 입력) ── */
+
+  /** registerToken 만료(5분) 시 REGISTER_EXPIRED로 실패한다 */
+  getRegistrationInfo: async (registerToken: string) => {
+    const { data } = await authInstance.get<CreatorRegistrationInfo>(
+      "/creator/auth/registration-info",
+      withRegisterToken(registerToken)
+    )
+    return data
+  },
+
+  /** 쇼룸명 중복·형식 확인. 인증 불필요. */
+  checkShowroomName: async (showroomName: string) => {
+    const { data } = await authInstance.get<ShowroomNameCheckResponse>(
+      "/creator/auth/check-showroom-name",
+      { params: { showroomName }, suppressErrorToast: true }
+    )
+    return data
+  },
+
+  /** 제출 성공 = 온보딩 완료. 서버가 isNewMember를 내리고 정식 토큰을 발급한다. */
+  completeRegistration: async (
+    registerToken: string,
+    data: CompleteRegistrationRequest
+  ) => {
+    const { data: response } = await authInstance.post<TokenResponse>(
+      "/creator/auth/complete-registration",
+      data,
+      withRegisterToken(registerToken)
+    )
+    return response
+  },
+
+  /**
+   * 사업자등록증·통장사본 업로드 → URL 반환. 인증 불필요(type 화이트리스트로 통제).
+   * Content-Type을 지정하지 않는다 — FormData면 브라우저가 boundary까지 자동으로 붙인다
+   * (수동 지정 시 boundary가 빠져 서버 파싱이 실패한다).
+   */
+  uploadCreatorDocument: async (file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+    const { data } = await authInstance.post<ImageUploadResponse>(
+      "/common/images",
+      formData,
+      { params: { type: "CREATOR_DOCUMENT" }, suppressErrorToast: true }
     )
     return data
   },

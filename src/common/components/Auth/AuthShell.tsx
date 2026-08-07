@@ -4,16 +4,23 @@ import { Wordmark } from "@/common/components/Auth/Wordmark"
 
 type AuthShellProps = {
   /**
-   * auth = 로그인 `.auth-card` (400px, 수직 중앙, 워드마크 186.3×20 로즈레드)
-   * form = 신청 `.form-card` (520px, 상단 정렬 + 스크롤, 워드마크 150×16 검정)
+   * auth       = 로그인 `.auth-card` (400px, 수직 중앙, 워드마크 186.3×20 로즈레드)
+   * form       = 신청 `.form-card` (520px, 상단 정렬 + 스크롤, 워드마크 150×16 검정)
+   * onboarding = 온보딩 `.auth-card` (480px, 상단 정렬, 워드마크 150×16 검정)
    *
-   * 두 시안이 폭·패딩·워드마크 색과 크기를 모두 다르게 쓰기 때문에
+   * 시안마다 폭·패딩·워드마크 색과 크기가 전부 달라서
    * 개별 prop을 나열하지 않고 화면 종류 하나로 묶었다.
    */
-  variant: "auth" | "form"
+  variant: "auth" | "form" | "onboarding"
   /** 워드마크 아래 서피스 캡션 (예: "쇼룸 스튜디오") */
   subtitle?: string
   children: ReactNode
+}
+
+const CARD_WIDTH: Record<AuthShellProps["variant"], number> = {
+  auth: 400,
+  form: 520,
+  onboarding: 480,
 }
 
 export function AuthShell({ variant, subtitle, children }: AuthShellProps) {
@@ -27,7 +34,7 @@ export function AuthShell({ variant, subtitle, children }: AuthShellProps) {
       )}
     >
       <div
-        style={{ width: isAuth ? 400 : 520, maxWidth: "100%" }}
+        style={{ width: CARD_WIDTH[variant], maxWidth: "100%" }}
         className={isAuth ? "pt-6 pb-5" : "py-14"}
       >
         <div className="mb-6 text-center">

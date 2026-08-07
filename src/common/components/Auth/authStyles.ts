@@ -1,14 +1,29 @@
 import { cn } from "@/lib/utils"
 
 /**
- * ui-studio-02-signup 시안의 `.inp` — 신청 폼 컨트롤 공통 스타일.
+ * 컨트롤 높이는 화면마다 다르다 — 각 시안이 서로 다른 값을 확정했다.
+ *   md(44px) = 신청(ui-studio-02-signup)
+ *   sm(40px) = 온보딩(ui-studio-03-onboarding rev.2, 파트너센터와 동일)
+ * 로그인 소셜 버튼(48px)은 SocialButton이 자체적으로 갖는다.
  *
- * ⚠️ 높이 44px. front-end-partners의 auth 입력은 40px이므로 그대로 옮겨오면 안 된다
- * (시안 `--auth-control-h: 44px`).
+ * 기본값을 md로 둬서 기존 신청 화면 호출부는 그대로 둔다.
  */
-export const authInputClass = (hasError?: boolean, extra?: string) =>
+export type ControlSize = "sm" | "md"
+
+const HEIGHT_CLASS: Record<ControlSize, string> = {
+  sm: "h-10",
+  md: "h-11",
+}
+
+/** 시안 `.inp` — 폼 컨트롤 공통 스타일 */
+export const authInputClass = (
+  hasError?: boolean,
+  extra?: string,
+  size: ControlSize = "md"
+) =>
   cn(
-    "h-11 w-full rounded-[6px] border bg-white px-3 text-[13px] text-sz-n-900 outline-none",
+    HEIGHT_CLASS[size],
+    "w-full rounded-[6px] border bg-white px-3 text-[13px] text-sz-n-900 outline-none",
     "placeholder:text-sz-n-400 transition-[color,box-shadow,border-color]",
     "disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400",
     hasError
@@ -17,16 +32,23 @@ export const authInputClass = (hasError?: boolean, extra?: string) =>
     extra
   )
 
-/** 시안 `.inp.ro` — 읽기 전용 표시용(플랫폼 고정 등). input이 아니라 div로 렌더한다. */
-export const authReadonlyBoxClass = cn(
-  "flex h-11 w-full items-center justify-between rounded-[6px] border border-sz-n-300",
-  "bg-sz-n-100 px-3 text-[13px] text-sz-n-700"
-)
-
-/** 시안 `.btn` — 44px. `.btn-primary` / `.btn-line` 두 종류. */
-export const authButtonClass = (variant: "primary" | "line", extra?: string) =>
+/** 시안 `.inp.ro` — 읽기 전용 표시용(플랫폼 고정·쇼룸 주소·예금주 등). input이 아니라 div로 렌더한다. */
+export const authReadonlyBoxClass = (size: ControlSize = "md") =>
   cn(
-    "flex h-11 items-center justify-center gap-2 rounded-[6px] border text-[13px] font-medium transition-colors",
+    HEIGHT_CLASS[size],
+    "flex w-full items-center justify-between rounded-[6px] border border-sz-n-300",
+    "bg-sz-n-100 px-3 text-[13px] text-sz-n-700"
+  )
+
+/** 시안 `.btn` — `.btn-primary` / `.btn-line` 두 종류 */
+export const authButtonClass = (
+  variant: "primary" | "line",
+  extra?: string,
+  size: ControlSize = "md"
+) =>
+  cn(
+    HEIGHT_CLASS[size],
+    "flex items-center justify-center gap-2 rounded-[6px] border text-[13px] font-medium transition-colors",
     variant === "primary"
       ? cn(
           "border-sz-auth-action bg-sz-auth-action text-white",

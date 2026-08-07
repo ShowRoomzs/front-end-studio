@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 디자인시스템 v1.2 §타이포그래피 — Pretendard (OFL, 상업적 이용 무료).
+         index.css의 @import로는 동작하지 않는다: Tailwind v4가 CSS를 처리하면서
+         원격 @import를 버려 빌드 결과에 남지 않는다. 그래서 <link>로 싣는다.
+         프로덕션 전환 시 `npm install pretendard`로 self-host 권장. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+    />
     <title>쇼룸 스튜디오</title>
   </head>
   <body>

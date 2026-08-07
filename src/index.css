@@ -1,9 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* 디자인시스템 v1.2 §타이포그래피 — 서체는 Pretendard.
+   폰트 파일 자체는 index.html의 <link>로 싣는다(여기서 @import하면 Tailwind v4가 버린다).
+   로드 실패 시 -apple-system → 시스템 sans-serif로 대체되며 레이아웃은 깨지지 않는다. */
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* v1.2 §서체 — Tailwind의 font-sans 유틸리티와 기본 서체를 함께 갈아끼운다 */
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -50,6 +57,13 @@
   --color-sz-warning-text: var(--sz-warning-text);
   --color-sz-danger-bg: var(--sz-danger-bg);
   --color-sz-danger-text: var(--sz-danger-text);
+  --color-sz-neutral-bg: var(--sz-neutral-bg);
+  --color-sz-neutral-text: var(--sz-neutral-text);
+  /* 로고 전용 (v1.2) — UI 액센트와 혼용 금지 */
+  --color-sz-brand-500: var(--sz-brand-500);
+  --color-sz-logo-color: var(--sz-logo-color);
+  --color-sz-logo-dark: var(--sz-logo-dark);
+  --color-sz-logo-white: var(--sz-logo-white);
   --color-sz-auth-action: var(--sz-auth-action);
   --color-sz-auth-action-hover: var(--sz-auth-action-hover);
 
@@ -108,15 +122,42 @@
   --sz-warning-text: #8f6620;
   --sz-danger-bg: #fbe6e6;
   --sz-danger-text: #b23434;
+  /* 취소·종료·해지 등 중립 상태 배지 (v1.2 §액센트&상태 4상치) */
+  --sz-neutral-bg: #f1f2f4;
+  --sz-neutral-text: #5b5f68;
+
+  /* ── 브랜드 로고 (v1.2 §브랜드 로고) ──
+     ⚠️ 로고 색과 UI 액센트 색은 **별개 체계**다. UI 액센트는 인디고(--sz-accent-500),
+     로고는 아래 램프를 쓴다. 웹 3서피스(파트너센터·스튜디오·어드민)의 로고 기본값은
+     --sz-logo-dark이며, 로즈레드는 소비자 앱·IR·마케팅용이다. 섞어 쓰지 말 것. */
+  --sz-brand-50: #fef4f6;
+  --sz-brand-100: #fde1e8;
+  --sz-brand-200: #fbc0ce;
+  --sz-brand-300: #f899af;
+  --sz-brand-400: #f56e8e;
+  --sz-brand-500: #f2456e;
+  --sz-brand-600: #cf3d61;
+  --sz-brand-700: #a93353;
+  --sz-brand-800: #822a44;
+  --sz-brand-900: #5b2136;
+  --sz-logo-color: var(--sz-brand-500);
+  --sz-logo-dark: var(--sz-n-900);
+  --sz-logo-white: #ffffff;
   /* Auth 전용 주 액션 (accent-500이 아닌 검정 — 로그인·가입 화면 확정 예외) */
   --sz-auth-action: #1a1b1f;
   --sz-auth-action-hover: #3a3d45;
 
-  /* ── 스튜디오 전용 예외 ──
+  /* ── 스튜디오 로그인 화면 전용 예외 (유지 확정) ──
      ui-studio-01-login §3: 다른 인증 화면(가입·온보딩)은 워드마크가 검정이지만
-     로그인 화면만 브랜드 로즈레드를 쓴다. 대표 확인을 거친 의도적 예외이며
-     다른 화면에 일반화하지 않는다. */
-  --sz-logo-studio: #f2456e;
+     **로그인 화면만** 브랜드 로즈레드를 쓴다. 대표 확인을 거친 의도적 예외다.
+
+     ⚠️ 디자인시스템 v1.2 §브랜드 로고의 서피스 표는 쇼룸 스튜디오도 `--logo-dark`로
+     적어두어 이 값과 어긋난다. 확인 결과 **화면 예외를 유지하기로 결정**됐으므로,
+     v1.2와 맞춘다는 이유로 이 토큰을 --sz-logo-dark로 되돌리지 말 것.
+     (v1.2 문서 쪽에 예외 항목을 추가하는 게 남은 과제)
+
+     값 자체는 브랜드 램프의 500과 같은 색이라 하드코딩하지 않고 참조한다. */
+  --sz-logo-studio: var(--sz-brand-500);
 
   /* ui-studio-01-login §4 / §8-2: 각 사 공식 브랜드 색. 지금 값은 임시 확정본이라
      소비자 앱 UI가 나오면 일괄 교체한다 — 컴포넌트에 하드코딩하지 말 것. */
@@ -142,6 +183,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
