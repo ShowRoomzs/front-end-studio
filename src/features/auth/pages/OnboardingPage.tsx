@@ -18,16 +18,14 @@ import { QUERY_KEYS } from "@/common/constants/queryKeys"
 import { AcctNumberField } from "@/features/auth/components/AcctNumberField"
 import { NoticeBox } from "@/features/auth/components/NoticeBox"
 import { RadioToggle } from "@/features/auth/components/RadioToggle"
-import {
-  SHOWROOM_NAME_MIN_LENGTH,
-  ShowroomNameField,
-} from "@/features/auth/components/ShowroomNameField"
+import { ShowroomNameField } from "@/features/auth/components/ShowroomNameField"
 import { UploadField } from "@/features/auth/components/UploadField"
 import {
   authService,
   type CreatorBusinessType,
 } from "@/features/auth/services/authService"
 import {
+  validateAccountNumber,
   validateBusinessRegistrationNumber,
   validateShowroomName,
 } from "@/features/auth/utils/studioValidation"
@@ -36,6 +34,11 @@ const SERVER_ERROR_MESSAGE =
   "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
 
 const BANK_PLACEHOLDER = ""
+
+// 서버는 "이미 사용 중인 쇼룸명입니다."까지만 준다. 시안 state C는 다음 행동까지 안내하므로
+// 중복일 때만 시안 문구를 쓰고, 그 외 사유는 서버 메시지를 그대로 보여준다.
+const SHOWROOM_NAME_DUPLICATED_MESSAGE =
+  "이미 사용 중인 쇼룸명입니다. 다른 이름을 입력해 주세요."
 
 type OnboardingForm = {
   showroomName: string
@@ -161,7 +164,10 @@ export default function OnboardingPage() {
         setNameCheck({
           checked: name,
           available: res.isAvailable,
-          message: res.message,
+          message:
+            res.code === "DUPLICATE"
+              ? SHOWROOM_NAME_DUPLICATED_MESSAGE
+              : res.message,
         })
       } catch {
         // 조회 실패는 조용히 넘긴다 — 제출 시 서버가 다시 판정한다
@@ -264,11 +270,9 @@ export default function OnboardingPage() {
         <Controller
           control={control}
           name="showroomName"
-          rules={{
-            required: true,
-            minLength: SHOWROOM_NAME_MIN_LENGTH,
-            validate: validateShowroomName,
-          }}
+          // minLength를 따로 두지 않는다 — 메시지 없는 규칙이 걸리면 빈 에러가 떠서
+          // 문구가 사라진다. 길이 검사는 validateShowroomName이 문구까지 담당한다.
+          rules={{ required: true, validate: validateShowroomName }}
           render={({ field }) => (
             <FormField
               label={
@@ -443,7 +447,9 @@ export default function OnboardingPage() {
         <Controller
           control={control}
           name="accountNumber"
-          rules={{ required: true, pattern: /^[0-9]{10,16}$/ }}
+          // 미입력은 문구 없이 버튼 비활성만(시안 §4-1)이라 required엔 메시지를 두지 않는다.
+          // 자릿수 미달·초과일 때만 실제 문구가 뜬다.
+          rules={{ required: true, validate: validateAccountNumber }}
           render={({ field }) => (
             <FormField
               label={
@@ -453,6 +459,7 @@ export default function OnboardingPage() {
                 </>
               }
               htmlFor="accountNumber"
+              error={errors.accountNumber?.message}
               help="10~16자리 숫자로 입력해 주세요. (붙여넣기 시 하이픈은 자동으로 제거됩니다)"
             >
               <AcctNumberField
@@ -460,6 +467,7 @@ export default function OnboardingPage() {
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
+                hasError={!!errors.accountNumber}
                 placeholder="- 없이 숫자만 입력"
                 disabled={isSubmitting}
               />
@@ -474,7 +482,11 @@ export default function OnboardingPage() {
               <RequiredMark />
             </>
           }
-          help="본인 인증한 실명과 일치해야 합니다. 사업자는 대표자명 또는 상호."
+          help={
+            isBusiness
+              ? "사업자는 대표자명 또는 상호로 등록된 예금주여야 합니다."
+              : "본인 인증한 실명과 일치해야 합니다. 사업자는 대표자명 또는 상호."
+          }
         >
           <div className={authReadonlyBoxClass("sm")}>
             <span className="truncate">

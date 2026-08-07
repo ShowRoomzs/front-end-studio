@@ -21,6 +21,17 @@ export const validateShowroomName = (value: string) => {
   return true
 }
 
+/**
+ * 계좌번호 — 백엔드 `^[0-9]{10,16}$`.
+ * 문구는 시안 state C의 err-msg와 동일하게 맞춘다.
+ */
+export const validateAccountNumber = (value: string) => {
+  if (!value) return true // 미입력은 required가 처리 — 문구 없이 버튼 비활성만
+  if (!/^[0-9]{10,16}$/.test(value))
+    return "계좌번호는 10~16자리 숫자로 입력해 주세요."
+  return true
+}
+
 /** 사업자등록번호 — 백엔드 `^\d{3}-\d{2}-\d{5}$` */
 export const validateBusinessRegistrationNumber = (value: string) => {
   if (!value) return true
