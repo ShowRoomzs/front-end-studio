@@ -1,9 +1,33 @@
 /**
- * 신청 Step2 검증·정규화.
+ * 신청·온보딩 검증·정규화.
  *
- * 정규식은 백엔드 CreatorApplicationRequest의 @Pattern과 **동일하게** 맞춘다.
+ * 정규식은 백엔드 @Pattern과 **동일하게** 맞춘다.
  * 프론트만 느슨하면 제출 시점에 서버가 거부해 사용자가 원인을 알 수 없게 된다.
  */
+
+/* ── 온보딩 (CreatorCompleteRegistrationRequest) ── */
+
+/**
+ * 쇼룸명 — 백엔드 `^[가-힣a-zA-Z0-9 ]+$`, @Size(2,20)과 동일.
+ * 공백과 한/영 혼용이 **허용된다**("소연의 뷰티로그" 같은 이름이 통과해야 한다).
+ */
+export const validateShowroomName = (value: string) => {
+  const name = value.trim()
+  if (!name) return true // 미입력은 required가 처리 — 문구 없이 버튼 비활성만
+  if (name.length < 2 || name.length > 20)
+    return "쇼룸명은 2~20자로 입력해 주세요."
+  if (!/^[가-힣a-zA-Z0-9 ]+$/.test(name))
+    return "한글·영문·숫자·공백만 사용할 수 있습니다."
+  return true
+}
+
+/** 사업자등록번호 — 백엔드 `^\d{3}-\d{2}-\d{5}$` */
+export const validateBusinessRegistrationNumber = (value: string) => {
+  if (!value) return true
+  if (!/^\d{3}-\d{2}-\d{5}$/.test(value))
+    return "올바른 사업자등록번호 형식으로 입력해 주세요. (예: 000-00-00000)"
+  return true
+}
 
 /** 백엔드 @Pattern ^[a-z0-9._]+$ 와 동일. 최대 30자(@Size). */
 export const ACCOUNT_ID_MAX_LENGTH = 30

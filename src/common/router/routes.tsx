@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom"
 import LoginPage from "@/features/auth/pages/LoginPage"
 import SignupPage from "@/features/auth/pages/SignupPage"
-import OnboardingPlaceholderPage from "@/features/auth/pages/OnboardingPlaceholderPage"
+import OnboardingPage from "@/features/auth/pages/OnboardingPage"
 import NaverCallbackPage from "@/features/auth/pages/NaverCallbackPage"
 import KakaoCallbackPage from "@/features/auth/pages/KakaoCallbackPage"
 import HomePage from "@/features/home/pages/HomePage"
@@ -17,7 +17,7 @@ export const authRoutes: Array<RouteObject> = [
   { path: "/login", element: <LoginPage /> },
   { path: "/signup", element: <SignupPage /> },
   // 승인 후 최초 로그인(isNewMember) 진입점. 정식 토큰이 없어 authRoutes에 둔다.
-  { path: "/onboarding", element: <OnboardingPlaceholderPage /> },
+  { path: "/onboarding", element: <OnboardingPage /> },
   // 소셜 로그인 팝업 전용 콜백. 각 VITE_*_REDIRECT_URI 및 각 사 콘솔에 등록한 값과
   // 경로가 문자 그대로 일치해야 한다.
   { path: "/oauth/naver/callback", element: <NaverCallbackPage /> },

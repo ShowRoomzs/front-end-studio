@@ -181,7 +181,9 @@ export function useNaverLogin() {
         if (!settled) {
           cleanup()
           reject(
-            new Error("네이버 로그인 시간이 초과되었습니다. 다시 시도해 주세요.")
+            new Error(
+              "네이버 로그인 시간이 초과되었습니다. 다시 시도해 주세요."
+            )
           )
         }
       }, RESPONSE_TIMEOUT_MS)

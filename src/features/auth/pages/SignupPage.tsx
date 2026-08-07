@@ -308,7 +308,7 @@ export default function SignupPage() {
               }
             >
               {/* §8-2: 원본 4종 선택은 폐기되고 Instagram 고정(읽기전용)으로 확정 */}
-              <div className={authReadonlyBoxClass}>
+              <div className={authReadonlyBoxClass()}>
                 Instagram
                 <span className="flex items-center gap-1 text-[11px] text-sz-n-500">
                   <LockIcon />
