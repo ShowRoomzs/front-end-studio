@@ -36,24 +36,36 @@ export function UploadField({
   const [fileName, setFileName] = useState("")
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState("")
+  // 시안은 실패 사유에 따라 힌트 줄 문구가 다르다 — "지원하지 않는 형식" / "선택한 파일 14.8MB"
+  const [errorHint, setErrorHint] = useState("")
+
+  const fail = (name: string, hint: string, message: string) => {
+    setFileName(name)
+    setErrorHint(hint)
+    setError(message)
+    onChange("")
+  }
 
   const handleSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("")
+    setErrorHint("")
     const file = e.target.files?.[0]
     e.target.value = "" // 같은 파일 재선택 허용
     if (!file) return
 
     const ext = file.name.split(".").pop()?.toLowerCase() ?? ""
     if (!ALLOWED_EXT.includes(ext)) {
-      setFileName(file.name)
-      onChange("")
-      setError("jpg, png, pdf 파일만 업로드할 수 있습니다.")
+      fail(
+        file.name,
+        "지원하지 않는 형식",
+        "jpg, png, pdf 파일만 업로드할 수 있습니다."
+      )
       return
     }
     if (file.size > MAX_SIZE) {
-      setFileName(file.name)
-      onChange("")
-      setError(
+      fail(
+        file.name,
+        `선택한 파일 ${(file.size / 1024 / 1024).toFixed(1)}MB`,
         "파일 크기가 10MB를 초과했습니다. 10MB 이하의 파일을 선택해 주세요."
       )
       return
@@ -65,8 +77,11 @@ export function UploadField({
       setFileName(file.name)
       onChange(res.imageUrl)
     } catch {
-      onChange("")
-      setError("업로드에 실패했습니다. 다시 시도해 주세요.")
+      fail(
+        file.name,
+        "업로드 실패",
+        "업로드에 실패했습니다. 다시 시도해 주세요."
+      )
     } finally {
       setUploading(false)
     }
@@ -105,10 +120,7 @@ export function UploadField({
               ? "업로드 중…"
               : uploaded
                 ? "업로드 완료"
-                : error
-                  ? // 실패 사유는 아래 err-msg에 적고, 여기엔 짧은 상태만
-                    "다시 선택해 주세요"
-                  : "최대 10MB · jpg, png, pdf"}
+                : errorHint || "최대 10MB · jpg, png, pdf"}
           </div>
         </div>
         <button
