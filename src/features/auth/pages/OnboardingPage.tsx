@@ -7,6 +7,7 @@ import { isAxiosError } from "axios"
 import { AuthShell } from "@/common/components/Auth/AuthShell"
 import { FormField, RequiredMark } from "@/common/components/Auth/FormField"
 import {
+  SELECT_CHEVRON_STYLE,
   authButtonClass,
   authInputClass,
   authReadonlyBoxClass,
@@ -446,7 +447,8 @@ export default function OnboardingPage() {
               <select
                 id="bankCode"
                 disabled={isSubmitting || banksLoading}
-                className={authInputClass(false, "pr-8", "sm")}
+                className={authInputClass(false, "appearance-none pr-8", "sm")}
+                style={SELECT_CHEVRON_STYLE}
                 {...field}
               >
                 <option value={BANK_PLACEHOLDER} disabled>
