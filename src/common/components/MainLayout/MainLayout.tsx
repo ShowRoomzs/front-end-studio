@@ -10,7 +10,7 @@ import { cookie } from "@/common/lib/cookie"
 import { useGetThreadSummary } from "@/features/connections/hooks/useGetThreadSummary"
 import { cn } from "@/lib/utils"
 import { useCallback, useEffect, useState } from "react"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 
 /**
  * 셸의 여백·제목·스크롤을 화면이 직접 가져가는 경로들.
@@ -21,7 +21,6 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom"
 const FULL_BLEED_PREFIXES = ["/connections"]
 
 export default function MainLayout() {
-  const navigate = useNavigate()
   const location = useLocation()
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -37,8 +36,18 @@ export default function MainLayout() {
     cookie.remove(COOKIE_NAME.ACCESS_TOKEN)
     cookie.remove(COOKIE_NAME.REFRESH_TOKEN)
     cookie.remove(COOKIE_NAME.ROLE)
-    navigate("/login", { replace: true })
-  }, [navigate])
+
+    /*
+      로그인과 같은 이유로 navigate가 아니라 문서를 새로 띄운다 — role 쿠키가
+      빠지면 라우트 트리가 통째로 갈아끼워지는데, navigate는 아직 살아 있는
+      mainRoutes에서 실행돼 주소와 화면이 어긋난다.
+
+      덤으로 이전 사용자의 조회 캐시(스레드 목록·메시지)가 메모리에서 사라진다.
+      같은 브라우저에서 다른 계정으로 다시 로그인할 때 남의 대화가 잠깐
+      비치는 걸 막는다.
+    */
+    window.location.replace("/login")
+  }, [])
 
   const isFullBleed = FULL_BLEED_PREFIXES.some(
     prefix =>
