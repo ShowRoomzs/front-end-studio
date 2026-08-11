@@ -56,7 +56,17 @@ export default function LoginPage() {
           setAccessToken(next.accessToken)
           setRefreshToken(next.refreshToken)
           setRole("CREATOR")
-          navigate("/")
+
+          // ⚠️ navigate("/")를 쓰면 안 된다 — 온보딩 완료 처리와 같은 이유다.
+          // navigate는 "지금" 마운트된 라우터에서 실행되는데, 그 시점의 라우터는
+          // 아직 authRoutes다(role 쿠키 반영은 다음 렌더). authRoutes에서 "/"는
+          // catch-all `*` → LoginPage에만 걸려, 주소만 "/"로 바뀐 채 로그인 화면이
+          // 그대로 남는다(= 한 번 더 로그인해야 대시보드로 넘어가던 증상).
+          //
+          // role이 바뀌면 createRouter가 라우트 트리를 통째로 갈아끼우므로(router.ts),
+          // 같은 라우터 안에서 이동시키지 말고 문서 자체를 새로 띄운다.
+          // replace를 쓰는 이유: 뒤로 가기로 로그인 화면에 돌아오지 않게 한다.
+          window.location.replace("/")
           return
         }
 
