@@ -1,4 +1,6 @@
 import type { RouteObject } from "react-router-dom"
+import MainLayout from "@/common/components/MainLayout/MainLayout"
+import ConnectionsPage from "@/features/connections/pages/ConnectionsPage"
 import LoginPage from "@/features/auth/pages/LoginPage"
 import SignupPage from "@/features/auth/pages/SignupPage"
 import OnboardingPage from "@/features/auth/pages/OnboardingPage"
@@ -25,8 +27,15 @@ export const authRoutes: Array<RouteObject> = [
   { path: "*", element: <LoginPage /> },
 ]
 
-/** 승인된 크리에이터(role=CREATOR)용 라우트. */
+/** 승인된 크리에이터(role=CREATOR)용 라우트 — 메인 셸(GNB+탑바) 안에 들어간다. */
 export const mainRoutes: Array<RouteObject> = [
-  { path: "/", element: <HomePage /> },
-  { path: "*", element: <HomePage /> },
+  {
+    path: "/",
+    element: <MainLayout />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: "connections", element: <ConnectionsPage /> },
+      { path: "*", element: <HomePage /> },
+    ],
+  },
 ]
