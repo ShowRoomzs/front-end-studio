@@ -27,5 +27,13 @@ export interface OutgoingMessage {
   content: string | null
   attachments: Array<OutgoingAttachment>
   status: "sending" | "failed"
+  /**
+   * 실패 사유.
+   *
+   * 시안(§13-10)은 말풍선에 "전송 실패"만 쓰라고 하므로 화면 문구는 그대로 두고,
+   * 이 값은 빨간 느낌표의 tooltip과 토스트로만 노출한다 — 원인을 전혀 남기지
+   * 않으면 S3 CORS·서명 불일치 같은 실패를 사용자도 개발자도 구분할 수 없다.
+   */
+  error?: string
   createdAt: string
 }

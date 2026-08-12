@@ -149,6 +149,7 @@ export default function MessageList(props: MessageListProps) {
           content={message.content}
           timestamp={message.status === "failed" ? "" : "전송 중…"}
           isFailed={message.status === "failed"}
+          failureReason={message.error}
           onRetry={() => onRetry(message.clientMessageId)}
           onCancel={() => onCancel(message.clientMessageId)}
         >

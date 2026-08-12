@@ -28,7 +28,8 @@ export default function RequestInboxPanel(props: RequestInboxPanelProps) {
           받은 연결 요청이 없습니다
         </div>
         <div className="max-w-[340px] text-[12px] leading-relaxed text-sz-n-500">
-          브랜드가 연결을 요청하면 여기에 표시됩니다.
+          브랜드가 연결을 요청하면 여기에 표시됩니다. 요청 도착 시 인앱
+          알림·이메일로 조용히 안내드려요.
         </div>
       </div>
     )

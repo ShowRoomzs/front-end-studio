@@ -64,14 +64,19 @@ export default function AttachPreview(props: AttachPreviewProps) {
         const icon = getAttachmentIcon(file.name)
 
         return isImage ? (
+          /*
+            ⚠️ 여기에 `overflow-hidden`을 걸면 안 된다 — 제거 버튼이 프레임
+            바깥(-top/-right)에 걸쳐 있어서 통째로 잘려나간다.
+            모서리 둥글리기는 컨테이너가 아니라 <img>가 직접 가져간다.
+          */
           <div
             key={localId}
-            className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[6px] bg-sz-n-200"
+            className="relative h-16 w-16 shrink-0 rounded-[6px] bg-sz-n-200"
           >
             <img
               src={objectUrls[localId]}
               alt={file.name}
-              className="h-full w-full object-cover"
+              className="h-full w-full rounded-[6px] object-cover"
             />
             <RemoveButton onClick={() => onRemove(localId)} />
           </div>

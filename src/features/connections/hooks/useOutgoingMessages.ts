@@ -11,7 +11,34 @@ import type {
 } from "@/features/connections/types"
 import { getLocalAttachmentType } from "@/features/connections/utils/attachmentIcon"
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
+import { isAxiosError } from "axios"
 import { useCallback, useEffect, useRef, useState } from "react"
+import toast from "react-hot-toast"
+
+const FALLBACK_SEND_ERROR = "메시지를 보내지 못했습니다."
+
+/**
+ * 실패 사유를 사람이 읽을 수 있는 한 줄로 만든다.
+ *
+ * axios 에러는 apiInstance 인터셉터가 이미 토스트를 띄웠으므로 여기서 또 띄우면
+ * 같은 문구가 두 번 뜬다. 그래서 "토스트를 띄울지"를 함께 돌려준다 —
+ * S3 직접 업로드(XHR)는 axios를 거치지 않아 아무도 알려주지 않는 유일한 구간이다.
+ */
+function describeSendError(error: unknown): {
+  message: string
+  shouldToast: boolean
+} {
+  if (isAxiosError(error)) {
+    return {
+      message: error.response?.data?.message ?? FALLBACK_SEND_ERROR,
+      shouldToast: false,
+    }
+  }
+  return {
+    message: error instanceof Error ? error.message : FALLBACK_SEND_ERROR,
+    shouldToast: true,
+  }
+}
 
 /**
  * 아직 서버에 없는 내 메시지들을 관리한다.
@@ -130,6 +157,19 @@ export function useOutgoingMessages(threadId: number | null) {
                   progress,
                 }),
             })
+
+            /*
+              완료 통지는 200으로 오지만 서버가 실측(HeadObject)에서 선언값과
+              어긋난 파일을 REJECTED로 되돌려 보낼 수 있다. 이걸 안 보고 그대로
+              전송하면 서버가 "UPLOADED가 아니다"로 400을 내서, 정작 원인이
+              무엇인지 알 수 없는 실패가 된다.
+            */
+            if (summary.status !== "UPLOADED") {
+              throw new Error(
+                `"${attachment.file.name}" 파일이 업로드 검증을 통과하지 못했습니다.`
+              )
+            }
+
             patchAttachment(clientMessageId, attachment.localId, {
               summary,
               progress: 100,
@@ -153,7 +193,11 @@ export function useOutgoingMessages(threadId: number | null) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return
         }
-        patchMessage(clientMessageId, { status: "failed" })
+        const { message, shouldToast } = describeSendError(error)
+        if (shouldToast) {
+          toast.error(message)
+        }
+        patchMessage(clientMessageId, { status: "failed", error: message })
       } finally {
         abortControllers.current.delete(clientMessageId)
       }
@@ -197,8 +241,9 @@ export function useOutgoingMessages(threadId: number | null) {
       if (!target) {
         return
       }
-      patchMessage(clientMessageId, { status: "sending" })
-      void runSend(threadId, { ...target, status: "sending" })
+      // 지난 실패 사유를 지우지 않으면 재전송 중에도 옛 오류가 툴팁에 남는다
+      patchMessage(clientMessageId, { status: "sending", error: undefined })
+      void runSend(threadId, { ...target, status: "sending", error: undefined })
     },
     [outgoing, patchMessage, runSend, threadId]
   )

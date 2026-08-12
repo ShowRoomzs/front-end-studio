@@ -13,6 +13,8 @@ interface MessageBubbleProps {
   timestamp: string
   /** 전송 실패 — 타임스탬프 자리에 빨간 느낌표가 대신 들어간다(§13-10) */
   isFailed?: boolean
+  /** 실패 사유 — 화면 문구는 시안대로 "전송 실패" 고정이고, 이건 tooltip으로만 */
+  failureReason?: string
   onRetry?: () => void
   onCancel?: () => void
   onClickImage?: (images: Array<AttachmentSummary>, index: number) => void
@@ -35,6 +37,7 @@ export default function MessageBubble(props: MessageBubbleProps) {
     attachments = [],
     timestamp,
     isFailed = false,
+    failureReason,
     onRetry,
     onCancel,
     onClickImage,
@@ -73,7 +76,7 @@ export default function MessageBubble(props: MessageBubbleProps) {
           </div>
           {isFailed ? (
             <span
-              title="전송 실패"
+              title={failureReason ?? "전송 실패"}
               className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sz-danger-text text-[10px] leading-none font-bold text-white"
             >
               !
@@ -98,7 +101,8 @@ export default function MessageBubble(props: MessageBubbleProps) {
 
       {isFailed && (
         <div className="mt-1 flex items-center justify-end gap-[7px] text-[11px] font-medium text-sz-danger-text">
-          <span>전송 실패</span>
+          {/* 첨부만 보낸 메시지는 말풍선이 없어 위쪽 느낌표가 안 뜬다 — 사유를 여기에도 건다 */}
+          <span title={failureReason ?? "전송 실패"}>전송 실패</span>
           <button
             type="button"
             onClick={onRetry}
