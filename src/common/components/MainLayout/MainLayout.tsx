@@ -6,6 +6,7 @@ import {
 import Sidebar from "@/common/components/Sidebar/Sidebar"
 import { COOKIE_NAME } from "@/common/constants/cookie"
 import { CREATOR_MENU } from "@/common/constants/menu"
+import { useGetShowroomName } from "@/common/hooks/useGetShowroomName"
 import { cookie } from "@/common/lib/cookie"
 import { useGetThreadSummary } from "@/features/connections/hooks/useGetThreadSummary"
 import { cn } from "@/lib/utils"
@@ -62,6 +63,7 @@ export default function MainLayout() {
   )
 
   const { data: threadSummary } = useGetThreadSummary()
+  const { data: showroom } = useGetShowroomName()
 
   return (
     <div className="flex h-screen bg-sz-n-50">
@@ -77,6 +79,7 @@ export default function MainLayout() {
       >
         <Header
           title={currentMenu?.label}
+          showroomName={showroom?.showroomName}
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           onLogout={handleLogout}
