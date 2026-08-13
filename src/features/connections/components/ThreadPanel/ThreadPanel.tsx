@@ -16,7 +16,7 @@ import type {
   AttachmentSummary,
   ThreadListItem,
 } from "@/features/connections/services/threadService"
-import { downloadFile } from "@/features/connections/utils/download"
+import { downloadAttachment } from "@/features/connections/utils/download"
 import { useState } from "react"
 import toast from "react-hot-toast"
 
@@ -119,8 +119,7 @@ export default function ThreadPanel(props: ThreadPanelProps) {
         }
         senderLabel={lightbox?.senderLabel}
         onDownload={() =>
-          currentImage?.fileUrl &&
-          downloadFile(currentImage.fileUrl, currentImage.originalName)
+          currentImage && downloadAttachment(currentImage.attachmentId)
         }
       />
 

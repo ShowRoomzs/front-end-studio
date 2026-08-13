@@ -2,7 +2,7 @@ import FileChip from "@/features/connections/components/Attachment/FileChip"
 import ImageGrid from "@/features/connections/components/Attachment/ImageGrid"
 import { DownloadIcon } from "@/features/connections/components/icons"
 import type { AttachmentSummary } from "@/features/connections/services/threadService"
-import { downloadFiles } from "@/features/connections/utils/download"
+import { downloadAttachments } from "@/features/connections/utils/download"
 import { cn } from "@/lib/utils"
 
 interface AttachmentRendererProps {
@@ -38,14 +38,15 @@ export default function AttachmentRenderer(props: AttachmentRendererProps) {
   */
   const showBulkDownload = attachments.length >= 2
 
+  /*
+    검증에 실패한 첨부(REJECTED)는 S3 객체가 이미 지워져 있어 건너뛴다 —
+    포함시키면 서버가 400으로 거절하고, 순차 저장이 거기서 멈춘다.
+  */
   const handleBulkDownload = () =>
-    downloadFiles(
+    downloadAttachments(
       attachments
-        .filter(attachment => attachment.fileUrl)
-        .map(attachment => ({
-          url: attachment.fileUrl!,
-          fileName: attachment.originalName,
-        }))
+        .filter(attachment => attachment.status === "UPLOADED")
+        .map(attachment => attachment.attachmentId)
     )
 
   return (

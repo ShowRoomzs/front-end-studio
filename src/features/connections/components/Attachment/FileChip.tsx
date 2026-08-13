@@ -1,7 +1,7 @@
 import { DownloadIcon } from "@/features/connections/components/icons"
 import type { AttachmentSummary } from "@/features/connections/services/threadService"
 import { getAttachmentIcon } from "@/features/connections/utils/attachmentIcon"
-import { downloadFile } from "@/features/connections/utils/download"
+import { downloadAttachment } from "@/features/connections/utils/download"
 import {
   formatBytes,
   formatDuration,
@@ -33,9 +33,7 @@ export default function FileChip(props: FileChipProps) {
   const isRejected = attachment.status === "REJECTED"
 
   const handleDownload = () => {
-    if (attachment.fileUrl) {
-      downloadFile(attachment.fileUrl, attachment.originalName)
-    }
+    downloadAttachment(attachment.attachmentId)
   }
 
   return (
