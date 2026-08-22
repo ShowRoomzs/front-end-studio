@@ -16,27 +16,49 @@ const OUTPUT_QUALITY = 0.92
 export const CROP_FILE_EXTENSION = "jpg"
 
 /**
- * 원본 소스를 얻는다.
+ * 같은 오리진 이미지 프록시 — `api/image-proxy.ts`(배포) · vite 개발 서버 미들웨어(로컬).
+ */
+function toProxyUrl(url: string) {
+  return `/api/image-proxy?url=${encodeURIComponent(url)}`
+}
+
+async function decodeFromNetwork(url: string) {
+  const response = await fetch(url, { credentials: "omit" })
+  if (!response.ok) {
+    throw new Error(`원본을 가져오지 못했습니다 (${response.status})`)
+  }
+  return createImageBitmap(await response.blob())
+}
+
+/**
+ * 자를 원본을 손에 넣는다.
  *
- * 새로 고른 파일은 바이트가 손에 있으니 그대로 디코딩하고, 이미 올라간 사진은 원본 URL에서
- * 다시 받아야 한다. 후자는 `crossOrigin`이 없으면 캔버스가 오염돼 `toBlob`이 던진다 —
- * 스토리지가 CORS를 열어주지 않는 경우가 있어서 호출부가 실패를 다룰 수 있게 그대로 전파한다.
+ * 새로 고른 파일은 바이트가 이미 있으니 그대로 디코딩한다. 이미 올라간 사진은 받아 와야
+ * 하는데, 여기서 두 번 시도한다.
+ *
+ * 1. **직접** — 스토리지가 CORS를 열어두면 이 경로로 끝난다. 콘솔에 CORS 오류 한 줄이
+ *    남지만 그건 실패한 시도의 흔적일 뿐 화면 동작과 무관하다.
+ * 2. **같은 오리진 프록시** — CloudFront는 지금 `Access-Control-Allow-Origin`을 주지 않아
+ *    브라우저가 응답 본문을 읽지 못한다. 앱 오리진을 한 번 거치면 애초에 교차 출처가
+ *    아니게 되어 제약이 사라진다.
+ *
+ * 순서를 이렇게 둔 이유 — 스토리지에 CORS가 설정되는 순간 프록시는 저절로 쓰이지 않게 되고,
+ * 그때 우회로만 걷어내면 된다.
  */
 export async function loadCropSource(source: File | string) {
   if (source instanceof File) {
     return createImageBitmap(source)
   }
 
-  const image = new Image()
-  image.crossOrigin = "anonymous"
-  image.src = source
-
-  await new Promise<void>((resolve, reject) => {
-    image.onload = () => resolve()
-    image.onerror = () => reject(new Error("원본 사진을 불러오지 못했습니다"))
-  })
-
-  return createImageBitmap(image)
+  try {
+    return await decodeFromNetwork(source)
+  } catch {
+    try {
+      return await decodeFromNetwork(toProxyUrl(source))
+    } catch {
+      throw new Error("원본 사진을 불러오지 못했습니다")
+    }
+  }
 }
 
 /**
