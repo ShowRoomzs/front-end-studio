@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 
 interface HeaderProps {
-  /** 현재 화면명 (시안 `.crumb`) */
+  /** 현재 화면명 (시안 `.crumb`) — GNB 라벨 */
   title?: string
+  /** 메뉴 아래 화면명 (시안 `.crumb-s`) — 없으면 crumb는 메뉴 라벨 하나로 끝난다 */
+  subtitle?: string | null
   /** 시안 `.brand-chip` — 없으면(로딩·조회 실패) 칩 자체를 그리지 않는다 */
   showroomName?: string
   isSidebarOpen: boolean
@@ -17,8 +19,14 @@ interface HeaderProps {
  * 로고는 여기가 아니라 사이드바 상단(`.side-brand`)에 있다.
  */
 export default function Header(props: HeaderProps) {
-  const { title, showroomName, isSidebarOpen, onToggleSidebar, onLogout } =
-    props
+  const {
+    title,
+    subtitle,
+    showroomName,
+    isSidebarOpen,
+    onToggleSidebar,
+    onLogout,
+  } = props
 
   return (
     <header
@@ -50,6 +58,13 @@ export default function Header(props: HeaderProps) {
         {/* 시안 `.crumb` — 16px/600 */}
         <div className="min-w-0 truncate text-[16px] font-semibold text-sz-n-900">
           {title}
+          {subtitle && (
+            // 시안 `.crumb-s` — 12px/400 --n-400. 굵기·크기를 낮춰야 현재 위치가
+            // 메뉴가 아니라 그 아래 화면이라는 게 읽힌다
+            <span className="ml-1.5 text-[12px] font-normal text-sz-n-400">
+              &rsaquo; {subtitle}
+            </span>
+          )}
         </div>
       </div>
 
