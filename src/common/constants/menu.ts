@@ -13,10 +13,10 @@ export const CREATOR_MENU: MenuConfig = {
     { id: "connections", label: "연결·소통", path: "/connections" },
     { id: "contracts", label: "계약 관리" },
     { id: "groupbuy", label: "공구 관리" },
-    { id: "posts", label: "게시물" },
+    { id: "posts", label: "게시물", path: "/posts" },
     { id: "sales", label: "판매 현황" },
     { id: "settlement", label: "정산 관리" },
-    { id: "showroom", label: "쇼룸 관리" },
+    { id: "showroom", label: "쇼룸 관리", path: "/showroom" },
     { id: "basic-info", label: "기본정보 관리" },
   ],
 }

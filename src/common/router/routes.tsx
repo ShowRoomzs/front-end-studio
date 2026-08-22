@@ -7,6 +7,7 @@ import OnboardingPage from "@/features/auth/pages/OnboardingPage"
 import NaverCallbackPage from "@/features/auth/pages/NaverCallbackPage"
 import KakaoCallbackPage from "@/features/auth/pages/KakaoCallbackPage"
 import HomePage from "@/features/home/pages/HomePage"
+import ShowroomManagementPage from "@/features/showroom/pages/ShowroomManagementPage"
 
 /**
  * 크리에이터 권한을 아직 갖지 않은 사용자용 라우트.
@@ -35,6 +36,8 @@ export const mainRoutes: Array<RouteObject> = [
     children: [
       { index: true, element: <HomePage /> },
       { path: "connections", element: <ConnectionsPage /> },
+      // GNB #8 쇼룸 관리 — 탭·기간·정렬은 쿼리스트링으로 유지한다
+      { path: "showroom", element: <ShowroomManagementPage /> },
       { path: "*", element: <HomePage /> },
     ],
   },

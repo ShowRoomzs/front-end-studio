@@ -10,7 +10,7 @@ import { useGetShowroomName } from "@/common/hooks/useGetShowroomName"
 import { cookie } from "@/common/lib/cookie"
 import { useGetThreadSummary } from "@/features/connections/hooks/useGetThreadSummary"
 import { cn } from "@/lib/utils"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Outlet, useLocation } from "react-router-dom"
 
 /**
@@ -23,6 +23,15 @@ const FULL_BLEED_PREFIXES = ["/connections"]
 
 export default function MainLayout() {
   const location = useLocation()
+
+  /**
+   * 메뉴 아래 화면명 — `usePageSubtitle`로 자식 화면이 올린다.
+   *
+   * 라우트가 바뀔 때 여기서 지우지 않는다. 훅의 정리 함수가 이미 언마운트 시점에
+   * 되돌리는데, 여기서 또 지우면 새 화면이 올린 값을 이전 화면의 정리가 덮는다.
+   */
+  const [subtitle, setSubtitle] = useState<string | null>(null)
+  const shellContext = useMemo(() => ({ setSubtitle }), [])
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY)
@@ -79,6 +88,7 @@ export default function MainLayout() {
       >
         <Header
           title={currentMenu?.label}
+          subtitle={subtitle}
           showroomName={showroom?.showroomName}
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -92,12 +102,12 @@ export default function MainLayout() {
           )}
         >
           {/* 디자인시스템 H1 — 20px/600 */}
-          {!isFullBleed && currentMenu && (
+          {!isFullBleed && (currentMenu || subtitle) && (
             <h1 className="mb-4 shrink-0 text-[20px] font-semibold text-sz-n-900">
-              {currentMenu.label}
+              {subtitle ?? currentMenu?.label}
             </h1>
           )}
-          <Outlet />
+          <Outlet context={shellContext} />
         </main>
       </div>
     </div>
