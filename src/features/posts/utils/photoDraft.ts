@@ -7,7 +7,10 @@ import {
   DEFAULT_CROP,
   type CropState,
 } from "@/features/posts/utils/aspectRatio"
-import type { PostImageResponse } from "@/features/posts/services/postService"
+import type {
+  PostImageRequest,
+  PostImageResponse,
+} from "@/features/posts/services/postService"
 
 /** 저장 요청에 그대로 실리는 부분 — 서버가 돌려준 값만 담는다 */
 export interface UploadedImage {
@@ -30,7 +33,21 @@ export interface PhotoDraft {
   source: File | string
   /** 화면에 보이는 크롭 결과 */
   previewUrl: string
+  /**
+   * 자르기 전 원본의 미리보기 — 크롭 모달이 이 URL을 쓴다.
+   *
+   * `previewUrl`과 나눠 두는 이유는 크롭이 끝나면 그쪽이 결과물로 갈아치워지기 때문이다.
+   * 같은 값을 쓰면 한 번 자른 사진을 다시 열었을 때 이미 잘린 그림을 또 자르게 된다.
+   */
+  originalPreviewUrl: string
   uploaded: UploadedImage | null
+  /**
+   * 크롭을 바꿨는데 결과물이 아직 그걸 반영하지 못한 상태.
+   *
+   * 결과물이 낡았는지를 비율만으로 판정할 수 없어서 따로 둔다 — 창을 옮기거나 확대해도
+   * 비율은 그대로라, 비율만 보면 "이미 맞다"고 판단해 다시 만들지 않는다.
+   */
+  dirty: boolean
   /** 업로드·크롭이 도는 중 — 이 칸은 아직 저장 대상이 아니다 */
   busy: boolean
 }
@@ -94,7 +111,9 @@ export function hasFailure(cells: Array<PhotoCell>) {
 
 /** 업로드나 크롭이 아직 도는 칸이 있으면 저장·게시를 눌러도 보낼 값이 없다 */
 export function hasBusyPhoto(cells: Array<PhotoCell>) {
-  return cells.some(cell => isPhoto(cell) && (cell.busy || !cell.uploaded))
+  return cells.some(
+    cell => isPhoto(cell) && (cell.busy || cell.dirty || !cell.uploaded)
+  )
 }
 
 /** 이미 올라간 사진을 편집 화면의 칸으로 되돌린다 */
@@ -108,26 +127,29 @@ export function toPhotoDraft(image: PostImageResponse): PhotoDraft {
     crop: DEFAULT_CROP,
     source: image.originalUrl,
     previewUrl: image.imageUrl,
+    originalPreviewUrl: image.originalUrl,
     uploaded: {
       imageUrl: image.imageUrl,
       originalUrl: image.originalUrl,
       width: image.width,
       height: image.height,
     },
+    dirty: false,
     busy: false,
   }
 }
 
 /** 저장 요청의 `images` — 배열 순서가 곧 노출 순서이고 첫 장이 대표 사진이다 */
-export function toImageRequests(cells: Array<PhotoCell>) {
-  return cells
-    .filter(isPhoto)
-    .map(photo =>
-      photo.uploaded
-        ? { ...photo.uploaded, fileSize: photo.fileSize }
-        : null
-    )
-    .filter((image): image is UploadedImage & { fileSize?: number } =>
-      image !== null
-    )
+export function toImageRequests(
+  cells: Array<PhotoCell>
+): Array<PostImageRequest> {
+  const requests: Array<PostImageRequest> = []
+
+  for (const cell of cells) {
+    // 실패 칸도, 아직 올라가는 중인 칸도 저장 대상이 아니다
+    if (isPhoto(cell) && cell.uploaded) {
+      requests.push({ ...cell.uploaded, fileSize: cell.fileSize })
+    }
+  }
+  return requests
 }

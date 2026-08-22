@@ -10,11 +10,7 @@ import type { BaseParams, PageInfo } from "@/common/types/page"
  * `POST_STATUS_BADGE`를 거칠 것.
  */
 export type PostStatus =
-  | "DRAFT"
-  | "PUBLISHED"
-  | "SUSPENDED"
-  | "UNDER_REVIEW"
-  | "DELETED"
+  "DRAFT" | "PUBLISHED" | "SUSPENDED" | "UNDER_REVIEW" | "DELETED"
 
 /**
  * 저장 의도 — 같은 본문을 두 버튼이 공유한다 (§24-3).

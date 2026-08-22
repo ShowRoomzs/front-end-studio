@@ -33,8 +33,7 @@ export async function loadCropSource(source: File | string) {
 
   await new Promise<void>((resolve, reject) => {
     image.onload = () => resolve()
-    image.onerror = () =>
-      reject(new Error("원본 사진을 불러오지 못했습니다"))
+    image.onerror = () => reject(new Error("원본 사진을 불러오지 못했습니다"))
   })
 
   return createImageBitmap(image)

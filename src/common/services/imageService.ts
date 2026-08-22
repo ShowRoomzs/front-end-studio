@@ -1,7 +1,8 @@
 import { apiInstance } from "@/common/lib/apiInstance"
 
 /** 크리에이터가 올릴 수 있는 이미지 용도 — 서버 `ImageType.CREATOR_ALLOWED_TYPES` */
-export type CreatorImageType = "POST" | "PRODUCT" | "MARKET" | "SHOWROOM_PROFILE"
+export type CreatorImageType =
+  "POST" | "PRODUCT" | "MARKET" | "SHOWROOM_PROFILE"
 
 export interface ImageUploadResponse {
   imageUrl: string
