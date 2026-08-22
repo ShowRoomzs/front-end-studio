@@ -30,7 +30,8 @@ export const DEFAULT_TOP_CONTENT_SORT: TopContentSort = "LIKES"
 /** 쇼룸 소개글 상한 — BE `@Size(max = 50)` */
 export const INTRODUCTION_MAX_LENGTH = 50
 
-/** 쇼룸명 상한 — BE `@Size(2, 20)`. 카운터에 쓴다 */
+/** 쇼룸명 길이 — BE `ShowroomNamePolicy`(2~20자)와 같은 값 */
+export const SHOWROOM_NAME_MIN_LENGTH = 2
 export const SHOWROOM_NAME_MAX_LENGTH = 20
 
 /** 프로필 이미지 — 시안 힌트 문구와 같은 값이어야 한다 */

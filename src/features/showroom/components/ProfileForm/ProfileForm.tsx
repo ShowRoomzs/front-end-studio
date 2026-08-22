@@ -11,6 +11,7 @@ import {
 import {
   ERROR_MESSAGE,
   INTRODUCTION_MAX_LENGTH,
+  SHOWROOM_NAME_MIN_LENGTH,
 } from "@/features/showroom/constants/params"
 import { useCheckShowroomName } from "@/features/showroom/hooks/useCheckShowroomName"
 import { useUpdateShowroomProfile } from "@/features/showroom/hooks/useShowroomQueries"
@@ -74,20 +75,47 @@ export default function ProfileForm(props: { profile: ShowroomProfile }) {
     values.instagramUrl.trim() !== (profile.instagramUrl ?? "")
 
   const canSave =
-    isDirty && !nameError && !instagramError && trimmedName.length >= 2
+    isDirty &&
+    !nameError &&
+    !instagramError &&
+    trimmedName.length >= SHOWROOM_NAME_MIN_LENGTH
 
   const handleNameBlur = useCallback(async () => {
     const name = values.showroomName.trim()
 
-    // 안 바꿨으면 물어볼 것이 없다 — 자기 이름이 중복으로 잡힌다
-    if (!name || name === profile.showroomName) {
+    /*
+      묻지 않는 두 경우.
+
+      ① 안 바꿨으면 물어볼 것이 없다 — 자기 이름이 중복으로 잡힌다.
+      ② 아직 2자가 안 됐으면 **미완성 입력**이다. 서버는 이걸 `INVALID_FORMAT`으로
+         돌려주는데, 타이핑 도중 한 글자마다 붉은 문구가 떴다 사라지면 고쳐야 할
+         것이 있다고 오해한다. 길이 미달은 저장 버튼 비활성으로 이미 말하고 있다.
+    */
+    if (
+      name === profile.showroomName ||
+      name.length < SHOWROOM_NAME_MIN_LENGTH
+    ) {
       setNameError(null)
       return
     }
 
     try {
       const result = await checkName(name)
-      setNameError(result.isAvailable ? null : ERROR_MESSAGE.NAME_DUPLICATE)
+
+      /*
+        `isAvailable`만 보면 안 된다 — 서버는 중복과 형식 오류를 `code`로 나눠 준다.
+        둘을 뭉치면 형식이 틀렸을 때도 "이미 사용 중"이라고 거짓말을 하게 된다.
+      */
+      if (result.code === "DUPLICATE") {
+        setNameError(ERROR_MESSAGE.NAME_DUPLICATE)
+        return
+      }
+      if (result.code === "INVALID_FORMAT") {
+        // 화면 필터가 놓친 형식 오류(정책이 어긋난 경우) — 서버 문구를 그대로 보여 준다
+        setNameError(result.message)
+        return
+      }
+      setNameError(null)
     } catch {
       // 확인에 실패하면 막지 않는다 — 최종 판정은 저장 시 서버가 한다
       setNameError(null)
