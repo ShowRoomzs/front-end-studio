@@ -1,5 +1,4 @@
 import StatusBadge from "@/features/posts/components/StatusBadge"
-import { useGetPost } from "@/features/posts/hooks/useGetPost"
 import type { PostListItem } from "@/features/posts/services/postService"
 import { formatCardDate, formatCount } from "@/features/posts/utils/format"
 import { cn } from "@/lib/utils"
@@ -17,18 +16,12 @@ export default function PostCard(props: { post: PostListItem }) {
   const { post } = props
   const navigate = useNavigate()
 
-  const [isHovered, setIsHovered] = useState(false)
   const [index, setIndex] = useState(0)
 
-  /**
-   * 넘겨 볼 사진은 마우스를 올린 뒤에 받아 온다 — 목록 응답에는 대표 한 장뿐이다.
-   * 격자 전체가 상세를 미리 받으면 24장짜리 화면에서 24번의 요청이 된다.
-   */
-  const { data: detail } = useGetPost(post.postId, { enabled: isHovered })
-
-  const images = detail?.images ?? []
-  const currentUrl = images[index]?.imageUrl ?? post.thumbnailUrl
-  const canFlip = post.imageCount > 1 && images.length > 1
+  // 목록 응답이 사진 URL 전체를 함께 내려준다 — 넘겨 보려고 상세를 따로 조회하지 않는다
+  const images = post.imageUrls
+  const currentUrl = images[index] ?? images[0] ?? null
+  const canFlip = images.length > 1
 
   const isDraft = post.status === "DRAFT"
   const isSuspended =
@@ -46,11 +39,7 @@ export default function PostCard(props: { post: PostListItem }) {
     <button
       type="button"
       onClick={() => navigate(`/posts/${post.postId}`)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false)
-        setIndex(0)
-      }}
+      onMouseLeave={() => setIndex(0)}
       className={cn(
         "group flex cursor-pointer flex-col overflow-hidden rounded-[8px] border bg-white text-left transition-shadow hover:shadow-sm",
         isDraft ? "border-dashed border-sz-n-300 bg-sz-n-50" : "border-sz-n-200"
