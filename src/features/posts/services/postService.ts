@@ -78,8 +78,13 @@ export interface StatusCount {
 export interface PostListItem {
   postId: number
   status: PostStatus
-  /** 목록 격자는 비율과 무관하게 균일 4:5 센터 크롭이다(§24-2) */
-  thumbnailUrl: string | null
+  /**
+   * 사진 URL 전체 — 배열 순서가 곧 노출 순서이고 첫 장이 대표 사진이다.
+   *
+   * 목록 격자는 비율과 무관하게 균일 4:5 센터 크롭으로 그리고(§24-2), 카드 위에서 좌우로
+   * 넘겨 볼 때 나머지 장을 여기서 꺼내 쓴다.
+   */
+  imageUrls: Array<string>
   imageCount: number
   /** 본문 앞 40자 */
   contentPreview: string | null

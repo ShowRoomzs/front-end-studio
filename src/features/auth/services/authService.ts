@@ -9,6 +9,15 @@ export type SocialLoginRequest = {
   token: string
   /** Apple 최초 로그인 시에만 내려오는 이름 */
   name?: string
+  /**
+   * 푸시 알림용 FCM 등록 토큰 (선택).
+   *
+   * 발급에 실패해도 보내지 않을 뿐 로그인은 그대로 진행된다 — 알림은 부가 기능이고
+   * 이것 때문에 로그인이 막히면 안 된다.
+   */
+  fcmToken?: string
+  /** 백엔드 `DevicePlatform` — 스튜디오는 항상 "WEB" */
+  platform?: string
 }
 
 /**
