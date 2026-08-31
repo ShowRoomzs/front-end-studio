@@ -101,7 +101,8 @@ const SOCIAL_STYLES: Record<SocialType, SocialStyle> = {
   GOOGLE: {
     label: "Google로 로그인",
     icon: <GoogleIcon />,
-    className: "border-sz-n-300 bg-white hover:enabled:bg-sz-n-50",
+    className:
+      "border-sz-social-google-border bg-white hover:enabled:bg-sz-n-50",
     style: { color: "var(--sz-social-google-fg)" },
   },
 }
