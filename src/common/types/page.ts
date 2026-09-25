@@ -16,4 +16,6 @@ export interface PageResponse<T> {
   pageInfo: PageInfo
 }
 
+export type SortOrder = "asc" | "desc"
+
 export type BaseParams = PageParams

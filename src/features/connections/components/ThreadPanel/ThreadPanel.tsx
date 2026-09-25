@@ -18,7 +18,7 @@ import type {
 } from "@/features/connections/services/threadService"
 import { downloadAttachment } from "@/features/connections/utils/download"
 import { useState } from "react"
-import toast from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
 
 interface ThreadPanelProps {
   thread: ThreadListItem
@@ -33,6 +33,7 @@ interface LightboxState {
 /** 우측 소통 스레드 (시안 `.cs-thread`) */
 export default function ThreadPanel(props: ThreadPanelProps) {
   const { thread } = props
+  const navigate = useNavigate()
 
   const { messages, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useGetThreadMessages(thread.threadId)
@@ -68,13 +69,18 @@ export default function ThreadPanel(props: ThreadPanelProps) {
         {/*
           [계약 확인]은 계약이 **있을 때만** 노출한다(§14-2) — 스튜디오는 계약을
           확인하는 쪽이라 없으면 볼 것이 없다. 파트너센터가 버튼을 비활성으로
-          남겨두는 것과 방향이 반대다. 계약 화면은 아직 없어 진입점만 둔다.
+          남겨두는 것과 방향이 반대다. 계약 목록을 이 브랜드명으로 검색해 연다 —
+          스레드 항목에 계약 ID가 없어 상세로 바로 가지는 못한다.
         */}
         {thread.hasContract && (
           <Button
             type="button"
             size="sm"
-            onClick={() => toast("계약 관리 화면은 준비 중입니다.")}
+            onClick={() =>
+              navigate(
+                `/contracts?keyword=${encodeURIComponent(thread.counterpartName)}`
+              )
+            }
           >
             계약 확인
           </Button>

@@ -11,7 +11,12 @@ export const CREATOR_MENU: MenuConfig = {
   groups: [
     { id: "home", label: "홈", path: "/" },
     { id: "connections", label: "연결·소통", path: "/connections" },
-    { id: "contracts", label: "계약 관리" },
+    {
+      id: "contracts",
+      label: "계약 관리",
+      path: "/contracts",
+      matchPaths: ["/contracts"],
+    },
     { id: "groupbuy", label: "공구 관리" },
     { id: "posts", label: "게시물", path: "/posts" },
     { id: "sales", label: "판매 현황" },

@@ -11,6 +11,8 @@ import PostListPage from "@/features/posts/pages/PostListPage"
 import PostEditorPage from "@/features/posts/pages/PostEditorPage"
 import PostDetailPage from "@/features/posts/pages/PostDetailPage"
 import ShowroomManagementPage from "@/features/showroom/pages/ShowroomManagementPage"
+import ContractListPage from "@/features/contracts/pages/ContractListPage"
+import ContractDetailPage from "@/features/contracts/pages/ContractDetailPage"
 
 /**
  * 크리에이터 권한을 아직 갖지 않은 사용자용 라우트.
@@ -39,6 +41,9 @@ export const mainRoutes: Array<RouteObject> = [
     children: [
       { index: true, element: <HomePage /> },
       { path: "connections", element: <ConnectionsPage /> },
+      // GNB #3 계약 관리(§27) — 목록 · 상세. 수신 측이라 작성 화면이 없다
+      { path: "contracts", element: <ContractListPage /> },
+      { path: "contracts/:contractId", element: <ContractDetailPage /> },
       { path: "posts", element: <PostListPage /> },
       { path: "posts/new", element: <PostEditorPage /> },
       { path: "posts/:postId", element: <PostDetailPage /> },
