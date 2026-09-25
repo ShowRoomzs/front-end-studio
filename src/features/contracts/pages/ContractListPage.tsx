@@ -71,6 +71,8 @@ export default function ContractListPage() {
 
   const hasCondition = params.tab !== "ALL" || !!params.keyword
   const actionRequired = summary?.actionRequiredCount ?? 0
+  // 받은 계약이 아예 없으면(S2) 표 없이 안내 카드만, 검색 결과 없음이면 표 머리만 남긴다
+  const isEmpty = !isLoading && (contractList?.content.length ?? 0) === 0
 
   const emptyState = useMemo(
     () => (
@@ -106,65 +108,73 @@ export default function ContractListPage() {
         onSearch={update}
       />
 
-      <div className="flex flex-col overflow-hidden rounded-[8px] border border-sz-n-200 bg-white">
-        <div className="flex shrink-0 items-center justify-between border-b border-sz-n-200 px-4 py-2.5">
-          <span className="text-[12px] text-sz-n-600">
-            총 <b className="text-sz-n-900">{pageInfo.totalResults}</b>건
-            {/* 내 서명이 필요한 건수 — 탭·검색과 무관한 전체 기준. 0건이면 문구를 붙이지 않는다 */}
-            {actionRequired > 0 && (
-              <>
-                {" · 내 서명이 필요한 계약 "}
-                <b className="text-sz-n-900">{actionRequired}</b>건
-              </>
-            )}
-          </span>
-
-          <div className="flex items-center gap-2">
-            <select
-              aria-label="정렬"
-              value={params.sort}
-              onChange={event =>
-                updateParams({
-                  sort: event.target.value as CreatorContractSortType,
-                  page: 1,
-                })
-              }
-              style={SELECT_CHEVRON_STYLE}
-              className="h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
-            >
-              {CREATOR_CONTRACT_SORT_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <select
-              aria-label="표시 건수"
-              value={params.size}
-              onChange={event =>
-                updateParams({ size: Number(event.target.value), page: 1 })
-              }
-              style={SELECT_CHEVRON_STYLE}
-              className="h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
-            >
-              {CREATOR_CONTRACT_PAGE_SIZES.map(size => (
-                <option key={size} value={size}>
-                  {size}건씩
-                </option>
-              ))}
-            </select>
-          </div>
+      {isEmpty && !hasCondition ? (
+        <div className="rounded-[8px] border border-sz-n-200 bg-white">
+          {emptyState}
         </div>
+      ) : (
+        <div className="flex flex-col overflow-hidden rounded-[8px] border border-sz-n-200 bg-white">
+          {!isEmpty && (
+            <div className="flex shrink-0 items-center justify-between border-b border-sz-n-200 px-4 py-2.5">
+              <span className="text-[12px] text-sz-n-600">
+                총 <b className="text-sz-n-900">{pageInfo.totalResults}</b>건
+                {/* 내 서명이 필요한 건수 — 탭·검색과 무관한 전체 기준. 0건이면 문구를 붙이지 않는다 */}
+                {actionRequired > 0 && (
+                  <>
+                    {" · 내 서명이 필요한 계약 "}
+                    <b className="text-sz-n-900">{actionRequired}</b>건
+                  </>
+                )}
+              </span>
 
-        <ContractTable
-          rows={contractList?.content ?? []}
-          isLoading={isLoading}
-          pageInfo={pageInfo}
-          emptyState={emptyState}
-          onRowClick={handleRowClick}
-        />
-      </div>
+              <div className="flex items-center gap-2">
+                <select
+                  aria-label="정렬"
+                  value={params.sort}
+                  onChange={event =>
+                    updateParams({
+                      sort: event.target.value as CreatorContractSortType,
+                      page: 1,
+                    })
+                  }
+                  style={SELECT_CHEVRON_STYLE}
+                  className="h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+                >
+                  {CREATOR_CONTRACT_SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  aria-label="표시 건수"
+                  value={params.size}
+                  onChange={event =>
+                    updateParams({ size: Number(event.target.value), page: 1 })
+                  }
+                  style={SELECT_CHEVRON_STYLE}
+                  className="h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+                >
+                  {CREATOR_CONTRACT_PAGE_SIZES.map(size => (
+                    <option key={size} value={size}>
+                      {size}건씩
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          <ContractTable
+            rows={contractList?.content ?? []}
+            isLoading={isLoading}
+            pageInfo={pageInfo}
+            emptyState={emptyState}
+            onRowClick={handleRowClick}
+          />
+        </div>
+      )}
     </div>
   )
 }

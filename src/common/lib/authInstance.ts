@@ -8,6 +8,8 @@ import { cookie } from "@/common/lib/cookie"
 declare module "axios" {
   export interface AxiosRequestConfig {
     suppressErrorToast?: boolean
+    /** apiInstance의 토큰 갱신 재요청 표시 — 한 요청당 한 번만 갱신한다 */
+    _retry?: boolean
   }
 }
 

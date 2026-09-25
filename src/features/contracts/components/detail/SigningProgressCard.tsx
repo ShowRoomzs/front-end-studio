@@ -67,7 +67,7 @@ export default function SigningProgressCard(props: SigningProgressCardProps) {
         </Notice>
       )}
 
-      <Stepper steps={buildStepper(view, detail)} />
+      <Stepper steps={buildStepper(view, detail, myName)} />
 
       {showBoxes && (
         <SignatureBoxes

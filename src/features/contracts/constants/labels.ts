@@ -34,7 +34,7 @@ export const EVENT_LABEL: Record<ContractEventType, string> = {
   CONCLUDED: "체결완료 · PDF·인증서 발급",
   DECLINED: "내가 거절",
   EXPIRED: "서명 기한 경과 · 만료 처리",
-  CANCELED: "브랜드 철회 · 취소",
+  CANCELED: "계약 취소",
   FIXED_FEE_PAID: "고정 지급비 지급 완료 기록 · 브랜드",
   GROUP_BUY_CREATED: "공구 생성",
 }

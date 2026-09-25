@@ -68,7 +68,8 @@ export interface StepChip {
 /** 4단 스텝퍼 — 운영자 검토 통과 → 서명 요청 발송 → 양측 서명 → 운영자 체결 완료 처리 */
 export function buildStepper(
   view: CreatorViewState,
-  detail: CreatorContractDetailResponse
+  detail: CreatorContractDetailResponse,
+  myName?: string
 ): Array<StepChip> {
   const { stepper, signature, closure, brand } = detail
 
@@ -149,7 +150,10 @@ export function buildStepper(
         sent,
         {
           label: "내가 거절",
-          who: formatMonthDayTime(closure.closedAt),
+          // 시안 S7 「뷰티_소연 · 07.24 10:15」
+          who: myName
+            ? `${myName} · ${formatMonthDayTime(closure.closedAt)}`
+            : formatMonthDayTime(closure.closedAt),
           tone: "stop",
         },
         notReached,
@@ -169,11 +173,18 @@ export function buildStepper(
       return [
         approved,
         sent,
-        {
-          label: "취소 · 종결",
-          who: `${brand.name} 요청 · 운영자 ${formatMonthDayTime(closure.closedAt)}`,
-          tone: "halt",
-        },
+        // 시안 S9는 브랜드 철회 — 검토 통과 이후 취소는 운영자만 하므로 주체에 따라 고른다
+        closure.actorType === "SELLER"
+          ? {
+              label: "브랜드 철회 · 취소",
+              who: `${brand.name} · ${formatMonthDayTime(closure.closedAt)}`,
+              tone: "halt",
+            }
+          : {
+              label: "운영자 취소",
+              who: `운영자 · ${formatMonthDayTime(closure.closedAt)}`,
+              tone: "halt",
+            },
         notReached,
       ]
   }

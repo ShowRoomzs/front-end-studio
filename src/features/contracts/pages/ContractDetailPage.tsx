@@ -12,11 +12,9 @@ import MyDutiesCard from "@/features/contracts/components/detail/MyDutiesCard"
 import PayoutCard from "@/features/contracts/components/detail/PayoutCard"
 import SigningProgressCard from "@/features/contracts/components/detail/SigningProgressCard"
 import StatusSideCard from "@/features/contracts/components/detail/StatusSideCard"
-import ClausesModal from "@/features/contracts/components/modals/ClausesModal"
 import DeclineModal from "@/features/contracts/components/modals/DeclineModal"
 import SignedResultModal from "@/features/contracts/components/modals/SignedResultModal"
 import Btn from "@/features/contracts/components/shared/Btn"
-import { FLINK_CLASS } from "@/features/contracts/components/shared/styles"
 import {
   CREATOR_CONTRACT_INITIAL_PARAMS,
   CREATOR_CONTRACT_LIST_PATH,
@@ -25,10 +23,7 @@ import {
   useDeclineContract,
   useRequestResend,
 } from "@/features/contracts/hooks/useCreatorContractMutations"
-import {
-  useGetCreatorContractClauses,
-  useGetCreatorContractDetail,
-} from "@/features/contracts/hooks/useCreatorContractQueries"
+import { useGetCreatorContractDetail } from "@/features/contracts/hooks/useCreatorContractQueries"
 import type {
   ContractDeclineReason,
   CreatorContractNavigationParams,
@@ -83,16 +78,11 @@ export default function ContractDetailPage() {
     isError,
   } = useGetCreatorContractDetail(contractId, navParams)
   const { data: showroom } = useGetShowroomName()
-  const { data: clauses } = useGetCreatorContractClauses(
-    contractId,
-    detail !== undefined
-  )
   const { mutateAsync: decline, isPending: isDeclining } = useDeclineContract()
   const { mutateAsync: requestResend, isPending: isResending } =
     useRequestResend()
 
   const [isDeclineOpen, setIsDeclineOpen] = useState(false)
-  const [isClausesOpen, setIsClausesOpen] = useState(false)
   const [isSignedOpen, setIsSignedOpen] = useState(false)
 
   /*
@@ -222,7 +212,7 @@ export default function ContractDetailPage() {
   const headerEvent = (() => {
     switch (view) {
       case "concluded":
-        return `${formatDateTimeShort(detail.closure.closedAt)} 체결`
+        return `${formatDateTimeShort(detail.stepper.concludedAt)} 체결`
       case "declined":
         return `${formatDateTimeShort(detail.closure.closedAt)} 거절`
       case "expired":
@@ -268,7 +258,7 @@ export default function ContractDetailPage() {
             <DocumentsCard
               contractId={detail.contractId}
               contractNumber={detail.contractNumber}
-              concludedAt={detail.closure.closedAt}
+              concludedAt={detail.stepper.concludedAt}
               documents={detail.documents}
             />
           )}
@@ -307,17 +297,6 @@ export default function ContractDetailPage() {
               <ContractItemsCard items={detail.items} showSettlementNote />
             </>
           )}
-
-          <p className="text-[11px] text-sz-n-500">
-            정산·수수료·법적 조항은 표준 조항으로 계약서에 자동 포함됩니다.{" "}
-            <button
-              type="button"
-              className={FLINK_CLASS}
-              onClick={() => setIsClausesOpen(true)}
-            >
-              표준 조항 전문 보기
-            </button>
-          </p>
         </div>
 
         <div className="sticky top-0 flex flex-col gap-4">
@@ -345,13 +324,6 @@ export default function ContractDetailPage() {
           isPending={isDeclining}
           onClose={() => setIsDeclineOpen(false)}
           onConfirm={handleDecline}
-        />
-      )}
-
-      {isClausesOpen && (
-        <ClausesModal
-          clauses={clauses}
-          onClose={() => setIsClausesOpen(false)}
         />
       )}
 

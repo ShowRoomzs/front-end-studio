@@ -27,7 +27,7 @@ export default function ContractEmptyState(props: ContractEmptyStateProps) {
         </div>
         <div className="text-[12px] text-sz-n-500">
           {keyword
-            ? `${tabLabel} 탭에서 “${keyword}”을(를) 찾지 못했습니다. 다른 탭에는 있을 수 있습니다.`
+            ? `${tabLabel} 탭에서 “${keyword}”${objectParticle(keyword)} 찾지 못했습니다. 다른 탭에는 있을 수 있습니다.`
             : `${tabLabel} 탭에 계약이 없습니다. 다른 탭에는 있을 수 있습니다.`}
         </div>
         <Btn variant="secondary" className="mt-4" onClick={onReset}>
@@ -52,7 +52,7 @@ export default function ContractEmptyState(props: ContractEmptyStateProps) {
       <Btn variant="secondary" className="mt-4" onClick={onGoConnections}>
         연결·소통 열기
       </Btn>
-      <div className="mx-auto mt-3.5 max-w-[460px] text-[11px] leading-[1.55] text-sz-n-500">
+      <div className="mt-3.5 text-[11px] leading-[1.55] text-sz-n-500">
         브랜드에게 <b className="font-semibold text-sz-n-700">내 연결코드</b>를
         전달하면 연결 요청이 정확히 내 쇼룸으로 도착합니다 — 연결코드는{" "}
         <b className="font-semibold text-sz-n-700">쇼룸 관리</b>에서 확인할 수
@@ -60,4 +60,11 @@ export default function ContractEmptyState(props: ContractEmptyStateProps) {
       </div>
     </div>
   )
+}
+
+/** 받침 유무로 목적격 조사를 고른다 — 「앵콜을」 · 「크림을」 · 「세럼을」 · 「토너를」 */
+function objectParticle(word: string) {
+  const last = word.charCodeAt(word.length - 1)
+  const isHangul = last >= 0xac00 && last <= 0xd7a3
+  return isHangul && (last - 0xac00) % 28 === 0 ? "를" : "을"
 }

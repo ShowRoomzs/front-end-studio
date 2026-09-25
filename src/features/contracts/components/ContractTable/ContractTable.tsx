@@ -84,10 +84,9 @@ export default function ContractTable(props: ContractTableProps) {
                   className={cn(
                     CELL_CLASS,
                     "whitespace-nowrap text-center tabular-nums",
+                    // 시안 S1 — 내 서명이 남은 건은 날짜 자체를 경고색으로 앞세운다(칩·보조 문구 없음)
                     row.deadline.type === "DEADLINE"
-                      ? row.deadline.tone === "WARNING"
-                        ? "font-semibold text-sz-warning-text"
-                        : "text-sz-n-500"
+                      ? "font-semibold text-sz-warning-text"
                       : "text-sz-n-400"
                   )}
                 >
