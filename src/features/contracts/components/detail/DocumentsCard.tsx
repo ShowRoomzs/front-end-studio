@@ -52,8 +52,9 @@ export default function DocumentsCard(props: DocumentsCardProps) {
         화면에서 언제든 다시 내려받을 수 있고, 계약 조건에 이견이 생기면 이
         파일이 판단 근거가 됩니다.{" "}
         <b className="font-semibold">감사추적인증서</b>에는 누가 언제 어떤
-        환경에서 서명했는지가 기록되어 있습니다. 파일이 보이지 않으면 운영자가
-        아직 등록하기 전입니다.
+        환경에서 서명했는지가 기록되어 있습니다.
+        {documents.length < 2 &&
+          " 파일이 보이지 않으면 운영자가 아직 등록하기 전입니다."}
       </Notice>
     </DetailCard>
   )

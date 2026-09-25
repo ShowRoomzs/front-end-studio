@@ -243,7 +243,8 @@ export interface CreatorContractPermissions {
 }
 
 export interface CreatorContractHistoryEntry {
-  eventType: ContractEventType
+  /** null = 서버가 합성한 「연결 성립」 행 */
+  eventType: ContractEventType | null
   actorType: ContractActorType
   actorDisplayName: string | null
   detail: string | null

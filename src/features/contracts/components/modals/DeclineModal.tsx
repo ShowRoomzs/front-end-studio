@@ -51,7 +51,7 @@ export default function DeclineModal(props: DeclineModalProps) {
             취소
           </Btn>
           <Btn
-            variant="dangerSolid"
+            variant="danger"
             disabled={reasonCode === ""}
             isLoading={isPending}
             onClick={() => reasonCode !== "" && onConfirm(reasonCode, memo)}

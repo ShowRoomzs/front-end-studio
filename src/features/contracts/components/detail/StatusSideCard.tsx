@@ -12,7 +12,6 @@ import {
 import {
   formatKRW,
   formatMonthDayTime,
-  isDeadlineImminent,
 } from "@/features/contracts/utils/format"
 import { toneToVariant } from "@/features/contracts/utils/statusBadge"
 import { cn } from "@/lib/utils"
@@ -96,7 +95,8 @@ export default function StatusSideCard(props: StatusSideCardProps) {
                 <span
                   className={cn(
                     "tabular-nums",
-                    isDeadlineImminent(signature.deadlineAt) &&
+                    // 시안 S3·S3a `.due` — 내 서명이 남아 있으면 기한을 경고색으로
+                    signature.creatorSignedAt === null &&
                       "font-semibold text-sz-warning-text"
                   )}
                 >
@@ -148,7 +148,10 @@ export default function StatusSideCard(props: StatusSideCardProps) {
       case "concluded":
         return (
           <>
-            <MetaRow label="체결일시" value={time(closure.closedAt)} />
+            <MetaRow
+              label="체결일시"
+              value={time(detail.stepper.concludedAt)}
+            />
             <MetaRow label="계약 문서" value="서명 PDF · 감사추적인증서" />
             <MetaRow
               label="고정 지급비"
@@ -258,7 +261,7 @@ export default function StatusSideCard(props: StatusSideCardProps) {
       </div>
 
       <p className="mt-2.5 text-[11px] leading-[1.55] text-sz-n-500">
-        {hintByView(view, isClosed, content.dueDate)}
+        {hintByView(view, isClosed, content.dueDate, closure.actorType)}
       </p>
     </DetailCard>
   )
@@ -267,7 +270,8 @@ export default function StatusSideCard(props: StatusSideCardProps) {
 function hintByView(
   view: CreatorViewState,
   isClosed: boolean,
-  dueDate: string | null
+  dueDate: string | null,
+  cancelActor: string | null = null
 ): ReactNode {
   switch (view) {
     case "signingNone":
@@ -296,7 +300,8 @@ function hintByView(
       return (
         <>
           <b className="font-semibold">여기서 내가 할 일은 없습니다.</b> 운영자
-          확인이 끝나면 체결되며 알림을 받습니다. 공구 게시물 작성은{" "}
+          확인은 보통 <b className="font-semibold">영업일 1일</b> 안에 끝나며,
+          체결되면 알림을 받습니다. 공구 게시물 작성은{" "}
           <b className="font-semibold">공구가 생성된 뒤</b> 가능합니다.
         </>
       )
@@ -340,7 +345,9 @@ function hintByView(
     case "canceled":
       return isClosed ? (
         <>
-          브랜드 요청으로 종결된 건이라{" "}
+          {cancelActor === "SELLER"
+            ? "브랜드가 발송을 철회한 건이라"
+            : "운영자가 취소 처리한 건이라"}{" "}
           <b className="font-semibold">내가 할 조치는 없습니다</b>. 새 계약을
           기다리거나 스레드에서 일정을 협의하세요.
         </>

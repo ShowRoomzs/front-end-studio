@@ -44,9 +44,6 @@ export const CREATOR_CONTRACT_SUMMARY_POLL_INTERVAL = 30_000
 /** 서명 진행중 상세 폴링(ms) — 운영자가 손으로 옮겨 적는 값이라 실시간이 아니다 */
 export const CREATOR_CONTRACT_DETAIL_POLL_INTERVAL = 30_000
 
-/** 서명 기한 임박 — 서버 `ContractDeadlinePolicy.IMMINENT_DAYS`와 같은 값 */
-export const DEADLINE_IMMINENT_DAYS = 3
-
 export const CREATOR_CONTRACT_LIST_PATH = "/contracts"
 
 /** 거절 사유 5종 — 서버 `ContractDeclineReason`과 1:1. 메모는 선택이다 */

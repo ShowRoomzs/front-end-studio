@@ -2,8 +2,6 @@ import {
   formatDateTimeShort,
   parseServerDateTime,
 } from "@/common/utils/formatDate"
-import { DEADLINE_IMMINENT_DAYS } from "@/features/contracts/constants/params"
-import dayjs from "dayjs"
 
 export function formatKRW(value: number | null | undefined): string {
   return value === null || value === undefined
@@ -44,18 +42,6 @@ export function formatMonthDay(value: string | null): string {
     return "—"
   }
   return parseServerDateTime(value).format("MM.DD")
-}
-
-/**
- * 서명 기한 임박(D-3) — 서버 `ContractDeadlinePolicy.isImminent`와 같은 판정.
- * 목록은 서버가 `deadline.tone`으로 내리지만 상세엔 그 값이 없어 여기서 같은 규칙으로 잰다.
- */
-export function isDeadlineImminent(deadlineAt: string | null): boolean {
-  if (!deadlineAt) {
-    return false
-  }
-  const deadline = parseServerDateTime(deadlineAt)
-  return !dayjs().isBefore(deadline.subtract(DEADLINE_IMMINENT_DAYS, "day"))
 }
 
 export function formatFileSize(bytes: number | null): string {
