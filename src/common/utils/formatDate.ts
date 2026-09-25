@@ -14,3 +14,19 @@ export function parseServerDateTime(date: string) {
   const hasTimeZone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(date)
   return hasTimeZone ? dayjs(date) : dayjs.utc(date).local()
 }
+
+/** 날짜만 (예: 2026.07.10) — 목록 등 밀도 높은 화면용 */
+export function formatDateOnly(date: string | null): string {
+  if (!date) {
+    return "—"
+  }
+  return parseServerDateTime(date).format("YYYY.MM.DD")
+}
+
+/** 날짜 + 분 (예: 2026.07.10 14:22) — 상세 메타 정보용 */
+export function formatDateTimeShort(date: string | null): string {
+  if (!date) {
+    return "—"
+  }
+  return parseServerDateTime(date).format("YYYY.MM.DD HH:mm")
+}
