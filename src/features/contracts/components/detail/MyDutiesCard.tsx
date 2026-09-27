@@ -15,7 +15,15 @@ interface MyDutiesCardProps {
 export default function MyDutiesCard(props: MyDutiesCardProps) {
   const { content, isConcluded } = props
   const alive = content.obligationAlive
-  const formats = `피드 ${content.feedCount ?? 0} · 릴스 ${content.reelsCount ?? 0} · 스토리 ${content.storyCount ?? 0}`
+  // 0개인 포맷은 빼고 적는다 — 「릴스 0 · 스토리 0」은 약속이 아니라 군더더기다(시안은 올리는 포맷만 나열)
+  const formats =
+    [
+      content.feedCount ? `피드 ${content.feedCount}` : null,
+      content.reelsCount ? `릴스 ${content.reelsCount}` : null,
+      content.storyCount ? `스토리 ${content.storyCount}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || "—"
 
   return (
     <DetailCard

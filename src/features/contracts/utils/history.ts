@@ -14,9 +14,10 @@ import type { CreatorContractHistoryEntry } from "@/features/contracts/types"
  */
 export function toHistoryItems(
   history: Array<CreatorContractHistoryEntry>,
+  signature: { brandSignedAt: string | null; creatorSignedAt: string | null },
   myShowroomName: string | undefined
 ): Array<HistoryItem> {
-  return newestFirst(history).map(entry => {
+  return newestFirst(withCurrentSignatures(history, signature)).map(entry => {
     // 취소 주체가 브랜드면 시안 S9 「브랜드 철회 · 취소」, 운영자면 「운영자 취소」
     const label =
       entry.eventType === null
@@ -43,6 +44,29 @@ export function toHistoryItems(
       processorName,
     }
   })
+}
+
+/**
+ * 서명 기록 정리 — 어드민이 서명 현황을 정정(체크 해제·일시 수정)해도 서버는 이전 「서명 완료」
+ * 이벤트를 지우지 않는다. 지금 서명 칸이 비어 있는 쪽의 기록은 빼고, 여러 번이면 마지막 하나만 둔다.
+ */
+function withCurrentSignatures<T extends { eventType: string | null }>(
+  history: Array<T>,
+  signature: { brandSignedAt: string | null; creatorSignedAt: string | null }
+) {
+  const lastIndex = (type: string) =>
+    history.map(entry => entry.eventType).lastIndexOf(type)
+  const keep = {
+    BRAND_SIGNED: signature.brandSignedAt ? lastIndex("BRAND_SIGNED") : -1,
+    CREATOR_SIGNED: signature.creatorSignedAt
+      ? lastIndex("CREATOR_SIGNED")
+      : -1,
+  }
+  return history.filter((entry, index) =>
+    entry.eventType === "BRAND_SIGNED" || entry.eventType === "CREATOR_SIGNED"
+      ? keep[entry.eventType] === index
+      : true
+  )
 }
 
 /** 이력 상세 문자열에 서버 시각(ISO)·null이 그대로 섞여 오면 화면 표기로 바꾼다 */
