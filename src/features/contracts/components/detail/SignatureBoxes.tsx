@@ -95,13 +95,11 @@ function SignBox(props: {
   )
 }
 
+/** 시안 `.s-done` — 스튜디오는 시각까지 한 색이다(파트너의 회색 시각과 다르다) */
 function Done(props: { at: string }) {
   return (
-    <div className="text-[11px] font-medium text-sz-success-text">
-      ✓ 서명 완료{" "}
-      <span className="font-normal tabular-nums text-sz-n-500">
-        — {formatDateTimeShort(props.at)}
-      </span>
+    <div className="text-[11px] font-medium tabular-nums text-sz-success-text">
+      ✓ 서명 완료 — {formatDateTimeShort(props.at)}
     </div>
   )
 }

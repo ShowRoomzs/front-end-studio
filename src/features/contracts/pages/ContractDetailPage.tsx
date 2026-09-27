@@ -312,7 +312,11 @@ export default function ContractDetailPage() {
           />
           <DetailCard title="이력" flushBody>
             <HistoryList
-              items={toHistoryItems(detail.history, showroom?.showroomName)}
+              items={toHistoryItems(
+                detail.history,
+                detail.signature,
+                showroom?.showroomName
+              )}
             />
           </DetailCard>
         </div>
