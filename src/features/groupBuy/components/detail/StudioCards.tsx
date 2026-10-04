@@ -74,6 +74,20 @@ function lifecycleSteps(detail: Detail): Array<GbStep> {
   }))
 }
 
+/** 시안 B13 「중단 사유」 — 호수 본문만 굵게, 괄호 속 법령 예시는 보통 굵기 */
+function ClauseText(props: { text: string }) {
+  const index = props.text.indexOf("(")
+  if (index <= 0) {
+    return <B className="text-sz-n-900">{props.text}</B>
+  }
+  return (
+    <>
+      <B className="text-sz-n-900">{props.text.slice(0, index)}</B>
+      {props.text.slice(index)}
+    </>
+  )
+}
+
 /** 시안 B5a · B13 — 경고 테두리 카드(헤더도 경고 배경) */
 function AlertCard(props: {
   title: string
@@ -149,7 +163,7 @@ export function SituationTopCard(props: {
       >
         <Terms>
           <TermRow label="중단 사유" labelWidth={110}>
-            <B className="text-sz-n-900">{reason ?? "운영자 직권 중단"}</B>
+            <ClauseText text={reason ?? "운영자 직권 중단"} />
             <FSub>{adminSuspension.noticeBody}</FSub>
           </TermRow>
           <TermRow label="집행 예정 일시" labelWidth={110}>
@@ -452,15 +466,22 @@ export function ReadinessCard(props: {
               : `시작일까지 ${timeline.daysUntilStart}일 남았습니다.`}
           </B>{" "}
           게시물 등록 후 운영자 승인에{" "}
-          <B>영업일 {readiness?.reviewSlaBusinessDays ?? 3}일</B>이 걸리므로,
-          {readiness?.registrationDeadline ? (
+          <B>영업일 {readiness?.reviewSlaBusinessDays ?? 3}일</B>
+          {readiness?.registrationDeadline && readiness.registrationOverdue ? (
+            // 시안은 마감일 전만 그린다 — 지난 뒤에 「늦어도 지난 날짜까지」라고 하면 틀린 안내다
             <>
-              {" "}
-              늦어도 <B>{localDate(readiness.registrationDeadline)}</B>까지
-              등록해야 시작일에 공구가 열립니다.
+              이 걸리는데, 등록 마감일(
+              <B>{localDate(readiness.registrationDeadline)}</B>)이 이미
+              지났습니다. 지금 등록해도 시작일에 공구가 열리지 않을 수 있습니다.
+            </>
+          ) : readiness?.registrationDeadline ? (
+            <>
+              이 걸리므로, 늦어도{" "}
+              <B>{localDate(readiness.registrationDeadline)}</B>까지 등록해야
+              시작일에 공구가 열립니다.
             </>
           ) : (
-            " 서둘러 등록해야 시작일에 공구가 열립니다."
+            "이 걸리므로, 서둘러 등록해야 시작일에 공구가 열립니다."
           )}{" "}
           열리지 않으면 계약의 <B>게시 완료 기한</B>도 지킬 수 없습니다.
         </Notice>
@@ -525,6 +546,13 @@ export function SalesCard(props: { detail: Detail }) {
   const amount = sales ? num(sales.amount) : "—"
   const reward = sales ? num(sales.myReward) : "—"
   const unclosed = orderClosure?.unclosed.total
+  // 시안 B5a — 숨김 중에는 「주문」 아래에 숨김 이후 들어온 건수를 쓴다
+  const sinceHidden =
+    detail.post.status === "HIDDEN" &&
+    sales?.ordersSinceHidden !== null &&
+    sales?.ordersSinceHidden !== undefined
+      ? `숨김 이후 ${num(sales.ordersSinceHidden)}건`
+      : null
 
   let title = "판매 실적"
   let note: string = "취소 · 반품 반영 · 확정 전 잠정치"
@@ -557,8 +585,9 @@ export function SalesCard(props: { detail: Detail }) {
       ]
       footer = (
         <Notice tone="neutral" className="mt-3">
-          플랫폼 수수료 · 원천징수 등 <B>공제 계산과 실입금액은 정산 관리</B>
-          에서 봅니다. 이 화면의 금액은 <B>공제 전</B> 확정 실적입니다.
+          플랫폼 수수료 · 원천징수 등{" "}
+          <B>공제 계산과 실입금액은 정산 관리(#7)</B>에서 봅니다. 이 화면의
+          금액은 <B>공제 전</B> 확정 실적입니다.
         </Notice>
       )
       break
@@ -580,7 +609,7 @@ export function SalesCard(props: { detail: Detail }) {
       break
     default:
       items = [
-        { value: orders, label: "주문", sub: "누적" },
+        { value: orders, label: "주문", sub: sinceHidden ?? "누적" },
         { value: quantity, label: "판매 수량", sub: breakdown || "—" },
         { value: amount, label: "판매 금액(원)", sub: "취소 · 반품 제외" },
         { value: reward, label: "내 리워드(원)", sub: "정산 시 지급" },
@@ -605,7 +634,7 @@ export function SalesCard(props: { detail: Detail }) {
 
 export function ClosedProgressCard(props: { detail: Detail }) {
   const { detail } = props
-  const { groupBuy, timeline, orderClosure, closure, afterEnd } = detail
+  const { groupBuy, orderClosure, closure, afterEnd } = detail
 
   if (groupBuy.status === "SUSPENDED") {
     const isAdmin =
@@ -655,11 +684,10 @@ export function ClosedProgressCard(props: { detail: Detail }) {
         </Notice>
         <GbStepper
           steps={[
-            {
-              label: "진행중",
-              who: `${md(timeline.startAt)} 시작`,
-              tone: "done",
-            },
+            // 시안 B9 — 준비중 · 준비완료 · 진행중까지는 지나온 단계로 그대로 둔다
+            ...lifecycleSteps(detail)
+              .slice(0, 3)
+              .map(step => ({ ...step, tone: "done" as const })),
             {
               label: "중단",
               who: `${isAdmin ? "운영자 직권" : "운영자 승인"} · ${md(groupBuy.endedAt)}`,
@@ -674,17 +702,7 @@ export function ClosedProgressCard(props: { detail: Detail }) {
   if (groupBuy.status === "SETTLED") {
     return (
       <DetailCard title="진행 상황" note="실적 확정 · 정산 지급 완료">
-        <GbStepper
-          steps={[
-            {
-              label: "진행중",
-              who: `${md(timeline.startAt)} 시작`,
-              tone: "done",
-            },
-            { label: "종료", who: md(timeline.endAt), tone: "done" },
-            { label: "정산완료", who: "판매 확정 후", tone: "cur" },
-          ]}
-        />
+        <GbStepper steps={lifecycleSteps(detail)} />
         <Notice tone="success" className="mt-4">
           <B>정산이 완료되었습니다.</B> 확정 실적 기준으로 리워드가
           지급되었습니다 — <B>공제 내역과 실입금액</B>은 정산 관리에서
@@ -702,17 +720,7 @@ export function ClosedProgressCard(props: { detail: Detail }) {
 
   return (
     <DetailCard title="진행 상황" note="판매 종료 · 리워드 확정 대기">
-      <GbStepper
-        steps={[
-          {
-            label: "진행중",
-            who: `${md(timeline.startAt)} 시작`,
-            tone: "done",
-          },
-          { label: "종료", who: md(timeline.endAt), tone: "cur" },
-          { label: "정산완료", who: "판매 확정 후", tone: "todo" },
-        ]}
-      />
+      <GbStepper steps={lifecycleSteps(detail)} />
       <Notice tone="info" className="mt-4">
         {onHold ? (
           <>
@@ -925,20 +933,14 @@ export function InfoCard(props: {
         isSuspended ? "종결된 공구 · 읽기 전용" : "계약에서 상속 · 변경 불가"
       }
     >
-      {!isSuspended && (
-        <FRow label="브랜드">
-          {brand.name}{" "}
-          {permissions.canOpenPairThread && (
-            <button
-              type="button"
-              className={FLINK_CLASS}
-              onClick={onOpenThread}
-            >
-              스레드 열기
-            </button>
-          )}
-        </FRow>
-      )}
+      <FRow label="브랜드">
+        {brand.name}{" "}
+        {permissions.canOpenPairThread && (
+          <button type="button" className={FLINK_CLASS} onClick={onOpenThread}>
+            스레드 열기
+          </button>
+        )}
+      </FRow>
       <FRow label="원 계약">
         <span className="tabular-nums">{contract.contractNumber}</span>{" "}
         <button type="button" className={FLINK_CLASS} onClick={onOpenContract}>
@@ -948,14 +950,17 @@ export function InfoCard(props: {
           <FSub>{d(contract.concludedAt)} 체결 · 계약 1건당 공구 1건</FSub>
         )}
       </FRow>
-      {!isSuspended && (
-        <FRow label="공구 기간">
-          <span className="tabular-nums">
-            {periodText(timeline.startAt, timeline.endAt)}{" "}
-            <span className="text-sz-n-500">({timeline.totalDays}일)</span>
+      <FRow label="공구 기간">
+        <span className="tabular-nums">
+          {periodText(timeline.startAt, timeline.endAt)}{" "}
+          <span className="text-sz-n-500">
+            {/* 시안 B9 — 중단된 공구는 일수 대신 중단일을 붙인다 */}
+            {isSuspended
+              ? `(${mdDate(groupBuy.endedAt)} 중단)`
+              : `(${timeline.totalDays}일)`}
           </span>
-        </FRow>
-      )}
+        </span>
+      </FRow>
       <FRow label="고정 지급비">
         {fixedFee.amount === null ? (
           "없음"
@@ -1166,8 +1171,6 @@ export function PostCard(props: { detail: Detail; onWritePost: () => void }) {
 
 export function ItemsCard(props: { detail: Detail }) {
   const { detail } = props
-  const preparing =
-    detail.groupBuy.status === "PREPARING" || detail.groupBuy.status === "READY"
   return (
     <DetailCard
       title="공구 상품 항목"
@@ -1205,13 +1208,10 @@ export function ItemsCard(props: { detail: Detail }) {
           </TermRow>
         ))}
       </Terms>
-      {preparing && (
-        <Notice tone="neutral" className="mt-3">
-          공구가와 리워드율은 <B>체결된 계약의 확정값</B>이라 여기서 바꿀 수
-          없습니다. 브랜드의 <B>준비 물량</B>은 브랜드 소관이라 표시하지
-          않습니다.
-        </Notice>
-      )}
+      <Notice tone="neutral" className="mt-3">
+        공구가와 리워드율은 <B>체결된 계약의 확정값</B>이라 여기서 바꿀 수
+        없습니다. 브랜드의 <B>준비 물량</B>은 브랜드 소관이라 표시하지 않습니다.
+      </Notice>
     </DetailCard>
   )
 }

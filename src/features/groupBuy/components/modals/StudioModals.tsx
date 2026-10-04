@@ -90,8 +90,10 @@ export function AcceptExtensionModal(
           · 종료일이 <B className="text-sz-n-900">{dt(extension.afterEndAt)}</B>
           로 바뀌고 소비자에게도 즉시 반영됩니다
           <br />· 게시물이{" "}
-          <B className="text-sz-n-900">{extension.days}일 더 노출</B>되고
-          그동안의 판매도 <B className="text-sz-n-900">내 리워드에 포함</B>
+          <B className="text-sz-n-900">
+            {extension.days === 7 ? "일주일" : `${extension.days}일`} 더 노출
+          </B>
+          되고 그동안의 판매도 <B className="text-sz-n-900">내 리워드에 포함</B>
           됩니다
           <br />· 계약의{" "}
           <B className="text-sz-n-900">고정 지급비와 리워드율은 그대로</B>입니다

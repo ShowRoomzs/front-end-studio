@@ -147,6 +147,7 @@ export default function GroupBuyDetailPage() {
   // 게시물이 승인된 뒤(예약·노출중·숨김)의 수정은 PATCH — 재승인 없이 바로 반영된다
   const isEditMode =
     detail.permissions.canEditPost && !detail.permissions.canWritePost
+  const meta = headerMeta(detail)
 
   return (
     <>
@@ -156,7 +157,15 @@ export default function GroupBuyDetailPage() {
             {detail.groupBuy.title}
           </h1>
           <p className="mt-0.5 text-[12px] tabular-nums text-sz-n-600">
-            {headerMeta(detail)}
+            {meta.text}
+            {meta.warn && (
+              <>
+                {" · "}
+                <b className="font-semibold text-sz-warning-text">
+                  {meta.warn}
+                </b>
+              </>
+            )}
           </p>
         </div>
         <RecordNav
