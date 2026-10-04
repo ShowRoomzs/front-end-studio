@@ -17,10 +17,17 @@ export const CREATOR_MENU: MenuConfig = {
       path: "/contracts",
       matchPaths: ["/contracts"],
     },
-    { id: "groupbuy", label: "공구 관리" },
+    {
+      id: "groupbuy",
+      label: "공구 관리",
+      path: "/group-buy",
+      // 상세(/group-buy/:id)에서도 이 메뉴가 활성으로 남아야 한다
+      matchPaths: ["/group-buy"],
+    },
     { id: "posts", label: "게시물", path: "/posts" },
     { id: "sales", label: "판매 현황" },
-    { id: "settlement", label: "정산 관리" },
+    // 화면은 아직 자리표시다 — 공구 관리의 [정산 관리 열기 ↗]가 이곳으로 온다
+    { id: "settlement", label: "정산 관리", path: "/settlement" },
     { id: "showroom", label: "쇼룸 관리", path: "/showroom" },
     { id: "basic-info", label: "기본정보 관리" },
   ],

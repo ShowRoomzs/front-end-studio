@@ -62,11 +62,20 @@ function withCurrentSignatures<T extends { eventType: string | null }>(
       ? lastIndex("CREATOR_SIGNED")
       : -1,
   }
-  return history.filter((entry, index) =>
-    entry.eventType === "BRAND_SIGNED" || entry.eventType === "CREATOR_SIGNED"
-      ? keep[entry.eventType] === index
-      : true
-  )
+  const bothSigned = !!signature.brandSignedAt && !!signature.creatorSignedAt
+  return history.filter((entry, index) => {
+    if (
+      entry.eventType === "BRAND_SIGNED" ||
+      entry.eventType === "CREATOR_SIGNED"
+    ) {
+      return keep[entry.eventType] === index
+    }
+    // 「양측 서명 완료 확인」도 지금 양측이 서명돼 있을 때 마지막 한 번만 남긴다
+    if (entry.eventType === "BOTH_SIGNED_CONFIRMED") {
+      return bothSigned && lastIndex("BOTH_SIGNED_CONFIRMED") === index
+    }
+    return true
+  })
 }
 
 /** 이력 상세 문자열에 서버 시각(ISO)·null이 그대로 섞여 오면 화면 표기로 바꾼다 */

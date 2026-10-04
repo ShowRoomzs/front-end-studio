@@ -10,6 +10,7 @@ import { useGetShowroomName } from "@/common/hooks/useGetShowroomName"
 import { cookie } from "@/common/lib/cookie"
 import { useGetThreadSummary } from "@/features/connections/hooks/useGetThreadSummary"
 import { useGetCreatorContractSummary } from "@/features/contracts/hooks/useCreatorContractQueries"
+import { useGetCreatorGroupBuySummary } from "@/features/groupBuy/hooks/useCreatorGroupBuy"
 import { cn } from "@/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Outlet, useLocation } from "react-router-dom"
@@ -28,7 +29,7 @@ const FULL_BLEED_PREFIXES = ["/connections"]
  * 계약 관리는 목록에 설명 줄이 붙고, 상세는 공구명이 제목이라 셸 H1로는 표현할 수 없다.
  * 탑바 crumb는 그대로 셸이 그린다(상세는 `usePageSubtitle("계약서")`로 하위 이름을 올린다).
  */
-const SELF_TITLED_PREFIXES = ["/contracts"]
+const SELF_TITLED_PREFIXES = ["/contracts", "/group-buy"]
 
 export default function MainLayout() {
   const location = useLocation()
@@ -88,6 +89,8 @@ export default function MainLayout() {
   const { data: threadSummary } = useGetThreadSummary()
   // 계약 GNB 배지 — 내 서명이 필요한 계약 건수. 놓치면 만료라 계약 화면 밖에서도 폴링한다
   const { data: contractSummary } = useGetCreatorContractSummary()
+  // 공구 GNB 배지 — 게시물 작성·재등록 · 숨김 게시물 수정 · 연장 응답 · 이행 확인이 필요한 공구 수
+  const { data: groupBuySummary } = useGetCreatorGroupBuySummary()
   const { data: showroom } = useGetShowroomName()
 
   return (
@@ -98,6 +101,7 @@ export default function MainLayout() {
         badgeCounts={{
           connections: threadSummary?.unreadCount ?? 0,
           contracts: contractSummary?.actionRequiredCount ?? 0,
+          groupbuy: groupBuySummary?.actionRequiredCount ?? 0,
         }}
       />
 
