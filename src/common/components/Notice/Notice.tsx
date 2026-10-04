@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils"
 import type { ReactNode } from "react"
 
-export type NoticeTone = "info" | "warn" | "danger" | "neutral" | "consent"
+export type NoticeTone =
+  "info" | "warn" | "danger" | "neutral" | "consent" | "success"
 
 const TONE_CLASS: Record<NoticeTone, string> = {
   info: "bg-sz-info-bg text-sz-info-text",
@@ -10,6 +11,8 @@ const TONE_CLASS: Record<NoticeTone, string> = {
   neutral: "bg-sz-n-100 text-sz-n-600",
   // 시안 `.notice.consent` — 고지·확인 체크가 들어가는 흰 박스(테두리만)
   consent: "border border-sz-n-200 bg-sz-n-50 text-sz-n-700",
+  // 시안 `.notice.success` — 공구 관리 이행 확인 완료(B11) · 정산 완료(B8) 결과 배너
+  success: "bg-sz-success-bg text-sz-success-text",
 }
 
 /**
