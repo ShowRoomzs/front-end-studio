@@ -450,7 +450,20 @@ export function ReadinessCard(props: {
         </Notice>
       )}
       <Checklist className="mt-4" rows={rows} />
-      {isReady ? (
+      {isReady && post.hidden ? (
+        // 준비완료에서도 운영자가 숨길 수 있다 — 숨긴 채로 시작되면 소비자에게 보이지 않는다
+        <Notice tone="warn" className="mt-4">
+          <B>운영자가 내 게시물을 숨겼습니다.</B> 공구는 {dt(timeline.startAt)}
+          에 그대로 시작되지만 <B>게시물이 소비자에게 보이지 않습니다</B> —
+          사유를 반영해 게시물을 수정하면 운영자가 확인하고 숨김을 해제합니다.
+          <br />
+          <br />
+          <B>숨김 사유</B> ·{" "}
+          {post.hidden.detail ??
+            POST_REASON_LABEL[post.hidden.code] ??
+            post.hidden.code}
+        </Notice>
+      ) : isReady ? (
         <Notice tone="info" className="mt-4">
           <B>{dt(timeline.startAt)}에 자동으로 시작됩니다.</B> 내가 눌러야 하는
           시작 버튼은 없습니다. 게시물은 <B>예약</B> 상태로 대기하다가 시작
@@ -709,10 +722,15 @@ export function ClosedProgressCard(props: { detail: Detail }) {
         </Notice>
         <GbStepper
           steps={[
-            // 시안 B9 — 준비중 · 준비완료 · 진행중까지는 지나온 단계로 그대로 둔다
+            // 시안 B9 — 준비중 · 준비완료 · 진행중까지는 지나온 단계로 그대로 둔다.
+            // 시작 전에 중단됐으면(준비완료 중 요청 승인) 진행중은 지나지 않은 칸이다
             ...lifecycleSteps(detail)
               .slice(0, 3)
-              .map(step => ({ ...step, tone: "done" as const })),
+              .map((step, index) =>
+                index === 2 && groupBuy.openedAt === null
+                  ? { ...step, who: "시작 전", tone: "todo" as const }
+                  : { ...step, tone: "done" as const }
+              ),
             {
               label: "중단",
               who: `${isAdmin ? "운영자 직권" : "운영자 승인"} · ${md(groupBuy.endedAt)}`,
