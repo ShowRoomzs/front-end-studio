@@ -111,10 +111,29 @@ export function toGroupBuyHistoryItems(
   return history.map(entry => {
     const text = eventText(entry)
     return {
-      label: entry.detail ? `${text.label} · ${entry.detail}` : text.label,
+      label:
+        entry.eventType === "FULFILLMENT_AUTO_CONFIRMED"
+          ? `계약 이행 확인 — ${autoConfirmText(entry.detail)}`
+          : entry.detail
+            ? `${text.label} · ${entry.detail}`
+            : text.label,
       processedAt: entry.occurredAt,
       tone: text.tone,
       processorName: actorName(entry),
     }
   })
+}
+
+/**
+ * 자동 이행 detail — 서버가 「인플루언서 무응답으로 자동 이행」 라벨을 남긴다.
+ * 그 전 기록은 무응답 측 enum 원문(SELLER · CREATOR)이라 바꿔 읽는다.
+ */
+function autoConfirmText(detail: string | null): string {
+  if (detail === "SELLER") {
+    return "브랜드 무응답으로 자동 이행"
+  }
+  if (detail === "CREATOR") {
+    return "인플루언서 무응답으로 자동 이행"
+  }
+  return detail ?? "무응답 자동 이행"
 }

@@ -574,11 +574,26 @@ export function SalesCard(props: { detail: Detail }) {
       break
     case "SETTLED":
       title = "확정 실적"
+      // 시안 B8 「구매확정 308건 · 환불 4건 반영」 — 판매 모듈이 모르면(null) 건수 없이 쓴다
       note = sales
-        ? `구매확정 ${num(sales.orderCount)}건 · 환불 반영`
+        ? [
+            sales.purchaseConfirmedCount != null
+              ? `구매확정 ${num(sales.purchaseConfirmedCount)}건`
+              : "구매확정",
+            sales.refundedCount != null
+              ? `환불 ${num(sales.refundedCount)}건 반영`
+              : "환불 반영",
+          ].join(" · ")
         : "확정 실적"
       items = [
-        { value: orders, label: "확정 주문", sub: "환불 제외" },
+        {
+          value: orders,
+          label: "확정 주문",
+          sub:
+            sales?.refundedCount != null
+              ? `환불 ${num(sales.refundedCount)}건 제외`
+              : "환불 제외",
+        },
         { value: quantity, label: "확정 수량", sub: breakdown || "—" },
         { value: amount, label: "확정 판매 금액(원)", sub: "확정" },
         { value: reward, label: "내 리워드(원)", sub: "지급 완료" },

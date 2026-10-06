@@ -253,6 +253,10 @@ export interface CreatorGroupBuyDetailResponse {
   sales: {
     basis: "LIVE" | "PROVISIONAL" | "SETTLED" | "AT_SUSPENSION"
     orderCount: number
+    /** 종결 중 구매확정 — B8 「구매확정 308건」. 판매 모듈이 모르면 null */
+    purchaseConfirmedCount: number | null
+    /** 종결 중 환불(결제 후 취소) — B8 「환불 4건 반영」. 판매 모듈이 모르면 null */
+    refundedCount: number | null
     itemQuantities: Array<{ productId: number; quantity: number }>
     amount: number
     myReward: number
