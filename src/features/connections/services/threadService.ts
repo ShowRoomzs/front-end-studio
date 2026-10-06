@@ -21,7 +21,7 @@ export interface AttachmentSummary {
   attachmentType: AttachmentType
   /**
    * CDN URL — **화면에 보여줄 때만** 쓴다(이미지 썸네일·라이트박스, 영상 재생).
-   * 저장(다운로드)에는 쓰지 않는다 — `getDownloadUrl`로 매번 새로 서명받아야
+   * 저장(다운로드)에는 쓰지 않는다 — `getDownloadUrls`로 매번 새로 서명받아야
    * 원본 파일명으로 저장되고 미리보기로 열리지 않는다.
    */
   fileUrl: string | null
@@ -169,10 +169,14 @@ export const threadService = {
     return data
   },
 
-  /** 저장 직전에 호출한다 — 발급된 URL이 5분 뒤 만료되므로 미리 받아두면 안 된다 */
-  getDownloadUrl: async (attachmentId: number) => {
-    const { data } = await apiInstance.get<AttachmentDownloadResponse>(
-      `/creator/attachments/${attachmentId}/download`
+  /**
+   * 저장 직전에 호출한다 — 발급된 URL이 5분 뒤 만료되므로 미리 받아두면 안 된다.
+   * 파일 하나든 「전체 다운로드」든 한 번에 발급한다. 응답은 요청한 ID 순서를 따른다.
+   */
+  getDownloadUrls: async (attachmentIds: Array<number>) => {
+    const { data } = await apiInstance.post<Array<AttachmentDownloadResponse>>(
+      "/creator/attachments/download",
+      { attachmentIds }
     )
     return data
   },

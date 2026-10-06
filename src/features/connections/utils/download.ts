@@ -4,8 +4,7 @@ import { threadService } from "@/features/connections/services/threadService"
  * 여러 건을 연달아 저장할 때 클릭 사이에 두는 간격.
  *
  * 다운로드 트리거를 한 틱에 몰아 쏘면 브라우저가 뒤쪽 것들을 조용히 버린다.
- * URL을 매번 새로 발급받느라 자연스럽게 간격이 생기긴 하지만, 응답이 빠른 환경에서는
- * 그것만으로 부족해 명시적으로 벌린다.
+ * URL을 한 번에 받아 오므로 사이에 요청 대기 시간도 없다 — 명시적으로 벌린다.
  */
 const SEQUENTIAL_DOWNLOAD_GAP = 400
 
@@ -44,8 +43,11 @@ export async function downloadAttachment(
   attachmentId: number
 ): Promise<boolean> {
   try {
-    const { downloadUrl } = await threadService.getDownloadUrl(attachmentId)
-    triggerDownload(downloadUrl)
+    const [file] = await threadService.getDownloadUrls([attachmentId])
+    if (!file) {
+      return false
+    }
+    triggerDownload(file.downloadUrl)
     return true
   } catch {
     // 권한 없음·업로드 미완료 등 실패 사유는 apiInstance 인터셉터가 토스트로 띄운다
@@ -56,20 +58,25 @@ export async function downloadAttachment(
 /**
  * 전체 다운로드 — 압축하지 않고 개별 파일로 순차 저장한다(§13-9).
  *
- * 첫 실패에서 멈춘다. 여기서 실패하는 이유(로그인 만료·스레드 접근 권한)는 대체로
- * 나머지에도 똑같이 적용돼서, 계속 돌면 같은 토스트만 파일 수만큼 쌓인다.
+ * URL은 한 번의 요청으로 모두 받는다(서버 일괄 발급 · 요청 순서대로 응답). 하나라도 권한이
+ * 없으면 요청 전체가 실패해 토스트 한 번으로 끝난다. 받은 URL은 5분 안에 쓰이므로 순차 저장
+ * 간격(400ms)으로는 만료되지 않는다.
  *
  * 참고: 파일이 여러 개면 크롬이 "여러 파일 다운로드를 허용하시겠습니까?"를 한 번 묻는다.
  * 브라우저 정책이라 우회할 수 없고, 서버 압축은 §13-9에서 하지 않기로 한 사항이다.
  */
 export async function downloadAttachments(attachmentIds: Array<number>) {
-  for (const [index, attachmentId] of attachmentIds.entries()) {
+  let files: Awaited<ReturnType<typeof threadService.getDownloadUrls>>
+  try {
+    files = await threadService.getDownloadUrls(attachmentIds)
+  } catch {
+    // 실패 사유는 apiInstance 인터셉터가 토스트로 띄운다
+    return
+  }
+  for (const [index, file] of files.entries()) {
     if (index > 0) {
       await delay(SEQUENTIAL_DOWNLOAD_GAP)
     }
-    const started = await downloadAttachment(attachmentId)
-    if (!started) {
-      break
-    }
+    triggerDownload(file.downloadUrl)
   }
 }
