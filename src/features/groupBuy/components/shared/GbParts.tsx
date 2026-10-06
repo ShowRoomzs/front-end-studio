@@ -195,13 +195,17 @@ export function KpiRow(props: { items: Array<KpiItem> }) {
       {props.items.map(item => (
         <div
           key={item.label}
-          className="flex-1 rounded-[6px] border border-sz-n-200 bg-white px-3.5 py-3"
+          className="min-w-0 flex-1 rounded-[6px] border border-sz-n-200 bg-white px-3.5 py-3"
         >
           <div className="text-[19px] font-semibold tabular-nums text-sz-n-900">
             {item.value}
           </div>
           <div className="mt-[3px] text-[11px] text-sz-n-600">{item.label}</div>
-          <div className="mt-[2px] text-[10px] tabular-nums text-sz-n-400">
+          {/* 상품명이 길면 「세럼 130 · 크림 88」 한 줄을 넘는다 — 줄바꿈 대신 말줄임(전체는 title) */}
+          <div
+            className="mt-[2px] truncate text-[10px] tabular-nums text-sz-n-400"
+            title={item.sub}
+          >
             {item.sub}
           </div>
         </div>
@@ -361,6 +365,9 @@ export function GbModal(props: {
     // 바깥 클릭으로 닫지 않는다 — 입력한 사유가 빗나간 클릭 한 번에 날아가면 안 된다
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.4)]">
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         className="flex max-h-[90vh] flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]"
         style={{ width }}
       >

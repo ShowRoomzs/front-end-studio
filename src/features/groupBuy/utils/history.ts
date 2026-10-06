@@ -17,7 +17,7 @@ const EVENT_TEXT: Record<
   { label: string; tone: HistoryDotTone }
 > = {
   CREATED: { label: "공구 생성 · 계약 조건 상속", tone: "muted" },
-  STOCK_CONFIRMED: { label: "브랜드 준비 물량 확보 확인", tone: "success" },
+  STOCK_CONFIRMED: { label: "브랜드 준비 물량 확보 확인", tone: "muted" },
   POST_SUBMITTED: {
     label: "게시물 등록 · 운영자 검토 요청",
     tone: "accent",
@@ -46,10 +46,7 @@ const EVENT_TEXT: Record<
     label: "중단 요청 반려 · 결과 알림 수신",
     tone: "danger",
   },
-  SUSPENDED: {
-    label: "운영자 중단 승인 · 공구 중단 · 게시물 내려감",
-    tone: "warn",
-  },
+  SUSPENDED: { label: "공구 중단 · 요청 승인", tone: "muted" },
   SUSPENSION_NOTICED: { label: "운영자 직권 중단 사전 통지", tone: "warn" },
   APPEAL_SUBMITTED: { label: "소명 자료 제출", tone: "accent" },
   SUSPENSION_WITHDRAWN: { label: "직권 중단 철회", tone: "success" },
@@ -74,7 +71,7 @@ const EVENT_TEXT: Record<
   },
   FULFILLMENT_AGREED: { label: "이행 이슈 합의 종결", tone: "success" },
   FULFILLMENT_RESOLVED: { label: "정산 보류 해제", tone: "success" },
-  SALES_FINALIZED: { label: "전 주문 종결 · 실적 확정", tone: "accent" },
+  SALES_FINALIZED: { label: "실적 확정", tone: "success" },
   SETTLED: { label: "정산 완료 · 리워드 지급", tone: "success" },
 }
 
@@ -92,20 +89,51 @@ function actorName(entry: GroupBuyHistoryEntry): string {
   return entry.actorDisplayName ?? fallback[entry.actorType]
 }
 
+/** 시안 B9 · B10 — 브랜드가 보낸 중단 요청은 「브랜드 중단 요청」으로 주체를 밝힌다 */
+function eventText(entry: GroupBuyHistoryEntry) {
+  const text = EVENT_TEXT[entry.eventType] ?? {
+    label: entry.eventType,
+    tone: "muted" as const,
+  }
+  if (
+    entry.eventType === "SUSPENSION_REQUESTED" &&
+    entry.actorType === "SELLER"
+  ) {
+    return { ...text, label: "브랜드 중단 요청" }
+  }
+  return text
+}
+
 /** 서버 이력(최신순) → 공용 HistoryList 항목 */
 export function toGroupBuyHistoryItems(
   history: Array<GroupBuyHistoryEntry>
 ): Array<HistoryItem> {
   return history.map(entry => {
-    const text = EVENT_TEXT[entry.eventType] ?? {
-      label: entry.eventType,
-      tone: "muted" as const,
-    }
+    const text = eventText(entry)
     return {
-      label: entry.detail ? `${text.label} · ${entry.detail}` : text.label,
+      label:
+        entry.eventType === "FULFILLMENT_AUTO_CONFIRMED"
+          ? `계약 이행 확인 — ${autoConfirmText(entry.detail)}`
+          : entry.detail
+            ? `${text.label} · ${entry.detail}`
+            : text.label,
       processedAt: entry.occurredAt,
       tone: text.tone,
       processorName: actorName(entry),
     }
   })
+}
+
+/**
+ * 자동 이행 detail — 서버가 「인플루언서 무응답으로 자동 이행」 라벨을 남긴다.
+ * 그 전 기록은 무응답 측 enum 원문(SELLER · CREATOR)이라 바꿔 읽는다.
+ */
+function autoConfirmText(detail: string | null): string {
+  if (detail === "SELLER") {
+    return "브랜드 무응답으로 자동 이행"
+  }
+  if (detail === "CREATOR") {
+    return "인플루언서 무응답으로 자동 이행"
+  }
+  return detail ?? "무응답 자동 이행"
 }
