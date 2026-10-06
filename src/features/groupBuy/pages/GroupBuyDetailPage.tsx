@@ -266,7 +266,12 @@ export default function GroupBuyDetailPage() {
                   {
                     onSuccess: () => {
                       closeModal()
-                      toast.success("게시물을 수정했습니다. 바로 반영됩니다.")
+                      // 숨김 중 수정은 자동으로 다시 노출되지 않는다 — 운영자가 확인하고 해제한다
+                      toast.success(
+                        detail.post.status === "HIDDEN"
+                          ? "게시물을 수정했습니다. 운영자가 확인한 뒤 숨김을 해제합니다."
+                          : "게시물을 수정했습니다. 바로 반영됩니다."
+                      )
                     },
                   }
                 )
