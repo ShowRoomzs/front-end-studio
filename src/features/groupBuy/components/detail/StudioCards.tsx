@@ -369,9 +369,11 @@ export function ReadinessCard(props: {
                 className="h-7 shrink-0"
                 onClick={onWritePost}
               >
-                {rejected || post.status === "WRITING"
+                {rejected
                   ? "게시물 수정"
-                  : "게시물 작성"}
+                  : post.status === "WRITING"
+                    ? "이어서 작성"
+                    : "게시물 작성"}
               </Btn>
             ) : (
               "대기"
@@ -419,6 +421,7 @@ export function ReadinessCard(props: {
 
   const steps = lifecycleSteps(detail)
   const rejection = post.rejection
+  const startPassed = timeline.startOverdue || timeline.daysUntilStart === null
 
   return (
     <DetailCard title="준비 상황" note={note}>
@@ -426,8 +429,10 @@ export function ReadinessCard(props: {
       {rejected && (
         <Notice tone="warn" className="mt-4">
           <B>운영자가 게시물을 반려했습니다.</B> 사유를 반영해 <B>다시 등록</B>
-          해야 공구가 열립니다 — 시작일까지 반려 상태가 이어지면 공구는 열리지
-          않습니다.
+          해야 공구가 열립니다 —{" "}
+          {startPassed
+            ? "시작 시각이 지나 재승인이 나는 즉시 열리지만, 종료일은 그대로라 판매 기간이 그만큼 줄어듭니다."
+            : "시작일까지 반려 상태가 이어지면 공구는 열리지 않습니다."}
           {rejection && (
             <>
               <br />
@@ -458,14 +463,19 @@ export function ReadinessCard(props: {
           바뀌고, 반려되면 사유와 함께 알림이 오니 게시물을 고쳐 다시 등록하면
           됩니다.
         </Notice>
+      ) : startPassed ? (
+        // 시작 시각이 지나도 공구는 취소되지 않는다 — 승인이 나는 즉시 열리고 종료일은 그대로다
+        <Notice tone="warn" className="mt-4">
+          <B>시작 시각이 지났습니다.</B> 게시물을 등록하고 운영자 승인(
+          <B>영업일 {readiness?.reviewSlaBusinessDays ?? 3}일</B>)이 나는{" "}
+          <B>즉시 공구가 열리지만</B> 종료일은 그대로라 판매 기간이 그만큼
+          줄어듭니다. 늦어질수록 계약의 <B>게시 완료 기한</B>도 지키기
+          어려워집니다.
+        </Notice>
       ) : (
         <Notice tone="warn" className="mt-4">
-          <B>
-            {timeline.startOverdue || timeline.daysUntilStart === null
-              ? "시작 시각이 지났습니다."
-              : `시작일까지 ${timeline.daysUntilStart}일 남았습니다.`}
-          </B>{" "}
-          게시물 등록 후 운영자 승인에{" "}
+          <B>시작일까지 {timeline.daysUntilStart}일 남았습니다.</B> 게시물 등록
+          후 운영자 승인에{" "}
           <B>영업일 {readiness?.reviewSlaBusinessDays ?? 3}일</B>
           {readiness?.registrationDeadline && readiness.registrationOverdue ? (
             // 시안은 마감일 전만 그린다 — 지난 뒤에 「늦어도 지난 날짜까지」라고 하면 틀린 안내다
@@ -985,7 +995,7 @@ export function InfoCard(props: {
             <FSub>
               지급 시점 <B>{fixedFee.triggerLabel ?? "—"}</B> ·{" "}
               <B>브랜드 직접 지급</B>
-              {isSuspended && (
+              {isSuspended && fixedFee.amount > 0 && (
                 <>
                   {" "}
                   · <B>플랫폼이 회수해 주지 않습니다</B>

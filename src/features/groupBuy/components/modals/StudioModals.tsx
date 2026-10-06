@@ -385,9 +385,11 @@ export function FulfillmentModal(
   const closure = detail.orderClosure
   const shipping = closure?.unclosed.awaitingShipment ?? null
   const currentStatus =
-    closure && shipping !== null
-      ? `${num(closure.totalCount)}건 중 ${num(shipping)}건 배송 중`
-      : null
+    closure && closure.totalCount === 0
+      ? "접수된 주문 없음"
+      : closure && shipping !== null
+        ? `${num(closure.totalCount)}건 중 ${num(shipping)}건 배송 중`
+        : null
 
   return (
     <GbModal
@@ -575,7 +577,8 @@ export function SuspensionModal(
           <B className="text-sz-n-900">중단이 승인되면 되돌릴 수 없습니다</B>
         </div>
         <div className="leading-[1.8]">
-          {fee !== null && (
+          {/* 지급비가 없으면(0원) 회수 문장 자체가 의미 없다 */}
+          {fee !== null && fee > 0 && (
             <>
               · 이미 받은 고정 지급비{" "}
               <B className="text-sz-n-900">
