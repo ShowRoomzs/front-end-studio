@@ -11,6 +11,7 @@ import { cookie } from "@/common/lib/cookie"
 import { useGetThreadSummary } from "@/features/connections/hooks/useGetThreadSummary"
 import { useGetCreatorContractSummary } from "@/features/contracts/hooks/useCreatorContractQueries"
 import { useGetCreatorGroupBuySummary } from "@/features/groupBuy/hooks/useCreatorGroupBuy"
+import { useGetSettlementSummary } from "@/features/settlement/hooks/useSettlementQueries"
 import { cn } from "@/lib/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Outlet, useLocation } from "react-router-dom"
@@ -29,7 +30,7 @@ const FULL_BLEED_PREFIXES = ["/connections"]
  * 계약 관리는 목록에 설명 줄이 붙고, 상세는 공구명이 제목이라 셸 H1로는 표현할 수 없다.
  * 탑바 crumb는 그대로 셸이 그린다(상세는 `usePageSubtitle("계약서")`로 하위 이름을 올린다).
  */
-const SELF_TITLED_PREFIXES = ["/contracts", "/group-buy"]
+const SELF_TITLED_PREFIXES = ["/contracts", "/group-buy", "/settlement"]
 
 export default function MainLayout() {
   const location = useLocation()
@@ -91,6 +92,8 @@ export default function MainLayout() {
   const { data: contractSummary } = useGetCreatorContractSummary()
   // 공구 GNB 배지 — 게시물 작성·재등록 · 숨김 게시물 수정 · 연장 응답 · 이행 확인이 필요한 공구 수
   const { data: groupBuySummary } = useGetCreatorGroupBuySummary()
+  // 정산 GNB 배지 — 조정 협의 중 내 응답 차례 + 세금계산서 발행 필요 · 반려. API가 없어 배포본은 호출하지 않는다(0)
+  const { data: settlementSummary } = useGetSettlementSummary()
   const { data: showroom } = useGetShowroomName()
 
   return (
@@ -102,6 +105,7 @@ export default function MainLayout() {
           connections: threadSummary?.unreadCount ?? 0,
           contracts: contractSummary?.actionRequiredCount ?? 0,
           groupbuy: groupBuySummary?.actionRequiredCount ?? 0,
+          settlement: settlementSummary?.actionRequiredCount ?? 0,
         }}
       />
 

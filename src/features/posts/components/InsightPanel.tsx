@@ -98,7 +98,7 @@ function Section(props: {
  * 게시물 인사이트 3단 (§24-7) — 반응 / 이 게시물을 보고 한 행동 / 본 사람.
  *
  * 용어는 쇼룸 관리(#8)와 맞춘다 — 와이어의 "조회수"는 **노출**이고 좋아요율은 좋아요 ÷ 노출이다.
- * 매출·구매는 판매 현황(#6) 소관이라 여기 없다.
+ * 매출·구매는 성과 관리(#6) 소관이라 여기 없다.
  */
 export default function InsightPanel(props: {
   postId: number
@@ -232,7 +232,7 @@ export default function InsightPanel(props: {
               일반 게시물은{" "}
               <b className="text-sz-n-900">노출 · 반응 · 조회 후 행동</b>까지만
               봅니다 — 판매로 이어지지 않는 콘텐츠라 구매 · 매출은 집계하지
-              않습니다. 공구 게시물의 성과는 판매 현황(#6)에서 봅니다.
+              않습니다. 공구 게시물의 성과는 성과 관리에서 봅니다.
             </Note>
           </Section>
         </>

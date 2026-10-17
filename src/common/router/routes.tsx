@@ -15,7 +15,8 @@ import ContractListPage from "@/features/contracts/pages/ContractListPage"
 import ContractDetailPage from "@/features/contracts/pages/ContractDetailPage"
 import GroupBuyListPage from "@/features/groupBuy/pages/GroupBuyListPage"
 import GroupBuyDetailPage from "@/features/groupBuy/pages/GroupBuyDetailPage"
-import ComingSoonPage from "@/common/components/ComingSoon/ComingSoonPage"
+import SettlementListPage from "@/features/settlement/pages/SettlementListPage"
+import SettlementDetailPage from "@/features/settlement/pages/SettlementDetailPage"
 
 /**
  * 크리에이터 권한을 아직 갖지 않은 사용자용 라우트.
@@ -55,13 +56,10 @@ export const mainRoutes: Array<RouteObject> = [
       { path: "posts/:postId", element: <PostDetailPage /> },
       // GNB #8 쇼룸 관리 — 탭·기간·정렬은 쿼리스트링으로 유지한다
       { path: "showroom", element: <ShowroomManagementPage /> },
-      // GNB #7 정산 관리 — 정산 API가 아직 없어 자리표시. 공구 관리의 정산 버튼이 여기로 온다
-      {
-        path: "settlement",
-        element: (
-          <ComingSoonPage description="공구별 리워드 정산 내역 · 공제 · 실입금액 화면은 아직 준비 중입니다." />
-        ),
-      },
+      // GNB #7 정산 관리(§44) — 목록 · 상세. 정산 API가 없어 개발 서버만 목업, 배포본은 「준비 중」.
+      // 공구 관리의 [정산 관리 열기 ↗]가 목록으로 온다
+      { path: "settlement", element: <SettlementListPage /> },
+      { path: "settlement/:settlementId", element: <SettlementDetailPage /> },
       { path: "*", element: <HomePage /> },
     ],
   },
