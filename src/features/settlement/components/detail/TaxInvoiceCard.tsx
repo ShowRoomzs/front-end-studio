@@ -12,120 +12,150 @@ import {
   Sec,
 } from "@/features/settlement/components/detail/DetailParts"
 import {
+  TAX_INVOICE_ATTACHMENT_MAX_BYTES,
   TAX_INVOICE_STATUS_LABEL,
   TAX_INVOICE_STATUS_VARIANT,
 } from "@/features/settlement/constants/params"
 import type {
   SettlementDetail,
   SettlementTaxInvoice,
-  TaxInvoiceStatus,
+  TaxInvoiceCardStatus,
   TaxInvoiceSubmitBody,
 } from "@/features/settlement/types"
 import {
   formatFullDate,
   formatFullDateTime,
-  formatPercent,
+  formatRatio,
   formatWon,
-  isValidApprovalNo,
+  normalizeApprovalNumber,
 } from "@/features/settlement/utils/format"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
-import { useRef, useState, type ReactNode } from "react"
+import { useId, useRef, useState, type ReactNode } from "react"
 import toast from "react-hot-toast"
 
-const NOTICE_TONE: Record<TaxInvoiceStatus, NoticeTone> = {
-  REQUIRED: "warn",
-  REVIEWING: "info",
+const NOTICE_TONE: Record<TaxInvoiceCardStatus, NoticeTone> = {
+  PENDING_INPUT: "warn",
+  SUBMITTED: "info",
   REJECTED: "danger",
-  APPROVED: "success",
+  VERIFIED: "success",
 }
 
 const APPROVAL_PLACEHOLDER = "24자리 · 예) 20260829-41000012-38475920"
 
+/** 서버 `SETTLEMENT_TAX_INVOICE_NUMBER_INVALID` 기본 문구와 같다 */
+const APPROVAL_FORMAT_ERROR =
+  "승인번호 24자리를 확인해 주세요 — 숫자와 하이픈(-)만 입력할 수 있어요."
+
 /**
- * 사업자 세금계산서 발행 카드 4상태(§44-4 · 시안 D5 · D5a · D5b · D5c).
+ * 사업자 세금계산서 발행 카드 4상태(§44-4 · 시안 D5 · D5a · D5b · D5c) — 서버 `cardStatus`
+ * PENDING_INPUT · SUBMITTED · REJECTED · VERIFIED.
  *
- * 정산이 자동 확정된 직후에만 나타난다 — 확인 기간 중 발행하면 조정 결과로 수정세금계산서가 생긴다.
+ * 서버는 사업자 ∧ 확정 후에만 카드를 내린다 — 확인 기간 중 발행하면 조정 결과로 수정세금계산서가 생긴다.
  * 구성은 홈택스 입력 순서 그대로: 발행할 내용 → [발행 정보 복사] → 승인번호 + PDF(선택) → [제출].
  * 빈 값은 [제출] 비활성만, 형식 오류만 에러 문구. 확인 중에는 독촉 버튼이 없다(결과는 자동 알림).
  */
 export default function TaxInvoiceCard(props: {
   detail: SettlementDetail
   isSubmitting: boolean
+  /** 서버가 돌려준 승인번호 오류(형식 · 다른 정산에서 확인된 번호) — 입력을 고치면 호출부가 지운다 */
+  submitError: string | null
+  onEdit: () => void
   onSubmit: (body: TaxInvoiceSubmitBody) => void
   onDownloadPdf: () => void
+  isDownloadingPdf: boolean
 }) {
-  const { detail, isSubmitting, onSubmit, onDownloadPdf } = props
+  const {
+    detail,
+    isSubmitting,
+    submitError,
+    onEdit,
+    onSubmit,
+    onDownloadPdf,
+    isDownloadingPdf,
+  } = props
   const invoice = detail.taxInvoice
   if (!invoice) return null
-  const editable =
-    invoice.status === "REQUIRED" || invoice.status === "REJECTED"
+  const status = invoice.cardStatus
+  const editable = status === "PENDING_INPUT" || status === "REJECTED"
+  const supplier = invoice.supplier
 
   return (
     <Sec
       title="세금계산서 발행"
       note="사업자 · SHOWROOMZ 앞으로 정발행 · 홈택스"
       right={
-        <StatusBadge variant={TAX_INVOICE_STATUS_VARIANT[invoice.status]}>
-          {TAX_INVOICE_STATUS_LABEL[invoice.status]}
+        <StatusBadge variant={TAX_INVOICE_STATUS_VARIANT[status]}>
+          {TAX_INVOICE_STATUS_LABEL[status]}
         </StatusBadge>
       }
     >
-      <Notice tone={NOTICE_TONE[invoice.status]} className="mb-3">
+      <Notice tone={NOTICE_TONE[status]} className="mb-3">
         {noticeText(detail, invoice)}
       </Notice>
 
+      {/* 시안 `style="padding-top:0"` — 배너 바로 아래 첫 행 */}
       <ReadRow
         label="공급받는자"
-        sub={`사업자등록번호 ${invoice.receiver.businessNumber} · ${invoice.receiver.address} · 수신 ${invoice.receiver.email}`}
+        className="pt-0"
+        sub={`사업자등록번호 ${supplier.registrationNumber} · ${supplier.address} · 수신 ${supplier.taxEmail}`}
       >
-        {invoice.receiver.companyName} · 대표 {invoice.receiver.ceoName}
+        {supplier.name} · 대표 {supplier.representative}
       </ReadRow>
       <div className="mt-3 grid grid-cols-3 gap-2.5">
         <SumBox label="공급가액" value={invoice.supplyAmount} />
         <SumBox
-          label={`부가세 ${formatPercent(detail.taxRates.vatRate)}`}
+          label={`부가세 ${formatRatio(detail.breakdown.creatorVatRate)}`}
           value={invoice.vatAmount}
         />
         <SumBox label="합계" value={invoice.totalAmount} />
       </div>
 
-      {invoice.status === "REVIEWING" && invoice.submission && (
+      {status === "SUBMITTED" && (
         <ReadRow
           label="제출한 승인번호"
           className="mt-3"
-          sub={`${formatFullDateTime(invoice.submission.submittedAt)} 제출 · ${
-            invoice.submission.attachmentCount > 0
-              ? `PDF ${invoice.submission.attachmentCount}개 첨부`
+          sub={`${formatFullDateTime(invoice.submittedAt)} 제출 · ${
+            invoice.attachmentName
+              ? `PDF 첨부 · ${invoice.attachmentName}`
               : "첨부 없음"
           }`}
         >
-          <span className="tabular-nums">{invoice.submission.approvalNo}</span>
+          <span className="tabular-nums">{invoice.approvalNumber ?? "—"}</span>
         </ReadRow>
       )}
 
-      {invoice.status === "REJECTED" && invoice.rejection && (
+      {status === "REJECTED" && (
         <ReadRow
           label="반려 사유"
           className="mt-3"
-          sub={`운영팀 · ${formatFullDateTime(invoice.rejection.rejectedAt)} · 이전 승인번호 ${invoice.rejection.previousApprovalNo}`}
+          sub={`운영팀 · ${formatFullDateTime(invoice.rejectedAt)}${
+            invoice.approvalNumber
+              ? ` · 이전 승인번호 ${invoice.approvalNumber}`
+              : ""
+          }`}
         >
-          {invoice.rejection.reason}
+          {invoice.rejectReasonLabel ?? "—"}
         </ReadRow>
       )}
 
-      {invoice.status === "APPROVED" && invoice.approval && (
+      {status === "VERIFIED" && (
         <>
           <ReadRow
             label="승인번호"
             className="mt-3"
-            sub={`확인 ${formatFullDate(invoice.approval.approvedAt)} · 운영팀`}
+            sub={`확인 ${formatFullDate(invoice.verifiedAt)} · 운영팀`}
           >
-            <span className="tabular-nums">{invoice.approval.approvalNo}</span>
+            <span className="tabular-nums">
+              {invoice.approvalNumber ?? "—"}
+            </span>
           </ReadRow>
-          {invoice.approval.hasPdf && (
+          {/* 첨부 없이 제출했으면 내려받을 파일이 없다 — 버튼을 두지 않는다 */}
+          {invoice.attachmentName && (
             <div className="mt-3 flex justify-end">
-              <ActBtn onClick={onDownloadPdf}>세금계산서 PDF 다운로드</ActBtn>
+              <ActBtn disabled={isDownloadingPdf} onClick={onDownloadPdf}>
+                세금계산서 PDF 다운로드
+              </ActBtn>
             </div>
           )}
         </>
@@ -140,8 +170,10 @@ export default function TaxInvoiceCard(props: {
           </div>
           {/* 반려 → 재입력은 새 승인번호라 상태가 바뀌면 입력을 비운다 */}
           <ApprovalForm
-            key={invoice.status}
+            key={status}
             isSubmitting={isSubmitting}
+            submitError={submitError}
+            onEdit={onEdit}
             onSubmit={onSubmit}
           />
         </>
@@ -154,12 +186,12 @@ function noticeText(
   detail: SettlementDetail,
   invoice: SettlementTaxInvoice
 ): ReactNode {
-  switch (invoice.status) {
-    case "REQUIRED":
+  switch (invoice.cardStatus) {
+    case "PENDING_INPUT":
       return (
         <B>홈택스에서 발행한 뒤 승인번호를 입력해 주세요. 확인 후 지급돼요.</B>
       )
-    case "REVIEWING":
+    case "SUBMITTED":
       return (
         <>
           <B>운영팀이 홈택스 수취 내역과 대조하고 있어요.</B> 확인되면 알림을
@@ -173,16 +205,15 @@ function noticeText(
           뒤 새 승인번호를 입력해 주세요.
         </>
       )
-    case "APPROVED": {
-      const paid = detail.status === "PAID"
-      const date = formatFullDate(
-        paid ? detail.payout.paidDate : detail.payout.scheduledDate
-      )
+    case "VERIFIED": {
+      const { paidAt, payoutDueDate } = detail.timeline
+      const date = paidAt ?? payoutDueDate
+      if (!date) return <B>세금계산서가 확인되었어요.</B>
       return (
         <>
-          <B>세금계산서가 확인되었어요.</B> {date}에{" "}
+          <B>세금계산서가 확인되었어요.</B> {formatFullDate(date)}에{" "}
           {formatWon(invoice.totalAmount)}이{" "}
-          {paid ? "지급되었어요" : "지급됩니다"}.
+          {paidAt ? "지급되었어요" : "지급됩니다"}.
         </>
       )
     }
@@ -201,18 +232,18 @@ function SumBox(props: { label: string; value: number }) {
   )
 }
 
-/** [발행 정보 복사] — 홈택스에 옮겨 적을 값을 한 번에 */
+/** [발행 정보 복사] — 홈택스에 옮겨 적을 값을 한 번에(서버 API 없음 · FE 클립보드) */
 function copyIssueInfo(
   detail: SettlementDetail,
   invoice: SettlementTaxInvoice
 ) {
-  const r = invoice.receiver
+  const s = invoice.supplier
   const text = [
-    `공급받는자: ${r.companyName} (대표 ${r.ceoName})`,
-    `사업자등록번호: ${r.businessNumber}`,
-    `주소: ${r.address}`,
-    `수신 이메일: ${r.email}`,
-    `품목: ${detail.groupBuyTitle} 판매 리워드`,
+    `공급받는자: ${s.name} (대표 ${s.representative})`,
+    `사업자등록번호: ${s.registrationNumber}`,
+    `주소: ${s.address}`,
+    `수신 이메일: ${s.taxEmail}`,
+    `품목: ${detail.settlement.groupBuyTitle} 판매 리워드`,
     `공급가액: ${formatWon(invoice.supplyAmount)}`,
     `부가세: ${formatWon(invoice.vatAmount)}`,
     `합계: ${formatWon(invoice.totalAmount)}`,
@@ -224,22 +255,29 @@ function copyIssueInfo(
     .catch(() => toast.error("복사하지 못했습니다. 다시 시도해 주세요."))
 }
 
-/** 승인번호 + PDF(선택) + [제출] */
+/** 승인번호 + PDF(선택 · 10MB) + [제출] */
 function ApprovalForm(props: {
   isSubmitting: boolean
+  submitError: string | null
+  onEdit: () => void
   onSubmit: (body: TaxInvoiceSubmitBody) => void
 }) {
-  const { isSubmitting, onSubmit } = props
+  const { isSubmitting, submitError, onEdit, onSubmit } = props
   const [approvalNo, setApprovalNo] = useState("")
   const [touched, setTouched] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const inputId = useId()
+  const errorId = `${inputId}-error`
 
   const trimmed = approvalNo.trim()
-  const valid = isValidApprovalNo(trimmed)
+  // 서버 형식은 8-8-8 하이픈이다 — 하이픈 없이 24자리를 붙여 넣어도 맞춰 보낸다
+  const normalized = normalizeApprovalNumber(trimmed)
   // 빈 값은 문구 없이 버튼만 비활성 — 형식 오류는 입력을 마쳤거나 허용되지 않는 글자가 들어왔을 때만
   const hasIllegalChar = /[^0-9-\s]/.test(approvalNo)
-  const showError = trimmed !== "" && !valid && (touched || hasIllegalChar)
+  const formatError =
+    trimmed !== "" && !normalized && (touched || hasIllegalChar)
+  const errorText = submitError ?? (formatError ? APPROVAL_FORMAT_ERROR : null)
 
   const handleFile = (selected: File | undefined) => {
     if (!selected) return
@@ -250,12 +288,21 @@ function ApprovalForm(props: {
       toast.error("PDF 파일만 첨부할 수 있습니다.")
       return
     }
+    if (selected.size > TAX_INVOICE_ATTACHMENT_MAX_BYTES) {
+      toast.error(
+        `PDF는 ${TAX_INVOICE_ATTACHMENT_MAX_BYTES / (1024 * 1024)}MB까지 올릴 수 있습니다.`
+      )
+      return
+    }
     setFile(selected)
   }
 
   return (
     <>
-      <label className="mb-1 mt-4 block text-[12px] font-medium text-sz-n-600">
+      <label
+        htmlFor={inputId}
+        className="mb-1 mt-4 block text-[12px] font-medium text-sz-n-600"
+      >
         국세청 승인번호<span className="ml-0.5 text-sz-danger-text">*</span>
       </label>
       <div className="mt-3 flex items-start gap-2">
@@ -263,26 +310,39 @@ function ApprovalForm(props: {
           className={cn(
             INPUT_CLASS,
             "h-[34px] flex-1 tabular-nums",
-            showError && INPUT_ERROR_CLASS
+            errorText && INPUT_ERROR_CLASS
           )}
           placeholder={APPROVAL_PLACEHOLDER}
           value={approvalNo}
-          onChange={event => setApprovalNo(event.target.value)}
+          onChange={event => {
+            setApprovalNo(event.target.value)
+            if (submitError) onEdit()
+          }}
           onBlur={() => setTouched(true)}
-          aria-invalid={showError}
+          id={inputId}
+          aria-required
+          aria-invalid={!!errorText}
+          aria-describedby={errorText ? errorId : undefined}
         />
         <Btn
           variant="primary"
-          disabled={!valid}
+          disabled={!normalized}
           isLoading={isSubmitting}
-          onClick={() => onSubmit({ approvalNo: trimmed, file })}
+          onClick={() =>
+            normalized &&
+            onSubmit({ approvalNumber: normalized, attachment: file })
+          }
         >
           제출
         </Btn>
       </div>
-      {showError && (
-        <div role="alert" className="mt-[5px] text-[11px] text-sz-danger-text">
-          승인번호 24자리를 확인해 주세요 — 숫자와 하이픈(-)만 입력할 수 있어요.
+      {errorText && (
+        <div
+          id={errorId}
+          role="alert"
+          className="mt-[5px] text-[11px] text-sz-danger-text"
+        >
+          {errorText}
         </div>
       )}
 

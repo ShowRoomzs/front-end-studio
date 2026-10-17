@@ -3,18 +3,26 @@ import { INPUT_CLASS } from "@/features/contracts/components/shared/styles"
 import { SETTLEMENT_STATUS_LABEL } from "@/features/settlement/constants/params"
 import {
   SETTLEMENT_STATUSES,
+  type CreatorBusinessType,
   type SettlementListParams,
   type SettlementStatus,
+  type SettlementStatusCounts,
   type SettlementSummary,
 } from "@/features/settlement/types"
 import {
   formatMonthDay,
   formatMonthDayTime,
-  formatWon,
+  formatWonOrDash,
 } from "@/features/settlement/utils/format"
 import { cn } from "@/lib/utils"
 import { Check } from "lucide-react"
 import type { ReactNode } from "react"
+
+/**
+ * 화면 루트 — 시안 body `line-height:1.6`. 셸 기본(1.5)을 그대로 두면 카드 · 표 행마다 1~2px씩 줄어
+ * 상세 한 장에서 50px 넘게 어긋난다(상속받는 글자 전부가 대상이라 루트에 한 번만 건다).
+ */
+export const SETTLEMENT_PAGE_CLASS = "leading-[1.6]"
 
 export const SETTLEMENT_DESCRIPTION =
   "공구별 내 리워드가 어떻게 계산되고 언제 지급되는지 확인합니다."
@@ -41,47 +49,55 @@ export function SettlementPageHeader(props: {
 }
 
 /**
- * 시안 `.kgrid.c4` — 누적 수령 · 지급 예정 · 정산 확인 중 · 조정 협의(§44-2).
- * 건수가 0이면 금액도 0원이 아니라 「—」 — 0원은 실적처럼 읽힌다(L2).
+ * 시안 `.kgrid.c4` — 누적 수령 · 지급 예정 · 정산 확인 중 · 조정 협의.
+ * 건수가 0이면 서버가 금액을 null로 내린다 — 0원이 아니라 「—」(0원은 실적처럼 읽힌다 · L2).
  */
 export function SettlementKpis(props: {
   summary: SettlementSummary | undefined
+  /** 내 세무 구분 — 사업자의 실지급액은 리워드 + 부가세라 「세후」라고 적으면 틀린 말이 된다 */
+  businessType: CreatorBusinessType | null
 }) {
-  const { summary } = props
-  const paidCount = summary?.paidCount ?? 0
-  const scheduledCount = summary?.scheduledCount ?? 0
-  const confirmingCount = summary?.confirmingCount ?? 0
-  const adjustingCount = summary?.adjustingCount ?? 0
-  const nextPayoutDate = summary?.nextPayoutDate ?? null
+  const { summary, businessType } = props
+  const business = businessType === "BUSINESS"
+  const paid = summary?.totalPaid
+  const scheduled = summary?.payoutScheduled
+  const reviewing = summary?.reviewing
+  const adjustingCount = summary?.adjusting.count ?? 0
+  const paidCount = paid?.count ?? 0
+  const scheduledCount = scheduled?.count ?? 0
+  const reviewingCount = reviewing?.count ?? 0
 
   return (
     <div className="mb-4 grid grid-cols-4 gap-3">
       <Kpi
         label="누적 수령"
-        value={paidCount > 0 ? formatWon(summary?.paidTotal ?? 0) : "—"}
+        value={formatWonOrDash(paid?.amount ?? null)}
         sub={
-          paidCount > 0 ? `지급 완료 ${paidCount}건 · 세후` : "지급 완료 0건"
+          paidCount > 0
+            ? `지급 완료 ${paidCount}건 · ${business ? "부가세 포함" : "세후"}`
+            : "지급 완료 0건"
         }
       />
       <Kpi
         label="지급 예정"
-        value={
-          scheduledCount > 0 ? formatWon(summary?.scheduledTotal ?? 0) : "—"
-        }
+        value={formatWonOrDash(scheduled?.amount ?? null)}
         sub={
           scheduledCount > 0
-            ? nextPayoutDate
-              ? `${scheduledCount}건 · ${formatMonthDay(nextPayoutDate)} 지급 예정`
-              : `${scheduledCount}건 · 세금계산서 확인 후 지급`
+            ? scheduled?.nearestDate
+              ? `${scheduledCount}건 · ${formatMonthDay(scheduled.nearestDate)} 지급 예정`
+              : // 예정 건이 전부 보류(BLOCKED)면 날짜가 없다 — 사업자 = 세금계산서 · 비사업자 = 주민등록번호
+                `${scheduledCount}건 · ${business ? "세금계산서 확인 후 지급" : "주민등록번호 등록 후 지급"}`
             : "예정 없음"
         }
       />
       <Kpi
         label="정산 확인 중"
-        value={confirmingCount > 0 ? `${confirmingCount}건` : "—"}
+        value={reviewingCount > 0 ? `${reviewingCount}건` : "—"}
         sub={
-          confirmingCount > 0
-            ? `${formatMonthDayTime(summary?.nearestConfirmDeadlineAt ?? null)}까지 조정 요청 가능`
+          reviewingCount > 0
+            ? reviewing?.nearestDueAt
+              ? `${formatMonthDayTime(reviewing.nearestDueAt)}까지 조정 요청 가능`
+              : "확인 기간 종료 · 확정 대기"
             : "확인할 정산 없음"
         }
       />
@@ -119,7 +135,7 @@ function Kpi(props: { label: string; value: string; sub: string }) {
 export function SettlementFilters(props: {
   params: SettlementListParams
   keyword: string
-  statusCounts: SettlementSummary["statusCounts"] | undefined
+  statusCounts: SettlementStatusCounts | undefined
   onChange: (next: Partial<SettlementListParams>) => void
   onKeywordChange: (keyword: string) => void
   onSearch: () => void
@@ -134,13 +150,13 @@ export function SettlementFilters(props: {
     onSearch,
     onReset,
   } = props
-  const selected = ([] as Array<SettlementStatus>).concat(params.statuses)
+  const selected = ([] as Array<SettlementStatus>).concat(params.status)
 
   const toggle = (status: SettlementStatus) => {
     const has = selected.includes(status)
     if (has && selected.length === 1) return
     onChange({
-      statuses: has
+      status: has
         ? selected.filter(item => item !== status)
         : SETTLEMENT_STATUSES.filter(
             item => item === status || selected.includes(item)
@@ -168,6 +184,7 @@ export function SettlementFilters(props: {
         <input
           className={cn(INPUT_CLASS, "h-8 w-[320px]")}
           placeholder="공구명 · 브랜드명 검색"
+          aria-label="공구명 · 브랜드명 검색"
           value={keyword}
           onChange={event => onKeywordChange(event.target.value)}
           onKeyDown={event => {

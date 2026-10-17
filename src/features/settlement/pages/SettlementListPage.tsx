@@ -1,12 +1,11 @@
-import NotReady from "@/common/components/NotReady/NotReady"
 import Pagination from "@/common/components/Pagination/Pagination"
 import { usePaginationInfo } from "@/common/hooks/usePaginationInfo"
 import { useParams } from "@/common/hooks/useParams"
-import { DEV_MOCK_ENABLED } from "@/common/utils/devMock"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { SELECT_CHEVRON_STYLE } from "@/features/contracts/constants/params"
 import {
   SETTLEMENT_DESCRIPTION,
+  SETTLEMENT_PAGE_CLASS,
   SettlementEmptyState,
   SettlementFilters,
   SettlementKpis,
@@ -20,17 +19,20 @@ import {
   SETTLEMENT_PAGE_SIZES,
   SETTLEMENT_SORT_OPTIONS,
 } from "@/features/settlement/constants/params"
+import { useSettlementDownload } from "@/features/settlement/hooks/useSettlementDownload"
 import {
+  useGetProfileTaxInfo,
   useGetSettlementList,
   useGetSettlementSummary,
 } from "@/features/settlement/hooks/useSettlementQueries"
+import { settlementService } from "@/features/settlement/services/settlementService"
 import type {
   SettlementListParams,
-  SettlementSort,
+  SettlementPartySort,
 } from "@/features/settlement/types"
+import dayjs from "dayjs"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
-import toast from "react-hot-toast"
 import { useLocation, useNavigate } from "react-router-dom"
 
 /** 시안 `.sel-sm` — 목록 툴바 셀렉트(채운 삼각형) */
@@ -42,31 +44,8 @@ const SELECT_SM_CLASS =
  *
  * 인플루언서가 묻는 것은 「내가 얼마를 언제 받나」 하나다. 이 화면이 금액의 단일 소스이고(성과는 해석,
  * 정산은 돈의 사실) 조회 전용이라 체크박스 · 관리 열 · 일괄 액션이 없다.
- *
- * 정산 API가 아직 없어 개발 서버에서만 목업으로 채운다 — 배포본은 「준비 중」(가짜 금액 금지).
  */
 export default function SettlementListPage() {
-  if (!DEV_MOCK_ENABLED) {
-    return (
-      <div>
-        <SettlementPageHeader
-          title="정산 관리"
-          description={SETTLEMENT_DESCRIPTION}
-        />
-        <div className="overflow-hidden rounded-[8px] border border-sz-n-200 bg-white">
-          <NotReady title="정산 관리 화면은 준비 중입니다">
-            공구별 리워드 정산 · 지급 내역은 정산 기능이 열리면 이곳에서 확인할
-            수 있습니다.
-          </NotReady>
-        </div>
-      </div>
-    )
-  }
-
-  return <SettlementList />
-}
-
-function SettlementList() {
   const navigate = useNavigate()
   const location = useLocation()
   const {
@@ -81,7 +60,12 @@ function SettlementList() {
 
   const { data: list, isLoading } = useGetSettlementList(params)
   const { data: summary } = useGetSettlementSummary()
+  const { data: profileTax } = useGetProfileTaxInfo()
   const rows = list?.content ?? []
+  // 세무 구분은 프로필 값 — 프로필을 못 읽으면 행의 부가세로 짐작한다(사업자만 부가세가 붙는다)
+  const businessType =
+    profileTax?.businessType ??
+    (rows.some(row => row.creatorVatAmount > 0) ? "BUSINESS" : null)
 
   const pageInfo = usePaginationInfo({
     data: list?.pageInfo,
@@ -94,22 +78,22 @@ function SettlementList() {
   const neverHadSettlements = !!summary && totalCount === 0
   const hasCondition =
     params.keyword.trim() !== "" ||
-    ([] as Array<string>).concat(params.statuses).length <
-      SETTLEMENT_INITIAL_PARAMS.statuses.length
+    ([] as Array<string>).concat(params.status).length <
+      SETTLEMENT_INITIAL_PARAMS.status.length
 
   return (
-    <div>
+    <div className={SETTLEMENT_PAGE_CLASS}>
       <SettlementPageHeader
         title="정산 관리"
         description={SETTLEMENT_DESCRIPTION}
         right={
-          summary && summary.payoutYears.length > 0 ? (
-            <AnnualStatement years={summary.payoutYears} />
+          summary && summary.totalPaid.count > 0 ? (
+            <AnnualStatement />
           ) : undefined
         }
       />
 
-      <SettlementKpis summary={summary} />
+      <SettlementKpis summary={summary} businessType={businessType} />
 
       <SettlementFilters
         params={params}
@@ -133,7 +117,7 @@ function SettlementList() {
                 value={params.sort}
                 onChange={event =>
                   updateParams({
-                    sort: event.target.value as SettlementSort,
+                    sort: event.target.value as SettlementPartySort,
                     page: 1,
                   })
                 }
@@ -179,6 +163,7 @@ function SettlementList() {
         ) : (
           <SettlementTable
             rows={rows}
+            business={businessType === "BUSINESS"}
             onRowClick={row =>
               // 목록 조건을 들고 간다 — [목록]이 같은 자리로 돌아온다
               navigate({
@@ -200,9 +185,16 @@ function SettlementList() {
   )
 }
 
-/** 목록 상단 [연간 지급 내역] — 연도 선택 · 종합소득세 신고용(§44-1 #8 · 파일 형식은 미정 §46 C-13) */
-function AnnualStatement(props: { years: Array<number> }) {
-  const [year, setYear] = useState(props.years[0])
+/**
+ * 목록 상단 [연간 지급 내역] — 내 몫 지급일이 그 해에 속한 정산(xlsx · 비사업자는 종합소득세 신고용).
+ * 서버가 지급 연도 목록을 내리지 않아 올해 · 지난해를 고르게 하고, 그 해 지급이 없으면 서버 404를
+ * 「지급 내역 없음」으로 알린다(빈 엑셀은 「소득 0」으로 읽혀 서버가 파일을 만들지 않는다).
+ */
+function AnnualStatement() {
+  const thisYear = dayjs().year()
+  const years = [thisYear, thisYear - 1]
+  const [year, setYear] = useState(thisYear)
+  const { run, pendingKey } = useSettlementDownload()
 
   return (
     <div className="flex shrink-0 items-center gap-1.5">
@@ -213,7 +205,7 @@ function AnnualStatement(props: { years: Array<number> }) {
         style={SELECT_CHEVRON_STYLE}
         className={SELECT_SM_CLASS}
       >
-        {props.years.map(item => (
+        {years.map(item => (
           <option key={item} value={item}>
             {item}년
           </option>
@@ -221,10 +213,11 @@ function AnnualStatement(props: { years: Array<number> }) {
       </select>
       <Btn
         variant="secondary"
+        isLoading={pendingKey === "annual"}
         onClick={() =>
-          toast(
-            `개발용 목업이라 ${year}년 연간 지급 내역 파일이 없습니다. 정산 API가 연결되면 내려받을 수 있습니다.`
-          )
+          run("annual", () => settlementService.downloadAnnualStatement(year), {
+            notFoundText: `${year}년에 지급 완료된 정산이 없습니다.`,
+          })
         }
       >
         연간 지급 내역
