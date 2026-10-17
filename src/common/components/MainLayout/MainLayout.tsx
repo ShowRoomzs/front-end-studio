@@ -92,7 +92,8 @@ export default function MainLayout() {
   const { data: contractSummary } = useGetCreatorContractSummary()
   // 공구 GNB 배지 — 게시물 작성·재등록 · 숨김 게시물 수정 · 연장 응답 · 이행 확인이 필요한 공구 수
   const { data: groupBuySummary } = useGetCreatorGroupBuySummary()
-  // 정산 GNB 배지 — 조정 협의 중 내 응답 차례 + 세금계산서 발행 필요 · 반려. API가 없어 배포본은 호출하지 않는다(0)
+  // 정산 GNB 배지 — 서버 attentionCount = 조정 요청 가능 창이 열린 정산 확인 중 + 세금계산서 입력 대기 · 반려.
+  // 조정 협의의 「내 응답 필요」는 연결·소통 배지(스레드 안 읽음)가 센다 — 같은 조치를 두 번 세지 않는다
   const { data: settlementSummary } = useGetSettlementSummary()
   const { data: showroom } = useGetShowroomName()
 
@@ -105,7 +106,7 @@ export default function MainLayout() {
           connections: threadSummary?.unreadCount ?? 0,
           contracts: contractSummary?.actionRequiredCount ?? 0,
           groupbuy: groupBuySummary?.actionRequiredCount ?? 0,
-          settlement: settlementSummary?.actionRequiredCount ?? 0,
+          settlement: settlementSummary?.attentionCount ?? 0,
         }}
       />
 

@@ -47,7 +47,8 @@ export function Sec(props: {
         <div className="flex items-center gap-2 rounded-t-[8px] border-b border-sz-n-200 bg-sz-n-50 px-4 py-3">
           <h2 className="text-[13px] font-semibold text-sz-n-900">{title}</h2>
           {note && <span className="text-[11px] text-sz-n-500">{note}</span>}
-          {right && <span className="ml-auto">{right}</span>}
+          {/* flex로 감싼다 — inline span이면 16px 루트 글자의 줄 상자가 생겨 헤더가 4px 커진다 */}
+          {right && <span className="ml-auto flex">{right}</span>}
         </div>
       )}
       <div className={cn("p-4", bodyClassName)}>{children}</div>
@@ -111,11 +112,17 @@ export function MNote(props: { children: ReactNode; inline?: boolean }) {
 
 export type MRowKind = "base" | "sub" | "rate" | "mid" | "tot"
 
+/**
+ * 시안은 `.mtab`이 전역 `tbody td`(border-top n-100 · 첫 행 없음)를 물려받아 행마다 옅은 구분선이 있다.
+ * 소계 · 총계는 그 위에 더 진한 상단 보더를 덮어쓴다.
+ */
+const MROW_BASE = "border-t border-sz-n-100 first:border-t-0"
+
 const MROW_CLASS: Record<MRowKind, string> = {
   base: "",
   sub: "text-sz-n-600",
   rate: "text-sz-n-600",
-  mid: "border-t border-sz-n-300 bg-sz-n-50 font-semibold",
+  mid: "border-sz-n-300 bg-sz-n-50 font-semibold",
   tot: "border-t-[1.5px] border-sz-n-400 bg-sz-n-50 text-[17px] font-semibold text-sz-n-900",
 }
 
@@ -158,7 +165,7 @@ export function MRow(props: {
     valueClassName,
   } = props
   return (
-    <tr className={MROW_CLASS[kind]}>
+    <tr className={cn(MROW_BASE, MROW_CLASS[kind])}>
       <td className="px-3 py-2.5">
         {label}
         {note && <MNote>{note}</MNote>}

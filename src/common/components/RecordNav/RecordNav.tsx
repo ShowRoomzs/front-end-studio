@@ -1,5 +1,7 @@
 interface RecordNavProps {
   onList: () => void
+  /** 목록 버튼 문구 — 기본 「목록」. 정산 관리 시안(ui-studio-12)은 「목록으로」 */
+  listLabel?: string
   /** 이전 건이 없으면 넘기지 않는다 → 버튼 자체가 렌더링되지 않음(비활성 아님) */
   onPrev?: () => void
   /** 다음 건이 없으면 넘기지 않는다 → 버튼 자체가 렌더링되지 않음(비활성 아님) */
@@ -11,12 +13,12 @@ const BTN_CLASS =
 
 /** 목록 / ‹ 이전 / 다음 › — 상세 화면 간 이동. 경계 건은 해당 버튼을 렌더링 생략한다. */
 export default function RecordNav(props: RecordNavProps) {
-  const { onList, onPrev, onNext } = props
+  const { onList, listLabel = "목록", onPrev, onNext } = props
 
   return (
     <div className="flex items-center gap-1.5">
       <button type="button" className={BTN_CLASS} onClick={onList}>
-        목록
+        {listLabel}
       </button>
       {(onPrev || onNext) && (
         <span className="mx-0.5 h-[18px] w-px bg-sz-n-300" />
