@@ -31,7 +31,12 @@ const FULL_BLEED_PREFIXES = ["/connections"]
  * 계약 관리는 목록에 설명 줄이 붙고, 상세는 공구명이 제목이라 셸 H1로는 표현할 수 없다.
  * 탑바 crumb는 그대로 셸이 그린다(상세는 `usePageSubtitle("계약서")`로 하위 이름을 올린다).
  */
-const SELF_TITLED_PREFIXES = ["/contracts", "/group-buy", "/settlement"]
+const SELF_TITLED_PREFIXES = [
+  "/contracts",
+  "/group-buy",
+  "/settlement",
+  "/performance",
+]
 
 /** 홈(ui-studio-14)은 셸 H1이 없다 — 「/」는 접두어로 비교하면 모든 경로에 걸리므로 따로 본다 */
 const UNTITLED_PATHS = ["/"]
