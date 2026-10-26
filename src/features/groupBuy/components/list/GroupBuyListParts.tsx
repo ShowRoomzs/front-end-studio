@@ -1,6 +1,7 @@
 import Pagination, {
   type PaginationProps,
 } from "@/common/components/Pagination/Pagination"
+import SanctionHoldBadge from "@/common/components/Suspension/SanctionHoldBadge"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { INPUT_CLASS } from "@/features/contracts/components/shared/styles"
 import { periodText } from "@/features/contracts/utils/format"
@@ -188,9 +189,16 @@ export function GroupBuyTable(props: {
                 className="group cursor-pointer border-t border-sz-n-100 first:border-t-0 hover:bg-sz-accent-50"
               >
                 <td className={CELL_CLASS}>
-                  <span className="block truncate font-medium text-sz-n-900 group-hover:text-sz-accent-600">
-                    {row.title}
-                  </span>
+                  {/*
+                    시안 13 S4 · R2 — 오픈 전 공구에만 서버가 보류 배지를 내린다. 행 높이를 늘리지 않도록
+                    상태 칸이 아닌 이름 칸에 붙이고, 상태 배지는 그대로 둔다
+                  */}
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate font-medium text-sz-n-900 group-hover:text-sz-accent-600">
+                      {row.title}
+                    </span>
+                    <SanctionHoldBadge hold={row.sanctionHold} />
+                  </div>
                 </td>
                 <td className={cn(CELL_CLASS, "truncate")}>{row.brandName}</td>
                 <td className={cn(CELL_CLASS, "text-center tabular-nums")}>

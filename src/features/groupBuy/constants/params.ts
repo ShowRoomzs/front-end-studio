@@ -97,7 +97,7 @@ export const EMERGENCY_REASON_LABEL: Record<string, string> = {
   DAMAGE_SURGE: "피해 급증 우려",
 }
 
-/** 반려·숨김 사유 코드 — 운영자 설명이 없을 때만 쓴다 */
+/** 반려·노출 중지 사유 코드 — 운영자 설명이 없을 때만 쓴다 */
 export const POST_REASON_LABEL: Record<string, string> = {
   AD_EFFECT_ASSERTION: "표시광고법 위반 문구 — 효과 단정",
   AD_MEDICAL_CLAIM: "표시광고법 위반 문구 — 의료적 효능 표현",

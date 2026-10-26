@@ -41,6 +41,9 @@ const NOTICE_TONE: Record<TaxInvoiceCardStatus, NoticeTone> = {
   VERIFIED: "success",
 }
 
+/** 세금계산서 수신 이메일 미정 — 시안 12 rev.4 표기(서버 `company.tax-email`이 비어 있을 때) */
+const TAX_EMAIL_PENDING = "[확인 필요]"
+
 const APPROVAL_PLACEHOLDER = "24자리 · 예) 20260829-41000012-38475920"
 
 /** 서버 `SETTLEMENT_TAX_INVOICE_NUMBER_INVALID` 기본 문구와 같다 */
@@ -98,7 +101,8 @@ export default function TaxInvoiceCard(props: {
       <ReadRow
         label="공급받는자"
         className="pt-0"
-        sub={`사업자등록번호 ${supplier.registrationNumber} · ${supplier.address} · 수신 ${supplier.taxEmail}`}
+        // 기-35 — 공급받는자는 서버 값(`company.*`). 수신 이메일이 아직 비어 있으면 시안 표기 [확인 필요]
+        sub={`사업자등록번호 ${supplier.registrationNumber} · ${supplier.address} · 수신 이메일 ${supplier.taxEmail?.trim() || TAX_EMAIL_PENDING}`}
       >
         {supplier.name} · 대표 {supplier.representative}
       </ReadRow>
@@ -242,7 +246,8 @@ function copyIssueInfo(
     `공급받는자: ${s.name} (대표 ${s.representative})`,
     `사업자등록번호: ${s.registrationNumber}`,
     `주소: ${s.address}`,
-    `수신 이메일: ${s.taxEmail}`,
+    // 수신 이메일이 비어 있으면(서버 설정 [확인 필요]) 옮겨 적을 값이 없어 줄을 뺀다
+    ...(s.taxEmail?.trim() ? [`수신 이메일: ${s.taxEmail}`] : []),
     `품목: ${detail.settlement.groupBuyTitle} 판매 리워드`,
     `공급가액: ${formatWon(invoice.supplyAmount)}`,
     `부가세: ${formatWon(invoice.vatAmount)}`,

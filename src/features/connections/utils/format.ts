@@ -95,3 +95,34 @@ export function formatElapsedDays(date: string) {
   }
   return parseServerDateTime(date).format("YYYY.MM.DD")
 }
+
+/** 금액 — "1,240,000원" */
+export function formatWon(amount: number) {
+  return `${amount.toLocaleString("ko-KR")}원`
+}
+
+/** 카드 머리 · 종결 시각(이벤트 시각 — UTC 벽시계를 로컬로) — "2026.08.29 09:00" */
+export function formatDateTime(date: string) {
+  return parseServerDateTime(date).format("YYYY.MM.DD HH:mm")
+}
+
+/**
+ * 합의 기한 — "2026.09.12". 기한은 정산 화면과 같은 값이라 정산 관리처럼 서버 값을 그대로 읽는다
+ * (이벤트 시각과 달리 「그날 23:59:59」로 정해진 날짜다).
+ */
+export function formatDeadline(date: string) {
+  return dayjs(date).format("YYYY.MM.DD")
+}
+
+/** D-1 안내의 마감 — "2026.09.12 23:59" */
+export function formatDeadlineTime(date: string) {
+  return dayjs(date).format("YYYY.MM.DD HH:mm")
+}
+
+/** 증감 — "186,000원 감액" · "180,000원 증액" · 같으면 "변동 없음" */
+export function formatDelta(delta: number) {
+  if (delta === 0) {
+    return "변동 없음"
+  }
+  return `${formatWon(Math.abs(delta))} ${delta > 0 ? "증액" : "감액"}`
+}

@@ -2,12 +2,14 @@ import DetailCard from "@/common/components/DetailCard/DetailCard"
 import HistoryList from "@/common/components/HistoryList/HistoryList"
 import { usePageSubtitle } from "@/common/components/MainLayout/usePageSubtitle"
 import RecordNav from "@/common/components/RecordNav/RecordNav"
+import SuspensionNotice from "@/common/components/Suspension/SuspensionNotice"
 import { useGetShowroomName } from "@/common/hooks/useGetShowroomName"
 import { formatDateTimeShort } from "@/common/utils/formatDate"
 import ClosureReasonCard from "@/features/contracts/components/detail/ClosureReasonCard"
 import ContractItemsCard from "@/features/contracts/components/detail/ContractItemsCard"
 import ContractTermsCard from "@/features/contracts/components/detail/ContractTermsCard"
 import DocumentsCard from "@/features/contracts/components/detail/DocumentsCard"
+import DraftApprovalsCard from "@/features/contracts/components/detail/DraftApprovalsCard"
 import MyDutiesCard from "@/features/contracts/components/detail/MyDutiesCard"
 import PayoutCard from "@/features/contracts/components/detail/PayoutCard"
 import SigningProgressCard from "@/features/contracts/components/detail/SigningProgressCard"
@@ -35,6 +37,7 @@ import {
   deriveCreatorView,
 } from "@/features/contracts/utils/contractView"
 import { toHistoryItems } from "@/features/contracts/utils/history"
+import { useAccountStatus } from "@/features/home/hooks/useAccountStatus"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import {
@@ -45,7 +48,7 @@ import {
 } from "react-router-dom"
 
 /**
- * S3·S3a·S3b·S3c·S6·S7·S8·S9 — 받은 계약 상세(쇼룸 스튜디오). 한 응답으로 8종을 그린다.
+ * S3·S3a·S3b·S3c·S6·S7·S8·S9·S10 — 받은 계약 상세(쇼룸 스튜디오). 한 응답으로 9종을 그린다.
  *
  * 인플루언서가 할 수 있는 일은 **거절 · 서명 안내 재발송 요청 · 스레드 이동 · 문서 다운로드**뿐이다.
  * 조건 입력 필드는 어디에도 없다(§27-4). 서명은 이 화면 밖(전자서명 링크)에서 일어난다.
@@ -78,6 +81,7 @@ export default function ContractDetailPage() {
     isError,
   } = useGetCreatorContractDetail(contractId, navParams)
   const { data: showroom } = useGetShowroomName()
+  const { isSuspended } = useAccountStatus()
   const { mutateAsync: decline, isPending: isDeclining } = useDeclineContract()
   const { mutateAsync: requestResend, isPending: isResending } =
     useRequestResend()
@@ -131,6 +135,14 @@ export default function ContractDetailPage() {
       threadId !== null ? `/connections?threadId=${threadId}` : "/connections"
     )
   }, [threadId, navigate])
+
+  // [공구 관리 열기] — 체결 시 자동 생성된 공구 상세로 간다(GNB #4 공구 관리)
+  const groupBuyId = detail?.groupBuy.groupBuyId ?? null
+  const openGroupBuy = useCallback(() => {
+    if (groupBuyId !== null) {
+      navigate(`/group-buy/${groupBuyId}`)
+    }
+  }, [groupBuyId, navigate])
 
   const documents = detail?.documents
   const openDraft = useCallback(() => {
@@ -208,6 +220,13 @@ export default function ContractDetailPage() {
   const isClosed = CLOSED_VIEWS.includes(view)
   const isConcluded = view === "concluded"
   const myName = showroom?.showroomName ?? "나"
+  const isSigning =
+    view === "signingNone" || view === "signingTheirs" || view === "signingMine"
+  /*
+    시안 13 S3 — 정지 중 [서명 안내 다시 받기]는 비활성(서버 `CONTRACT_RESEND_REQUEST` 409가 받친다).
+    서버 permissions는 정지를 보지 않아 내 보류 배지 · 계정 상태로 가른다.
+  */
+  const resendBlocked = isSuspended || detail.sanctionHold?.kind === "MINE"
 
   const headerEvent = (() => {
     switch (view) {
@@ -219,6 +238,8 @@ export default function ContractDetailPage() {
         return `${formatDateTimeShort(detail.closure.closedAt)} 만료`
       case "canceled":
         return `${formatDateTimeShort(detail.closure.closedAt)} 취소`
+      case "terminated":
+        return `${formatDateTimeShort(detail.closure.closedAt)} 해지`
       default:
         return `${formatDateTimeShort(detail.receivedAt)} 받음`
     }
@@ -252,7 +273,26 @@ export default function ContractDetailPage() {
 
       <div className="grid grid-cols-[1fr_320px] items-start gap-4">
         <div className="flex flex-col gap-4">
+          {/* 시안 13 R1 — 상대 브랜드 정지로 체결 보류. 정지 사실 · 사유는 말하지 않는다(서버 kind = COUNTERPARTY) */}
+          {isSigning && detail.sanctionHold?.kind === "COUNTERPARTY" && (
+            <SuspensionNotice tone="neutral">
+              <b>상대 브랜드 사정으로 체결이 잠시 보류되었습니다.</b> 서명은 해
+              둘 수 있고, 서명 기한은 보류 기간 동안 멈춥니다. 재개되면 알려
+              드릴게요.
+            </SuspensionNotice>
+          )}
+
           <SigningProgressCard detail={detail} view={view} myName={myName} />
+
+          {/* 시안 S6 「초안 승인 기록」(기-30) — 사전 검수 계약이거나 기록이 있을 때 */}
+          {isConcluded &&
+            (detail.content.preReview ||
+              (detail.draftApprovals?.length ?? 0) > 0) && (
+              <DraftApprovalsCard
+                approvals={detail.draftApprovals ?? []}
+                content={detail.content}
+              />
+            )}
 
           {isConcluded && (
             <DocumentsCard
@@ -276,6 +316,7 @@ export default function ContractDetailPage() {
             <PayoutCard
               payout={detail.payout}
               fixedFee={detail.fixedFee}
+              settlement={detail.settlement}
               isConcluded={isConcluded}
             />
           )}
@@ -286,7 +327,11 @@ export default function ContractDetailPage() {
                 items={detail.items}
                 showSettlementNote={false}
               />
-              <MyDutiesCard content={detail.content} isConcluded={false} />
+              <MyDutiesCard
+                content={detail.content}
+                isConcluded={false}
+                isTerminated={view === "terminated"}
+              />
             </>
           ) : (
             <>
@@ -304,18 +349,20 @@ export default function ContractDetailPage() {
             detail={detail}
             view={view}
             isResending={isResending}
+            resendBlocked={resendBlocked}
             onRequestResend={handleResend}
             onOpenThread={openThread}
             onDecline={() => setIsDeclineOpen(true)}
             onOpenDraft={openDraft}
-            onOpenGroupBuy={() => toast("공구 관리 화면은 준비 중입니다.")}
+            onOpenGroupBuy={openGroupBuy}
           />
           <DetailCard title="이력" flushBody>
             <HistoryList
               items={toHistoryItems(
                 detail.history,
                 detail.signature,
-                showroom?.showroomName
+                showroom?.showroomName,
+                { status: detail.status, closure: detail.closure }
               )}
             />
           </DetailCard>

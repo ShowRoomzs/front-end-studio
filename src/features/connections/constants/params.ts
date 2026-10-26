@@ -65,7 +65,35 @@ export const THREAD_LIST_POLL_INTERVAL = 15_000
 export const MESSAGE_POLL_INTERVAL = 8_000
 
 export const OPERATOR_CHANNEL_STATUS_TEXT = "공지·문의 채널"
+/** 시안 13 S8 — 계정 이용 정지 중 운영팀 채널 머리(소명은 정지 카드 아래 답글로) */
+export const OPERATOR_CHANNEL_SUSPENDED_STATUS_TEXT =
+  "운영팀 채널 · 계정 이용 정지 소명 진행 중"
 export const CONNECTED_THREAD_STATUS_TEXT = "연결됨 · 스레드 열림"
 
 export const OPERATOR_NOTICE_TEXT =
   "이 대화는 분쟁 발생 시 확인을 위해 운영자가 열람할 수 있습니다"
+
+/*
+  이슈 스레드(정산 조정 협의 · ui-studio-11) — 고지 · 입력 잠금 문구는 시안 그대로다.
+  금액은 양측 합의로만 바뀌고 운영팀은 열람만 한다(§42-4). 스튜디오 시안은 종결 뒤에도 같은 고지를 둔다.
+*/
+export const ISSUE_NOTICE_TEXT =
+  "금액은 양측 합의로만 바뀌어요. 운영팀은 열람만 해요. · 대화 내용은 분쟁 기록으로 보관돼요."
+export const ISSUE_CLOSED_NOTICE_TEXT = ISSUE_NOTICE_TEXT
+export const ISSUE_CLOSED_INPUT_TEXT =
+  "종결된 이슈에는 메시지를 보낼 수 없습니다"
+
+/**
+ * 합의 기한 = 개설 + N영업일(시안 「(10영업일)」). 서버 설정 `settlement.adjustment.deadline-business-days`(기본 10)가
+ * 응답에 실려 오지 않아 여기 한 곳에 둔다 — 서버가 내려 주면 그 값으로 바꾼다(백엔드 요청).
+ */
+export const ADJUSTMENT_DEADLINE_BUSINESS_DAYS = 10
+
+/** 이 화면을 보는 쪽 — 카드의 「누가」를 내 쪽 · 상대 쪽으로 나눌 때 쓴다 */
+export const VIEWER_PARTY = "CREATOR" as const
+
+/** 당사자 호칭 — 「브랜드 요청」 · 「인플루언서 제안」 */
+export const PARTY_LABEL = {
+  SELLER: "브랜드",
+  CREATOR: "인플루언서",
+} as const

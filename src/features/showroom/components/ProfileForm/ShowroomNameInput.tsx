@@ -11,6 +11,8 @@ interface ShowroomNameInputProps {
   onChange: (value: string) => void
   onBlur: () => void
   hasError: boolean
+  /** 계정 이용 정지 중 — 쇼룸명만 잠근다(시안 13 · 소개 · 이미지는 허용) */
+  disabled?: boolean
 }
 
 /**
@@ -22,7 +24,7 @@ interface ShowroomNameInputProps {
  * 하고 있다 — 한쪽만 고치지 말 것.
  */
 export default function ShowroomNameInput(props: ShowroomNameInputProps) {
-  const { value, onChange, onBlur, hasError } = props
+  const { value, onChange, onBlur, hasError, disabled = false } = props
   const isComposingRef = useRef(false)
 
   const sanitize = (raw: string) =>
@@ -35,6 +37,7 @@ export default function ShowroomNameInput(props: ShowroomNameInputProps) {
         type="text"
         value={value}
         maxLength={SHOWROOM_NAME_MAX_LENGTH}
+        disabled={disabled}
         placeholder="한글·영문·숫자·공백 2~20자"
         onCompositionStart={() => {
           isComposingRef.current = true
@@ -51,7 +54,14 @@ export default function ShowroomNameInput(props: ShowroomNameInputProps) {
           )
         }
         onBlur={onBlur}
-        className={inputClass(hasError, "pr-16")}
+        className={inputClass(
+          hasError,
+          cn(
+            "pr-16",
+            disabled &&
+              "cursor-not-allowed border-sz-n-200 bg-sz-n-50 text-sz-n-500"
+          )
+        )}
       />
       <span
         aria-hidden

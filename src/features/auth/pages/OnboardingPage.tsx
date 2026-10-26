@@ -19,6 +19,10 @@ import { QUERY_KEYS } from "@/common/constants/queryKeys"
 import { AcctNumberField } from "@/features/auth/components/AcctNumberField"
 import { NoticeBox } from "@/features/auth/components/NoticeBox"
 import { RadioToggle } from "@/features/auth/components/RadioToggle"
+import {
+  ResidentNumberField,
+  type ResidentNumberValue,
+} from "@/features/auth/components/ResidentNumberField"
 import { ShowroomNameField } from "@/features/auth/components/ShowroomNameField"
 import { UploadField } from "@/features/auth/components/UploadField"
 import {
@@ -26,6 +30,10 @@ import {
   type CreatorBusinessType,
 } from "@/features/auth/services/authService"
 import {
+  RESIDENT_NUMBER_BACK_LENGTH,
+  RESIDENT_NUMBER_FRONT_LENGTH,
+  RESIDENT_NUMBER_INVALID_MESSAGE,
+  isValidResidentNumber,
   validateAccountNumber,
   validateBusinessRegistrationNumber,
   validateShowroomName,
@@ -46,13 +54,15 @@ type OnboardingForm = {
   businessType: CreatorBusinessType
   businessRegistrationNumber: string
   businessLicenseImageUrl: string
+  /** 비사업자만 — 사업자로 바꾸면 등록 해제된다(shouldUnregister) */
+  residentNumber: ResidentNumberValue
   bankCode: string
   accountNumber: string
   bankBookImageUrl: string
 }
 
 /**
- * ui-studio-03-onboarding (rev.2) — 승인 후 첫 로그인 시 강제 진입하는 활성화 게이트.
+ * ui-studio-03-onboarding (rev.3) — 승인 후 첫 로그인 시 강제 진입하는 활성화 게이트.
  *
  * 상태 4종은 별도 라우팅이 아니라 같은 화면의 유효성 결과 차이다:
  *   A 초기(개인·비사업자 기본값) · B 사업자 선택(필드 2개 조건부 노출)
@@ -93,6 +103,7 @@ export default function OnboardingPage() {
       businessType: "INDIVIDUAL",
       businessRegistrationNumber: "",
       businessLicenseImageUrl: "",
+      residentNumber: { front: "", back: "" },
       bankCode: BANK_PLACEHOLDER,
       accountNumber: "",
       bankBookImageUrl: "",
@@ -214,7 +225,11 @@ export default function OnboardingPage() {
               businessRegistrationNumber: values.businessRegistrationNumber,
               businessLicenseImageUrl: values.businessLicenseImageUrl,
             }
-          : {}),
+          : {
+              // 숫자 13자리(서버는 하이픈도 받지만 정제된 값으로 보낸다)
+              residentRegistrationNumber:
+                values.residentNumber.front + values.residentNumber.back,
+            }),
         bankCode: values.bankCode,
         accountNumber: values.accountNumber,
         bankBookImageUrl: values.bankBookImageUrl,
@@ -348,7 +363,7 @@ export default function OnboardingPage() {
                 name="businessType"
                 options={[
                   { value: "INDIVIDUAL", label: "개인 (비사업자)" },
-                  { value: "BUSINESS", label: "개인사업자 · 법인" },
+                  { value: "BUSINESS", label: "개인사업자" },
                 ]}
                 value={field.value}
                 onChange={field.onChange}
@@ -356,7 +371,8 @@ export default function OnboardingPage() {
               />
               {!isBusiness && (
                 <p className="text-[11px] text-sz-n-500">
-                  비사업자 선택 시 리워드 지급 때 원천징수 3.3%가 공제됩니다.
+                  리워드는 SHOWROOMZ가 지급하며, 비사업자는 3.3%(소득세 ·
+                  지방소득세)를 원천징수한 뒤 입금돼요.
                 </p>
               )}
             </div>
@@ -424,7 +440,61 @@ export default function OnboardingPage() {
                 />
               )}
             />
+
+            {/* rev.3 ② — 사업자는 주민번호 대신 세금계산서 안내 1회 */}
+            <NoticeBox className="mb-4">
+              세금계산서는 <b>SHOWROOMZ 앞으로 발행</b>해요(리워드 + 부가세
+              10%). 정산이 확정되면 홈택스에서 발행하고 승인번호를 입력하면 확인
+              후 지급돼요.
+            </NoticeBox>
           </>
+        )}
+
+        {/* rev.3 ① — 비사업자 주민등록번호(원천징수 신고용) · 미입력은 버튼 비활성만 */}
+        {!isBusiness && (
+          <Controller
+            control={control}
+            name="residentNumber"
+            shouldUnregister
+            rules={{
+              // 덜 채운 상태는 문구 없이 무효(false), 다 채웠는데 형식이 틀리면 서버와 같은 문구.
+              validate: ({ front, back }) => {
+                if (
+                  front.length < RESIDENT_NUMBER_FRONT_LENGTH ||
+                  back.length < RESIDENT_NUMBER_BACK_LENGTH
+                ) {
+                  return false
+                }
+                return (
+                  isValidResidentNumber(front + back) ||
+                  RESIDENT_NUMBER_INVALID_MESSAGE
+                )
+              },
+            }}
+            render={({ field }) => (
+              <FormField
+                label={
+                  <>
+                    주민등록번호
+                    <RequiredMark />
+                    <OptionalNote>(비사업자)</OptionalNote>
+                  </>
+                }
+                htmlFor="residentNumberFront"
+                error={errors.residentNumber?.message || undefined}
+                help="원천징수 신고(지급명세서 제출)를 위해 소득세법에 따라 수집하며 암호화해 보관합니다."
+              >
+                <ResidentNumberField
+                  id="residentNumberFront"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  hasError={!!errors.residentNumber?.message}
+                  disabled={isSubmitting}
+                />
+              </FormField>
+            )}
+          />
         )}
 
         <Divider />
@@ -537,8 +607,9 @@ export default function OnboardingPage() {
         />
 
         <NoticeBox className="mb-5">
-          사업자 여부·정산 계좌는 입력 완료 후 <b>쇼룸 관리</b>에서 계속 수정할
-          수 있어요.
+          {/* ui-studio-06 ②-B 정정 — 실제 위치는 기본정보 관리 › 정산 정보 */}
+          사업자 여부·정산 계좌는 입력 후에도 <b>기본정보 관리 › 정산 정보</b>
+          에서 계속 수정할 수 있어요.
         </NoticeBox>
 
         <button

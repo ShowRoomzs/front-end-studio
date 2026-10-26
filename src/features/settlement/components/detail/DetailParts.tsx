@@ -248,3 +248,15 @@ export function ActBtn(props: {
 export function WaitTag({ children }: { children: ReactNode }) {
   return <b className="font-semibold text-sz-danger-text">{children}</b>
 }
+
+/**
+ * 시안 13 `.szb` — 상태 배지 옆 보조 배지(경고 · 점 없음 · 20px). 상태 라벨을 바꾸지 않고 사정만 덧붙인다
+ * (S6 「지급 정지 · 계정 이용 정지」).
+ */
+export function SubBadge({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex h-5 items-center rounded-[6px] bg-sz-warning-bg px-[7px] text-[11px] font-medium whitespace-nowrap text-sz-warning-text">
+      {children}
+    </span>
+  )
+}

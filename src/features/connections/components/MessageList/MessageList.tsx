@@ -1,5 +1,10 @@
 import UploadingChip from "@/features/connections/components/Attachment/UploadingChip"
+import { SysBar } from "@/features/connections/components/IssueThread/cardParts"
+import SystemCard, {
+  type AdjustmentResponse,
+} from "@/features/connections/components/IssueThread/SystemCard"
 import MessageBubble from "@/features/connections/components/MessageBubble/MessageBubble"
+import type { AdjustmentView } from "@/features/connections/services/adjustmentService"
 import type {
   AttachmentSummary,
   MessageItem,
@@ -27,6 +32,11 @@ interface MessageListProps {
     senderLabel: string
   ) => void
   onPlayVideo: (attachment: AttachmentSummary) => void
+  /** 이슈 스레드의 고정 카드 — 정산 조정 카드의 버튼 · 이름을 여기서 읽는다(1:1 스레드면 null) */
+  issueView?: AdjustmentView | null
+  /** 응답 요청이 나가는 중 — 카드 버튼을 잠근다 */
+  isResponding?: boolean
+  onRespond?: (response: AdjustmentResponse, proposalId: number) => void
 }
 
 /**
@@ -48,6 +58,9 @@ export default function MessageList(props: MessageListProps) {
     onCancel,
     onClickImage,
     onPlayVideo,
+    issueView = null,
+    isResponding = false,
+    onRespond,
   } = props
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -121,26 +134,49 @@ export default function MessageList(props: MessageListProps) {
                 {dayMark}
               </div>
             )}
-            <MessageBubble
-              isMine={message.mine}
-              senderName={counterpartName}
-              content={message.content}
-              attachments={message.attachments}
-              timestamp={formatMessageTime(message.createdAt)}
-              onClickImage={(images, imageIndex) =>
-                onClickImage(
-                  images,
-                  imageIndex,
-                  `${message.mine ? "나" : counterpartName} · ${formatMessageTime(
-                    message.createdAt
-                  )}`
-                )
-              }
-              onPlayVideo={onPlayVideo}
-            />
+            {message.messageType === "SYSTEM" ? (
+              <SystemCard
+                message={message}
+                view={issueView}
+                pendingResponse={isResponding}
+                onRespond={(response, proposalId) =>
+                  onRespond?.(response, proposalId)
+                }
+              />
+            ) : (
+              <MessageBubble
+                isMine={message.mine}
+                senderName={counterpartName}
+                content={message.content}
+                attachments={message.attachments}
+                timestamp={formatMessageTime(message.createdAt)}
+                onClickImage={(images, imageIndex) =>
+                  onClickImage(
+                    images,
+                    imageIndex,
+                    `${message.mine ? "나" : counterpartName} · ${formatMessageTime(
+                      message.createdAt
+                    )}`
+                  )
+                }
+                onPlayVideo={onPlayVideo}
+              />
+            )}
           </div>
         )
       })}
+
+      {/*
+        시안 T3 — 합의로 닫힌 이슈는 끝에 종결 안내를 남긴다(같은 사안 재요청 불가).
+        철회도 C4가 「같은 사안으로 다시 조정을 요청할 수 없습니다」라 같은 안내를 둔다(기한 만료 T4에는 없다)
+      */}
+      {(issueView?.status === "AGREED" ||
+        issueView?.status === "WITHDRAWN") && (
+        <SysBar>
+          <b>종결된 이슈입니다.</b> 같은 사안으로 다시 요청할 수 없습니다 · 일반
+          대화는 1:1 스레드에서 계속할 수 있습니다
+        </SysBar>
+      )}
 
       {outgoing.map(message => (
         <MessageBubble

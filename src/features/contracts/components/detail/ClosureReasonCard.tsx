@@ -16,6 +16,27 @@ export default function ClosureReasonCard(props: ClosureReasonCardProps) {
   const { detail, view } = props
   const { closure, brand } = detail
 
+  // 시안 S10 「해지 사유」 — 운영자 처리 사유(close_reason_*) · 경과 설명
+  if (view === "terminated") {
+    return (
+      <DetailCard
+        title="해지 사유"
+        note={`운영자 처리 · 양측 동의 확인 · ${formatDateTimeShort(closure.closedAt)}`}
+      >
+        <FieldRow label="사유 구분">
+          {closure.reasonLabel ?? closure.reasonCode ?? "—"}
+        </FieldRow>
+        <FieldRow label="경과">
+          {closure.memo ? (
+            <span className="whitespace-pre-line">{closure.memo}</span>
+          ) : (
+            <span className="text-sz-n-500">없음</span>
+          )}
+        </FieldRow>
+      </DetailCard>
+    )
+  }
+
   if (view !== "declined" && view !== "canceled") {
     return null
   }

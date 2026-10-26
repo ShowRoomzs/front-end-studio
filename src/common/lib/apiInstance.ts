@@ -2,6 +2,8 @@ import axios from "axios"
 import toast from "react-hot-toast"
 import { COOKIE_NAME } from "@/common/constants/cookie"
 import { cookie } from "@/common/lib/cookie"
+import { queryClient } from "@/common/lib/queryClient"
+import { HOME_QUERY_KEYS } from "@/features/home/constants/params"
 
 const SERVER_ERROR_MESSAGE =
   "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
@@ -76,6 +78,15 @@ apiInstance.interceptors.response.use(
     // 호출부가 실제 원인을 알 수 없게 된다.
     if (error.config?.suppressErrorToast !== true) {
       toast.error(error.response?.data?.message ?? SERVER_ERROR_MESSAGE)
+    }
+    /*
+      정지로 막힌 행위(409 CREATOR_SUSPENDED · 시안 13) — 화면이 아직 정지를 모르고 버튼을 열어 둔 경우다.
+      문구는 위 토스트가 서버 메시지 그대로 띄우고, 계정 상태를 다시 읽어 배너 · 비활성을 맞춘다.
+    */
+    if (error.response?.data?.code === "CREATOR_SUSPENDED") {
+      void queryClient.invalidateQueries({
+        queryKey: [HOME_QUERY_KEYS.ACCOUNT_STATUS],
+      })
     }
     return Promise.reject(error)
   }

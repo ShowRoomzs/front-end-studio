@@ -41,7 +41,7 @@ export default function SignedResultModal(props: SignedResultModalProps) {
     },
     {
       n: 3,
-      label: "운영자 체결 완료 처리",
+      label: "운영자 공구 생성 처리",
       status: "서명 완료 후",
       done: false,
     },

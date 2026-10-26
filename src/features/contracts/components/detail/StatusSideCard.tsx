@@ -1,5 +1,7 @@
 import DetailCard, { MetaRow } from "@/common/components/DetailCard/DetailCard"
 import StatusBadge from "@/common/components/StatusBadge/StatusBadge"
+import SanctionHoldBadge from "@/common/components/Suspension/SanctionHoldBadge"
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import { formatDateTimeShort } from "@/common/utils/formatDate"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { FLINK_CLASS } from "@/features/contracts/components/shared/styles"
@@ -7,6 +9,7 @@ import { PAYMENT_STATE_TEXT } from "@/features/contracts/constants/labels"
 import type { CreatorContractDetailResponse } from "@/features/contracts/types"
 import {
   CLOSED_VIEWS,
+  establishedAtOf,
   type CreatorViewState,
 } from "@/features/contracts/utils/contractView"
 import {
@@ -22,6 +25,8 @@ interface StatusSideCardProps {
   detail: CreatorContractDetailResponse
   view: CreatorViewState
   isResending: boolean
+  /** 시안 13 S3 — 계정 이용 정지 중이면 [서명 안내 다시 받기] 비활성 + 툴팁 */
+  resendBlocked: boolean
   onRequestResend: () => void
   onOpenThread: () => void
   onDecline: () => void
@@ -38,6 +43,7 @@ export default function StatusSideCard(props: StatusSideCardProps) {
     detail,
     view,
     isResending,
+    resendBlocked,
     onRequestResend,
     onOpenThread,
     onDecline,
@@ -54,6 +60,23 @@ export default function StatusSideCard(props: StatusSideCardProps) {
     content,
   } = detail
   const isClosed = CLOSED_VIEWS.includes(view)
+  const hold = detail.sanctionHold ?? null
+  /*
+    시안 13 S3 · R1 — 정지 보류 중 서명 기한이 멈춰 있다(서버 `signatureDeadlinePaused`).
+    내 정지는 경고색 「정지 중 멈춤 · 해제 후 남은 기한부터」, 상대 사정은 중립 「보류 중 멈춤 · 재개 후 남은 기한부터」
+  */
+  const pausedNote = detail.signatureDeadlinePaused ? (
+    <span
+      className={cn(
+        "block text-[11px] font-normal",
+        hold?.kind === "MINE" ? "text-sz-warning-text" : "text-sz-n-500"
+      )}
+    >
+      {hold?.kind === "MINE"
+        ? "정지 중 멈춤 · 해제 후 남은 기한부터"
+        : "보류 중 멈춤 · 재개 후 남은 기한부터"}
+    </span>
+  ) : null
   const hasDraft = documents.some(doc => doc.documentType === "GENERATED_DRAFT")
 
   const time = (value: string | null) => (
@@ -101,6 +124,7 @@ export default function StatusSideCard(props: StatusSideCardProps) {
                   )}
                 >
                   {formatDateTimeShort(signature.deadlineAt)}
+                  {pausedNote}
                 </span>
               }
             />
@@ -115,7 +139,12 @@ export default function StatusSideCard(props: StatusSideCardProps) {
             <MetaRow label="내 서명" value={done(signature.creatorSignedAt)} />
             <MetaRow
               label="브랜드 서명 기한"
-              value={time(signature.deadlineAt)}
+              value={
+                <span className="tabular-nums">
+                  {formatDateTimeShort(signature.deadlineAt)}
+                  {pausedNote}
+                </span>
+              }
             />
             {fee}
             {draftRow}
@@ -127,12 +156,8 @@ export default function StatusSideCard(props: StatusSideCardProps) {
             <MetaRow label="받은 일시" value={time(detail.receivedAt)} />
             <MetaRow
               label="양측 서명"
-              value={done(
-                [signature.brandSignedAt, signature.creatorSignedAt]
-                  .filter((v): v is string => v !== null)
-                  .sort()
-                  .at(-1) ?? null
-              )}
+              // 성립 시각 = 양측 서명 완료(1021 기-05)
+              value={done(establishedAtOf(detail))}
             />
             {fee}
             <MetaRow
@@ -154,7 +179,7 @@ export default function StatusSideCard(props: StatusSideCardProps) {
             />
             <MetaRow label="계약 문서" value="서명 PDF · 감사추적인증서" />
             <MetaRow
-              label="고정 지급비"
+              label="브랜드 지급 기록"
               value={PAYMENT_STATE_TEXT[fixedFee.paymentState]}
             />
             <MetaRow
@@ -209,29 +234,64 @@ export default function StatusSideCard(props: StatusSideCardProps) {
             />
           </>
         )
+      case "terminated":
+        return (
+          <>
+            <MetaRow label="받은 일시" value={time(detail.receivedAt)} />
+            <MetaRow label="체결 일시" value={time(establishedAtOf(detail))} />
+            <MetaRow label="해지 일시" value={time(closure.closedAt)} />
+            <MetaRow
+              label="연결된 공구"
+              value={
+                groupBuy.groupBuyId !== null && permissions.canOpenGroupBuy ? (
+                  <button
+                    type="button"
+                    className={FLINK_CLASS}
+                    onClick={onOpenGroupBuy}
+                  >
+                    {detail.title} ↗
+                  </button>
+                ) : (
+                  "생성되지 않음"
+                )
+              }
+            />
+            <MetaRow
+              label="연결 상태"
+              value={detail.brand.connected ? "연결됨 유지" : "연결 없음"}
+            />
+          </>
+        )
     }
   })()
 
   return (
     <DetailCard title="상태">
       <div className="flex items-center justify-between gap-2.5 border-b border-sz-n-100 pb-3">
-        <span className="text-[12px] text-sz-n-500">현재 상태</span>
-        <StatusBadge variant={toneToVariant(detail.statusTone)}>
-          {detail.statusLabel}
-        </StatusBadge>
+        <span className="shrink-0 text-[12px] text-sz-n-500">현재 상태</span>
+        {/* 시안 13 S3 · R1 — 상태는 그대로 두고 보류 보조 배지만 붙인다(서버 `sanctionHold`) */}
+        <span className="flex flex-wrap items-center justify-end gap-1">
+          <StatusBadge variant={toneToVariant(detail.statusTone)}>
+            {detail.statusLabel}
+          </StatusBadge>
+          <SanctionHoldBadge hold={hold} />
+        </span>
       </div>
       <div className="pt-2">{rows}</div>
 
       <div className="mt-4 flex flex-col gap-2">
         {permissions.canRequestResend && (
-          <Btn
-            variant="secondary"
-            className="w-full"
-            isLoading={isResending}
-            onClick={onRequestResend}
-          >
-            서명 안내 다시 받기
-          </Btn>
+          <SuspendedTooltip active={resendBlocked} className="flex w-full">
+            <Btn
+              variant="secondary"
+              className="w-full"
+              isLoading={isResending}
+              disabled={resendBlocked}
+              onClick={onRequestResend}
+            >
+              서명 안내 다시 받기
+            </Btn>
+          </SuspendedTooltip>
         )}
         {view === "concluded" && (
           <Btn
@@ -241,14 +301,15 @@ export default function StatusSideCard(props: StatusSideCardProps) {
             title={
               permissions.canOpenGroupBuy
                 ? undefined
-                : "공구 관리 화면은 준비 중입니다"
+                : "아직 공구가 생성되지 않았습니다"
             }
             onClick={onOpenGroupBuy}
           >
             공구 관리 열기
           </Btn>
         )}
-        {permissions.canOpenThread && (
+        {/* 시안 S10은 액션이 없다 — 해지 건은 내가 할 조치가 없고, 스레드는 계약 조건의 「스레드 열기」로 남는다 */}
+        {permissions.canOpenThread && view !== "terminated" && (
           <Btn variant="secondary" className="w-full" onClick={onOpenThread}>
             스레드에서 협의하기
           </Btn>
@@ -261,7 +322,13 @@ export default function StatusSideCard(props: StatusSideCardProps) {
       </div>
 
       <p className="mt-2.5 text-[11px] leading-[1.55] text-sz-n-500">
-        {hintByView(view, isClosed, content.dueDate, closure.actorType)}
+        {hintByView(
+          view,
+          isClosed,
+          content.dueDate,
+          closure.actorType,
+          fixedFee.triggerLabel
+        )}
       </p>
     </DetailCard>
   )
@@ -271,7 +338,8 @@ function hintByView(
   view: CreatorViewState,
   isClosed: boolean,
   dueDate: string | null,
-  cancelActor: string | null = null
+  cancelActor: string | null = null,
+  triggerLabel: string | null = null
 ): ReactNode {
   switch (view) {
     case "signingNone":
@@ -310,8 +378,9 @@ function hintByView(
         <>
           계약이 성립했습니다.{" "}
           <b className="font-semibold">브랜드가 공구를 생성하면</b> 공구
-          관리에서 공구 게시물을 작성할 수 있고, 그 게시물을 쇼룸에 등록한
-          시점에 고정 지급비가 지급됩니다.
+          관리에서 공구 게시물을 작성할 수 있고, 고정 지급비는 계약서 기재 시점(
+          {triggerLabel ?? "—"})에{" "}
+          <b className="font-semibold">브랜드가 직접</b> 지급합니다.
           {dueDate && (
             <>
               {" "}
@@ -352,5 +421,14 @@ function hintByView(
           기다리거나 스레드에서 일정을 협의하세요.
         </>
       ) : null
+    case "terminated":
+      return (
+        <>
+          체결 후 공구가 열리기 전에 해지된 건이라{" "}
+          <b className="font-semibold">내가 할 조치는 없습니다</b>. 공구 진행
+          중에 끝나는 경우는 해지가 아니라 공구 관리의{" "}
+          <b className="font-semibold">「중단」</b>입니다.
+        </>
+      )
   }
 }

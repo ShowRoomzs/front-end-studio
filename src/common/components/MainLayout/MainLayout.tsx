@@ -4,16 +4,17 @@ import {
   SIDEBAR_WIDTH,
 } from "@/common/components/MainLayout/config"
 import Sidebar from "@/common/components/Sidebar/Sidebar"
-import { COOKIE_NAME } from "@/common/constants/cookie"
 import { CREATOR_MENU } from "@/common/constants/menu"
 import { useGetShowroomName } from "@/common/hooks/useGetShowroomName"
-import { cookie } from "@/common/lib/cookie"
+import { logout } from "@/common/utils/logout"
 import { useGetThreadSummary } from "@/features/connections/hooks/useGetThreadSummary"
 import { useGetCreatorContractSummary } from "@/features/contracts/hooks/useCreatorContractQueries"
 import { useGetCreatorGroupBuySummary } from "@/features/groupBuy/hooks/useCreatorGroupBuy"
+import SuspensionBanner from "@/features/home/components/SuspensionBanner/SuspensionBanner"
+import { useAccountStatus } from "@/features/home/hooks/useAccountStatus"
 import { useGetSettlementSummary } from "@/features/settlement/hooks/useSettlementQueries"
 import { cn } from "@/lib/utils"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Outlet, useLocation } from "react-router-dom"
 
 /**
@@ -31,6 +32,9 @@ const FULL_BLEED_PREFIXES = ["/connections"]
  * 탑바 crumb는 그대로 셸이 그린다(상세는 `usePageSubtitle("계약서")`로 하위 이름을 올린다).
  */
 const SELF_TITLED_PREFIXES = ["/contracts", "/group-buy", "/settlement"]
+
+/** 홈(ui-studio-14)은 셸 H1이 없다 — 「/」는 접두어로 비교하면 모든 경로에 걸리므로 따로 본다 */
+const UNTITLED_PATHS = ["/"]
 
 export default function MainLayout() {
   const location = useLocation()
@@ -53,22 +57,8 @@ export default function MainLayout() {
     localStorage.setItem(SIDEBAR_STORAGE_KEY, String(isSidebarOpen))
   }, [isSidebarOpen])
 
-  const handleLogout = useCallback(() => {
-    cookie.remove(COOKIE_NAME.ACCESS_TOKEN)
-    cookie.remove(COOKIE_NAME.REFRESH_TOKEN)
-    cookie.remove(COOKIE_NAME.ROLE)
-
-    /*
-      로그인과 같은 이유로 navigate가 아니라 문서를 새로 띄운다 — role 쿠키가
-      빠지면 라우트 트리가 통째로 갈아끼워지는데, navigate는 아직 살아 있는
-      mainRoutes에서 실행돼 주소와 화면이 어긋난다.
-
-      덤으로 이전 사용자의 조회 캐시(스레드 목록·메시지)가 메모리에서 사라진다.
-      같은 브라우저에서 다른 계정으로 다시 로그인할 때 남의 대화가 잠깐
-      비치는 걸 막는다.
-    */
-    window.location.replace("/login")
-  }, [])
+  // 계정 이용 정지(ui-studio-13) — 탑바 배지 「정지」 · 모든 페이지 배너
+  const { isSuspended } = useAccountStatus()
 
   const isFullBleed = FULL_BLEED_PREFIXES.some(
     prefix =>
@@ -82,10 +72,13 @@ export default function MainLayout() {
         location.pathname.startsWith(`${item.path}/`))
   )
 
-  const isSelfTitled = SELF_TITLED_PREFIXES.some(
-    prefix =>
-      location.pathname === prefix || location.pathname.startsWith(`${prefix}/`)
-  )
+  const isSelfTitled =
+    UNTITLED_PATHS.includes(location.pathname) ||
+    SELF_TITLED_PREFIXES.some(
+      prefix =>
+        location.pathname === prefix ||
+        location.pathname.startsWith(`${prefix}/`)
+    )
 
   const { data: threadSummary } = useGetThreadSummary()
   // 계약 GNB 배지 — 내 서명이 필요한 계약 건수. 놓치면 만료라 계약 화면 밖에서도 폴링한다
@@ -120,7 +113,8 @@ export default function MainLayout() {
           showroomName={showroom?.showroomName}
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          onLogout={handleLogout}
+          onLogout={logout}
+          isSuspended={isSuspended}
         />
 
         <main
@@ -129,6 +123,13 @@ export default function MainLayout() {
             isFullBleed ? "overflow-hidden" : "overflow-auto p-6"
           )}
         >
+          {/*
+            시안 `.susp`(ui-studio-13) — 모든 페이지 본문 맨 위 · 닫기 없음. 정지가 아니면 아무것도 그리지 않는다.
+            꽉 찬 화면(연결·소통)은 셸 여백이 없으니 배너에만 여백을 준다
+          */}
+          <SuspensionBanner
+            className={cn("shrink-0", isFullBleed && "mx-6 mt-4")}
+          />
           {/* 디자인시스템 H1 — 20px/600 */}
           {!isFullBleed && !isSelfTitled && (currentMenu || subtitle) && (
             <h1 className="mb-4 shrink-0 text-[20px] font-semibold text-sz-n-900">

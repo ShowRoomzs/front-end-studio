@@ -21,6 +21,11 @@ export interface ConnectionRequestItem {
   marketImageUrl: string | null
   status: ConnectionStatus
   requestedAt: string
+  /**
+   * 지금 수락할 수 있는 요청인가 — false 면 [수락] 비활성 + 「현재 수락할 수 없는 요청」(요청 브랜드 정지 · 시안 13 R ·
+   * 1017 설계서 8-6). 상대의 정지 사실은 내리지 않는다 · [거절]은 그대로. 옛 배포 응답에는 없다(없으면 수락 가능으로 본다)
+   */
+  acceptable?: boolean
 }
 
 export const connectionService = {

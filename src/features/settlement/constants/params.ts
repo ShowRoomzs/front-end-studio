@@ -10,6 +10,8 @@ import type {
 
 export const SETTLEMENT_LIST_PATH = "/settlement"
 export const GROUP_BUY_LIST_PATH = "/group-buy"
+/** 연결·소통 — 이슈 스레드는 `?threadId=`로 연다 */
+export const CONNECTIONS_PATH = "/connections"
 
 export const SETTLEMENT_QUERY_KEYS = {
   LIST: "creatorSettlementList",
@@ -66,7 +68,18 @@ export const CONFIRM_REASON_TEXT: Record<SettlementConfirmReason, string> = {
   AUTO: "확인 기간 중 요청 없음",
   AGREED: "조정 합의로 확정",
   EXPIRED: "합의 기한 경과 · 원래 금액 확정",
+  // 시안에 없다 — 서버 `SettlementConfirmReason.WITHDRAWN` 설명(「조정 요청 철회 · 원래 금액」)을 같은 꼴로
+  WITHDRAWN: "조정 요청 철회 · 원래 금액 확정",
 }
+
+/** 기-11 — 판매 리워드 산식 표기(rev.4) */
+export const REWARD_FORMULA = "확정 거래액 × 리워드율"
+
+/**
+ * 13 S6 — 계정 이용 정지로 내 몫 지급이 멈췄을 때(`payoutHold.sanction`) 상태 옆 보조 배지 · 내 분배 행 상태.
+ * 정산 상태는 「지급 예정」 그대로다(「보류」는 조정 협의 전용).
+ */
+export const PAYOUT_HOLD_SANCTION_LABEL = "지급 정지 · 계정 이용 정지"
 
 export const SETTLEMENT_SORT_OPTIONS: Array<{
   value: SettlementPartySort

@@ -2,6 +2,7 @@ import Pagination, {
   type PaginationProps,
 } from "@/common/components/Pagination/Pagination"
 import StatusBadge from "@/common/components/StatusBadge/StatusBadge"
+import SanctionHoldBadge from "@/common/components/Suspension/SanctionHoldBadge"
 import { formatDateTimeShort } from "@/common/utils/formatDate"
 import { DEADLINE_TEXT } from "@/features/contracts/constants/labels"
 import type { CreatorContractListItem } from "@/features/contracts/types"
@@ -62,9 +63,13 @@ export default function ContractTable(props: ContractTableProps) {
                 className="group cursor-pointer border-t border-sz-n-100 first:border-t-0 hover:bg-sz-accent-50"
               >
                 <td className={CELL_CLASS}>
-                  <span className="block truncate font-medium text-sz-n-900 group-hover:text-sz-accent-600">
-                    {row.title}
-                  </span>
+                  {/* 시안 13 — 행 높이를 늘리지 않도록 보류 보조 배지는 이름 칸에 붙인다(서버 `sanctionHold`) */}
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate font-medium text-sz-n-900 group-hover:text-sz-accent-600">
+                      {row.title}
+                    </span>
+                    <SanctionHoldBadge hold={row.sanctionHold} />
+                  </div>
                 </td>
                 <td className={cn(CELL_CLASS, "truncate text-sz-n-700")}>
                   {row.brandName}

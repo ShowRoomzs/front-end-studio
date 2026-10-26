@@ -12,16 +12,23 @@ import type {
   FulfillmentCheckBody,
   PostBody,
 } from "@/features/groupBuy/types"
+import {
+  normalizeDetail,
+  normalizeListItem,
+} from "@/features/groupBuy/utils/postStatus"
 
 const BASE_URL = "/creator/group-buys"
 
-/** 실행 API는 모두 갱신된 상세를 돌려준다 — 호출부가 상세 캐시를 그 값으로 바꾼다 */
+/**
+ * 실행 API는 모두 갱신된 상세를 돌려준다 — 호출부가 상세 캐시를 그 값으로 바꾼다.
+ * 목록 · 상세는 받자마자 게시물 상태 옛 이름(HIDDEN)을 새 이름으로 맞춘다(utils/postStatus).
+ */
 export const creatorGroupBuyService = {
   getList: async (params: CreatorGroupBuyListParams) => {
     const { data } = await apiInstance.get<
       PageResponse<CreatorGroupBuyListItem>
     >(BASE_URL, { params: paramsToSearchParams(params) })
-    return data
+    return { ...data, content: data.content.map(normalizeListItem) }
   },
 
   getSummary: async () => {
@@ -37,7 +44,7 @@ export const creatorGroupBuyService = {
       `${BASE_URL}/${groupBuyId}`,
       { params: paramsToSearchParams(params) }
     )
-    return data
+    return normalizeDetail(data)
   },
 
   saveDraft: async (groupBuyId: number, body: PostBody) => {
@@ -45,7 +52,7 @@ export const creatorGroupBuyService = {
       `${BASE_URL}/${groupBuyId}/post/draft`,
       body
     )
-    return data
+    return normalizeDetail(data)
   },
 
   submitPost: async (groupBuyId: number, body: PostBody) => {
@@ -53,7 +60,7 @@ export const creatorGroupBuyService = {
       `${BASE_URL}/${groupBuyId}/post/submission`,
       body
     )
-    return data
+    return normalizeDetail(data)
   },
 
   /** 승인 후 수정 — 재승인 없이 바로 반영된다 */
@@ -62,14 +69,14 @@ export const creatorGroupBuyService = {
       `${BASE_URL}/${groupBuyId}/post`,
       body
     )
-    return data
+    return normalizeDetail(data)
   },
 
   acceptExtension: async (groupBuyId: number) => {
     const { data } = await apiInstance.post<CreatorGroupBuyDetailResponse>(
       `${BASE_URL}/${groupBuyId}/extension/acceptance`
     )
-    return data
+    return normalizeDetail(data)
   },
 
   rejectExtension: async (groupBuyId: number, body: ExtensionRejectBody) => {
@@ -77,7 +84,7 @@ export const creatorGroupBuyService = {
       `${BASE_URL}/${groupBuyId}/extension/rejection`,
       body
     )
-    return data
+    return normalizeDetail(data)
   },
 
   requestSuspension: async (
@@ -88,7 +95,7 @@ export const creatorGroupBuyService = {
       `${BASE_URL}/${groupBuyId}/suspension-request`,
       body
     )
-    return data
+    return normalizeDetail(data)
   },
 
   checkFulfillment: async (groupBuyId: number, body: FulfillmentCheckBody) => {
@@ -96,6 +103,6 @@ export const creatorGroupBuyService = {
       `${BASE_URL}/${groupBuyId}/fulfillment-check`,
       body
     )
-    return data
+    return normalizeDetail(data)
   },
 }

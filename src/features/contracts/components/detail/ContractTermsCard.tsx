@@ -21,15 +21,19 @@ export default function ContractTermsCard(props: ContractTermsCardProps) {
   const { detail, view, onOpenThread } = props
   const { brand, period, fixedFee, permissions } = detail
   const isClosed = CLOSED_VIEWS.includes(view)
+  const isTerminated = view === "terminated"
+  const isConcluded = view === "concluded"
   const text = periodText(period.startAt, period.endAt)
 
   return (
     <DetailCard
       title="계약 조건"
       note={
-        isClosed
-          ? "종결된 계약 · 읽기 전용"
-          : "브랜드가 작성한 조건 · 이 화면에서 수정할 수 없습니다"
+        isTerminated
+          ? "해지된 계약 · 읽기 전용"
+          : isClosed
+            ? "종결된 계약 · 읽기 전용"
+            : "브랜드가 작성한 조건 · 이 화면에서 수정할 수 없습니다"
       }
     >
       <FieldRow label="브랜드">
@@ -55,15 +59,36 @@ export default function ContractTermsCard(props: ContractTermsCardProps) {
           {period.days !== null && (
             <span className="text-sz-n-500"> ({period.days}일)</span>
           )}
+          {isTerminated && (
+            <span className="text-sz-n-500"> · 시작 전 해지</span>
+          )}
         </span>
       </FieldRow>
       <FieldRow label="고정 지급비">
         <span className="tabular-nums">{formatKRW(fixedFee.amount ?? 0)}</span>
         <div className={FSUB_CLASS}>
-          {isClosed ? (
+          {isTerminated && fixedFee.amount ? (
+            <>
+              지급 시점 「{fixedFee.triggerLabel ?? "—"}」 — 공구가 열리지 않아
+              지급 시점이 오지 않았습니다 · 당사자 간 청구는{" "}
+              <b className="font-semibold text-sz-n-700">계약서</b>에 따릅니다
+            </>
+          ) : isTerminated ? (
+            "고정 지급비가 없는 계약입니다"
+          ) : isClosed ? (
             <>
               계약이 성립하지 않아{" "}
               <b className="font-semibold text-sz-n-700">지급되지 않았습니다</b>
+            </>
+          ) : fixedFee.amount && isConcluded ? (
+            // 시안 S6 — 체결완료는 짧은 문장
+            <>
+              브랜드가 <b className="font-semibold text-sz-n-700">직접 지급</b>{" "}
+              · 지급 시점{" "}
+              <b className="font-semibold text-sz-n-700">
+                {fixedFee.triggerLabel ?? "—"}
+              </b>
+              (계약서 기재) · 플랫폼을 거치지 않습니다
             </>
           ) : fixedFee.amount ? (
             <>

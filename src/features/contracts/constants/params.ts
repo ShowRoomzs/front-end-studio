@@ -6,8 +6,9 @@ import type {
 } from "@/features/contracts/types"
 
 /**
- * 상태 탭 5종(§27-1 #1) — 작성중 탭이 없다. 파트너의 「서명」 탭이 서명 진행중 + 체결 처리 대기
- * 묶음인 것과 달리 스튜디오는 둘이 쪼개져 각각 선다(시안 S1).
+ * 상태 탭 5종(§27-1 #1) — 작성중 탭이 없다. 파트너의 「서명」 탭이 서명 진행중 + 공구 생성 대기
+ * 묶음인 것과 달리 스튜디오는 둘이 쪼개져 각각 선다(시안 S1). 해지(TERMINATED)는 「종료」 탭에
+ * 들어간다 — 서버 `CreatorContractTab.CLOSED`가 거절 · 만료 · 취소 · 해지를 묶는다.
  */
 export const CREATOR_CONTRACT_TABS: Array<{
   label: string
@@ -15,7 +16,7 @@ export const CREATOR_CONTRACT_TABS: Array<{
 }> = [
   { label: "전체", value: "ALL" },
   { label: "서명 진행중", value: "SIGNING" },
-  { label: "체결 처리 대기", value: "CONCLUSION_PENDING" },
+  { label: "공구 생성 대기", value: "CONCLUSION_PENDING" },
   { label: "체결완료", value: "CONCLUDED" },
   { label: "종료", value: "CLOSED" },
 ]

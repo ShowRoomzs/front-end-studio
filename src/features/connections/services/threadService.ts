@@ -33,6 +33,49 @@ export interface AttachmentSummary {
   sortOrder: number | null
 }
 
+/**
+ * 스레드 종류 — 같은 상대의 줄이 여럿일 수 있어 이 값으로 구분한다.
+ * GROUP_BUY_ISSUE · GROUP_BUY_FULFILLMENT는 폐기 이력이라 새로 생기지 않는다.
+ */
+export type ThreadKind =
+  | "CONNECTION"
+  | "SETTLEMENT_ADJUSTMENT"
+  | "GROUP_BUY_ISSUE"
+  | "GROUP_BUY_FULFILLMENT"
+
+/**
+ * 정산 조정 협의 상태 — 백엔드 `AdjustmentStatus`.
+ * WITHDRAWN = 요청자가 상대 응답 전에 거둬 원래 금액으로 확정(1021 기-14)
+ */
+export type AdjustmentStatus = "OPEN" | "AGREED" | "EXPIRED" | "WITHDRAWN"
+
+/** 뷰어 기준 차례 — 반대 뒤에는 OPEN_FLOOR(양측 모두 제안 가능). 서버가 정한다 */
+export type AdjustmentTurn = "MY_TURN" | "THEIR_TURN" | "OPEN_FLOOR" | "CLOSED"
+
+export type AdjustmentTone =
+  "INFO" | "SUCCESS" | "WARNING" | "DANGER" | "NEUTRAL"
+
+/** 정산 조정의 당사자 — 백엔드 `SettlementParty` */
+export type SettlementParty = "SELLER" | "CREATOR"
+
+/** 목록 줄의 정산 조정 표시(`ThreadAdjustmentBadge`) — kind = SETTLEMENT_ADJUSTMENT일 때만 */
+export interface ThreadAdjustmentBadge {
+  adjustmentId: number
+  status: AdjustmentStatus
+  statusLabel: string
+  turn: AdjustmentTurn
+  /** 「내 응답 필요」 · 「상대 응답 대기」 · 「협의 중」 · 「종결」 */
+  turnLabel: string
+  turnTone: AdjustmentTone
+  deadlineAt: string
+  /** D-N — 종결 뒤 null */
+  remainingBusinessDays: number | null
+  /** 최신 제안 종류 — REQUEST(seq 1) · COUNTER(seq 2 이상). 제안이 없으면 null */
+  latestProposalKind?: "REQUEST" | "COUNTER" | null
+  /** 목록 줄 앞말 — 「정산 조정 요청」 · 「다른 금액 제안」(카드 제목과 같다) */
+  latestProposalKindLabel?: string | null
+}
+
 export interface ThreadListItem {
   threadId: number
   /** 운영자 채널이면 "SHOWROOMZ 운영팀", 아니면 상대 브랜드명 */
@@ -51,12 +94,121 @@ export interface ThreadListItem {
   lastMessagePreview: string | null
   lastMessageAt: string | null
   unreadCount: number
+  kind: ThreadKind
+  /** 공구 3자 스레드(이슈)의 공구 — CONNECTION이면 null */
+  groupBuyId: number | null
+  groupBuyTitle: string | null
+  adjustment: ThreadAdjustmentBadge | null
 }
 
 export interface ThreadSummaryResponse {
   unreadCount: number
   /** "요청함" 탭 배지 — 0건이면 배지를 숨긴다(§14-3) */
   pendingRequestCount: number
+}
+
+/** 시스템 카드 종류 — 백엔드 `MessageCardType`. 이 화면이 따로 그리는 것은 정산 조정 9종이고 나머지는 한 줄 띠다 */
+export type MessageCardType =
+  | "CONTRACT_RESEND_REQUEST"
+  | "CONTRACT_ADMIN_CANCELED"
+  | "SETTLEMENT_ADJUSTMENT_OPENED"
+  | "SETTLEMENT_ADJUSTMENT_REQUEST"
+  | "SETTLEMENT_ADJUSTMENT_COUNTER"
+  | "SETTLEMENT_ADJUSTMENT_ACCEPTED"
+  | "SETTLEMENT_ADJUSTMENT_REJECTED"
+  | "SETTLEMENT_ADJUSTMENT_DEADLINE_NOTICE"
+  | "SETTLEMENT_ADJUSTMENT_AGREED"
+  | "SETTLEMENT_ADJUSTMENT_EXPIRED"
+  | "SETTLEMENT_ADJUSTMENT_WITHDRAWN"
+  | "CONTRACT_CLOSE_CONSENT_REQUEST"
+  | "CONTRACT_TERMINATED"
+  | "GROUP_BUY_SUSPENSION_NOTICE"
+  | "ACCOUNT_SUSPENDED"
+  | "ACCOUNT_SUSPENSION_RELEASED"
+
+/** 정산 조정 카드의 사실(생성 시점 스냅샷) — 카드 종류마다 채워지는 칸이 다르다(빈 칸은 응답에서 빠진다) */
+export interface MessageCardAdjustment {
+  settlementId?: number
+  settlementNumber?: string
+  groupBuyId?: number
+  adjustmentId?: number
+  proposalId?: number
+  seq?: number
+  proposerType?: SettlementParty
+  proposerName?: string
+  originalRewardAmount?: number
+  rewardAmount?: number
+  reason?: string
+  deadlineAt?: string
+  responderType?: SettlementParty
+  responderName?: string
+  respondedAt?: string
+  finalRewardAmount?: number
+  agreedByType?: SettlementParty
+  agreedByName?: string
+  closedAt?: string
+}
+
+/**
+ * 계정 이용 정지 · 해제 카드의 사실(`MessageCardResponse.SanctionDetail` · 시안 13 S8) — 1017 이후 카드에만 있다.
+ * 차단 · 계속 이용 목록은 `memberType`별 고정 문구라 FE가 든다. 빈 칸은 응답에서 빠진다.
+ */
+export interface MessageCardSanction {
+  /** BRAND · CREATOR */
+  memberType?: string
+  /** 정지 사유 코드(정지 카드) · 해제 사유 코드(해제 카드) — `CreatorSuspensionReason` */
+  reasonCode?: string
+  reasonLabel?: string
+  /** 상세 사유 · 해제 메모 — 운영자가 적은 경우만 */
+  reasonDetail?: string
+  /** [정지 카드] 지급 정지 사유인가 — 정산 줄 문구가 갈린다 */
+  payoutHeld?: boolean
+  /** [정지 카드] 정지 종료일(포함) · LocalDate — 기간 없는 정지 · 1021 이전 카드는 없다 */
+  endsOn?: string
+  /** [정지 카드] 자동 해제 시각 = 종료일 다음 날 00:00 · KST 벽시계 */
+  autoReleaseAt?: string
+  /** [정지 카드] 정지 기간(일) — 「(14일)」 */
+  periodDays?: number
+  /** [정지 카드] 이의 신청 기한 — 통지 + N영업일 23:59:59 · KST 벽시계 */
+  appealDeadlineAt?: string
+}
+
+export interface MessageCardDetail {
+  requesterType?: SettlementParty
+  requesterName?: string
+  requestedAt?: string
+  /** [직권 취소] 사유 · [정지] 옛 카드의 사유 한 문장 */
+  reasonLabel?: string
+  /** [직권 취소 · 정지 · 해제] 처리 시각 — now() 이벤트(UTC 벽시계) */
+  processedAt?: string
+  notifiedBothParties?: boolean
+  adjustment?: MessageCardAdjustment
+  /** [계정 이용 정지 · 해제] 1017 이후 카드에만 */
+  sanction?: MessageCardSanction
+}
+
+export interface MessageCardAction {
+  /** RESEND_NOTICE(재발송 요청) · ADJUSTMENT_RESPOND(정산 조정 제안) */
+  type: string
+  /** PENDING 응답 대기 · DONE 응답됨 · CLOSED 응답 없이 닫힘(기한 만료 · 요청 철회) */
+  state: "PENDING" | "DONE" | "CLOSED"
+  doneAt: string | null
+  /** 「동의」 · 「반대」 · 「다른 금액 제안으로 응답됨」 · 「기한 만료」 · 「요청 철회」 */
+  resultLabel: string | null
+  /** 뷰어가 지금 이 카드에 답할 수 있다 — 버튼 종류는 `…/threads/{id}/adjustment`의 permissions */
+  respondable: boolean
+}
+
+/** 시스템 카드(`MessageCardResponse`) — 운영자 개인 정보는 담기지 않는다 */
+export interface MessageCard {
+  cardType: MessageCardType
+  title: string
+  tone: "WARNING" | "NEUTRAL"
+  contractId: number | null
+  contractNumber: string | null
+  groupBuyTitle: string | null
+  detail: MessageCardDetail | null
+  action: MessageCardAction | null
 }
 
 export interface MessageItem {
@@ -67,6 +219,10 @@ export interface MessageItem {
   content: string | null
   attachments: Array<AttachmentSummary>
   createdAt: string
+  /** TEXT 말풍선 · SYSTEM 시스템 카드 */
+  messageType: "TEXT" | "SYSTEM"
+  /** messageType = SYSTEM일 때만 */
+  card: MessageCard | null
 }
 
 export interface MessageListResponse {
@@ -117,6 +273,12 @@ export const threadService = {
       "/creator/connections/threads",
       { params }
     )
+    // DEV — 철회 API 404 목업(adjustmentDevMock)이 바꾼 이슈 줄을 덧씌운다. 배포 번들에서는 빠진다
+    if (import.meta.env.DEV) {
+      const mock =
+        await import("@/features/connections/services/adjustmentDevMock")
+      return mock.overlayThreads(data)
+    }
     return data
   },
 
@@ -135,6 +297,11 @@ export const threadService = {
       `/creator/threads/${threadId}/messages`,
       { params }
     )
+    if (import.meta.env.DEV) {
+      const mock =
+        await import("@/features/connections/services/adjustmentDevMock")
+      return mock.overlayMessages(threadId, data, params.cursor === undefined)
+    }
     return data
   },
 

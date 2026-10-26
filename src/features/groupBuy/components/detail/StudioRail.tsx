@@ -1,5 +1,7 @@
 import DetailCard, { MetaRow } from "@/common/components/DetailCard/DetailCard"
 import HistoryList from "@/common/components/HistoryList/HistoryList"
+import SanctionHoldBadge from "@/common/components/Suspension/SanctionHoldBadge"
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { B, GbBadge } from "@/features/groupBuy/components/shared/GbParts"
 import { toGroupBuyHistoryItems } from "@/features/groupBuy/utils/history"
@@ -9,6 +11,7 @@ import {
   d,
   dt,
   fixedFeeShort,
+  kstDt,
   localDate,
   num,
   won,
@@ -18,6 +21,8 @@ import type { ReactNode } from "react"
 export interface StudioRailActions {
   onWritePost: () => void
   onOpenThread: () => void
+  /** 내 운영팀 채널 — 노출 중지(B5a) · 직권 중단 소명(B13)의 문의 창구(기-21) */
+  onOpenOperatorChannel: () => void
   onOpenFulfillmentThread: () => void
   onAcceptExtension: () => void
   onRejectExtension: () => void
@@ -47,13 +52,16 @@ function Due(props: { children: ReactNode }) {
 
 /**
  * 우측 레일 「상태」 — 현재 상태 · 메타 · 액션 · 힌트. 버튼 노출은 서버 permissions로만 고른다.
+ * 계정 이용 정지(시안 13 S4a)는 서버 permissions가 보지 않아 `suspended`로 [연장 수락]만 막는다 — 거절 · 중단 요청은 그대로.
  */
 export function StudioStatusRail(props: {
   detail: Detail
   situation: SellingSituation | null
   actions: StudioRailActions
+  /** 내 계정 이용 정지 중 */
+  suspended: boolean
 }) {
-  const { detail, situation, actions } = props
+  const { detail, situation, actions, suspended } = props
   const {
     groupBuy,
     timeline,
@@ -83,6 +91,16 @@ export function StudioStatusRail(props: {
       스레드 열기
     </Btn>
   ) : null
+  const operatorButton = (
+    <Btn
+      key="operator"
+      variant="secondary"
+      className="w-full"
+      onClick={actions.onOpenOperatorChannel}
+    >
+      운영팀 채널 열기
+    </Btn>
+  )
   const dueRow = contract.contentDueDate
     ? {
         label: "게시 완료 기한",
@@ -168,24 +186,26 @@ export function StudioStatusRail(props: {
       if (dueRow) {
         rows.push(dueRow)
       }
-      if (permissions.canEditPost) {
-        buttons.push(
-          <Btn
-            key="edit"
-            variant="secondary"
-            className="w-full"
-            onClick={actions.onWritePost}
-          >
-            게시물 수정
-          </Btn>
-        )
-      }
+      // 시안 B4 · 기-08 — 준비완료(예약)는 수정 불가, 오픈 뒤 본문만. 노출 중지된 게시물만 서버가 연다
+      buttons.push(
+        <Btn
+          key="edit"
+          variant="secondary"
+          className="w-full"
+          disabled={!permissions.canEditPost}
+          onClick={actions.onWritePost}
+        >
+          {permissions.canEditPost
+            ? "게시물 수정"
+            : "게시물 수정 · 오픈 후 가능"}
+        </Btn>
+      )
       buttons.push(threadButton)
       hint = (
         <Hint>
-          게시물은 <B>승인 후에도 자유롭게 수정</B>할 수 있습니다(재승인 없음).
-          시작 시각은 <B>계약 확정값</B>이라 앞당기거나 미룰 수 없습니다. 기간
-          연장은 <B>공구가 시작된 뒤</B> 브랜드가 요청할 수 있습니다.
+          게시물은 <B>공구가 열린 뒤 본문만</B> 수정할 수 있습니다. 시작 시각은{" "}
+          <B>계약 확정값</B>이라 앞당기거나 미룰 수 없습니다. 기간 연장은{" "}
+          <B>공구가 시작된 뒤</B> 브랜드가 요청할 수 있습니다.
         </Hint>
       )
       break
@@ -202,17 +222,25 @@ export function StudioStatusRail(props: {
           },
           {
             label: "집행 예정",
-            value: <Due>{dt(adminSuspension.executeScheduledAt)}</Due>,
+            value: <Due>{kstDt(adminSuspension.executeScheduledAt)}</Due>,
           },
           { label: "내 게시물", value: postBadge },
           { label: "내 리워드(잠정)", value: myReward }
         )
-        buttons.push(threadButton)
+        // 시안 B13 · 기-21 — 소명 창구는 운영팀 채널 하나다(브랜드 스레드 버튼을 두지 않는다)
+        buttons.push(operatorButton)
+        const appealDeadline = adminSuspension.appealDeadlineAt
         hint = (
           <Hint>
-            이 통지에 대한 <B>이의 · 소명 접수는 브랜드를 통해</B> 이뤄집니다 —
-            사유에 이견이 있으면 <B>스레드에서 브랜드 · 운영자와 논의</B>해
-            주세요.
+            이 통지에 대한 <B>이의 · 소명은 운영팀 채널 한 곳</B>에서 접수합니다
+            · 소명 기한{" "}
+            <B>
+              {appealDeadline
+                ? `${kstDt(appealDeadline)}까지`
+                : "통지 후 N영업일"}
+            </B>{" "}
+            · 소명이 받아들여지면 중단이 <B>철회</B>되고, 아니면 예정 일시에{" "}
+            <B>집행</B>됩니다.
           </Hint>
         )
         break
@@ -241,9 +269,9 @@ export function StudioStatusRail(props: {
         )
       }
       rows.push({ label: "내 게시물", value: postBadge })
-      if (situation === "hidden" && post.hidden) {
+      if (situation === "suspendedPost" && post.hidden) {
         rows.push({
-          label: "숨김 경과",
+          label: "노출 중지 경과",
           value: <Warn>{post.hidden.hiddenDays}일</Warn>,
         })
       }
@@ -265,14 +293,20 @@ export function StudioStatusRail(props: {
 
       if (situation === "extensionPending" && permissions.canRespondExtension) {
         buttons.push(
-          <Btn
+          <SuspendedTooltip
             key="accept"
-            variant="primary"
-            className="w-full"
-            onClick={actions.onAcceptExtension}
+            active={suspended}
+            className="flex w-full"
           >
-            연장 수락
-          </Btn>,
+            <Btn
+              variant="primary"
+              className="w-full"
+              disabled={suspended}
+              onClick={actions.onAcceptExtension}
+            >
+              연장 수락
+            </Btn>
+          </SuspendedTooltip>,
           <Btn
             key="reject"
             variant="secondary"
@@ -286,7 +320,7 @@ export function StudioStatusRail(props: {
         buttons.push(
           <Btn
             key="edit"
-            variant={situation === "hidden" ? "primary" : "secondary"}
+            variant={situation === "suspendedPost" ? "primary" : "secondary"}
             className="w-full"
             onClick={actions.onWritePost}
           >
@@ -294,7 +328,10 @@ export function StudioStatusRail(props: {
           </Btn>
         )
       }
-      if (situation !== "extensionPending") {
+      if (situation === "suspendedPost") {
+        // 시안 B5a · rev.4 — 노출 중지 문의는 브랜드 스레드가 아니라 운영팀 채널이다
+        buttons.push(operatorButton)
+      } else if (situation !== "extensionPending") {
         buttons.push(threadButton)
       }
       if (permissions.canRequestSuspension) {
@@ -311,12 +348,13 @@ export function StudioStatusRail(props: {
       }
 
       hint =
-        situation === "hidden" ? (
+        situation === "suspendedPost" ? (
           <Hint>
-            숨김을 푸는 방법은 <B>지적된 내용을 고치는 것</B> 하나입니다 —
-            해제는 <B>운영자가</B> 합니다. 공구 기간은{" "}
-            <B>숨김과 무관하게 흘러가므로</B> 빨리 수정할수록 판매할 수 있는
-            날이 남습니다.
+            노출 중지를 푸는 방법은 <B>지적된 내용을 고치는 것</B> 하나입니다 —
+            해제는 <B>운영자가</B> 합니다. 무엇을 고쳐야 하는지 궁금하면{" "}
+            <B>운영팀 채널</B>에서 물어보세요. 공구 기간은{" "}
+            <B>노출 중지와 무관하게 흘러가므로</B> 빨리 수정할수록 판매할 수
+            있는 날이 남습니다.
           </Hint>
         ) : situation === "brandRequest" ? (
           <Hint>
@@ -546,7 +584,11 @@ export function StudioStatusRail(props: {
     <DetailCard title="상태">
       <div className="flex items-center justify-between gap-2.5 border-b border-sz-n-100 pb-3">
         <span className="shrink-0 text-[12px] text-sz-n-500">현재 상태</span>
-        <GbBadge tone={groupBuy.statusTone}>{groupBuy.statusLabel}</GbBadge>
+        {/* 시안 13 R2 — 상태는 그대로 두고 보류 보조 배지만 붙인다(서버 `sanctionHold` · 오픈 전 공구만) */}
+        <span className="flex flex-wrap items-center justify-end gap-1">
+          <GbBadge tone={groupBuy.statusTone}>{groupBuy.statusLabel}</GbBadge>
+          <SanctionHoldBadge hold={detail.sanctionHold} />
+        </span>
       </div>
       <div className="pt-2">
         {rows.map(row => (

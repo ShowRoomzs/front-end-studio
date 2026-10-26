@@ -26,8 +26,12 @@ const EVENT_TEXT: Record<
   OPEN_REJECTED: { label: "운영자 오픈 승인 반려", tone: "warn" },
   READY: { label: "준비 조건 충족 · 준비완료", tone: "success" },
   OPENED: { label: "공구 시작 · 게시물 노출 시작", tone: "success" },
-  POST_HIDDEN: { label: "운영자 게시물 숨김", tone: "warn" },
-  POST_UNHIDDEN: { label: "게시물 숨김 해제 · 노출 재개", tone: "success" },
+  // 이벤트 코드(POST_HIDDEN · POST_UNHIDDEN)는 DB 저장 문자열이라 서버가 그대로 둔다 — 문구만 「노출 중지」(1021 기-08)
+  POST_HIDDEN: { label: "운영자 게시물 노출 중지", tone: "warn" },
+  POST_UNHIDDEN: {
+    label: "게시물 노출 중지 해제 · 노출 재개",
+    tone: "success",
+  },
   EXTENSION_REQUESTED: { label: "브랜드가 기간 연장 요청", tone: "accent" },
   EXTENSION_ACCEPTED: { label: "연장 수락 · 종료일 변경", tone: "success" },
   EXTENSION_REJECTED: { label: "연장 거절", tone: "danger" },
@@ -57,6 +61,10 @@ const EVENT_TEXT: Record<
   SUSPENDED_EMERGENCY: {
     label: "운영자 긴급 직권 중단 · 공구 중단 · 게시물 내려감",
     tone: "warn",
+  },
+  TERMINATED_BY_CONTRACT: {
+    label: "계약 해지 · 공구 종결 · 게시물 내려감",
+    tone: "muted",
   },
   ENDED: { label: "공구 종료 · 게시물 노출 종료", tone: "accent" },
   ISSUE_OPENED: { label: "이슈 스레드 개설", tone: "warn" },

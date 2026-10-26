@@ -1,6 +1,9 @@
 import { usePageSubtitle } from "@/common/components/MainLayout/usePageSubtitle"
+import SuspendedBlockedState from "@/common/components/Suspension/SuspendedBlockedState"
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import { useGetShowroomName } from "@/common/hooks/useGetShowroomName"
 import { Button } from "@/components/ui/button"
+import { useAccountStatus } from "@/features/home/hooks/useAccountStatus"
 import ConfirmModal from "@/features/posts/components/ConfirmModal"
 import CropModal from "@/features/posts/components/CropModal"
 import InsightPanel from "@/features/posts/components/InsightPanel"
@@ -41,6 +44,10 @@ import { useNavigate } from "react-router-dom"
  * 좌측 편집 / 우측 미리보기 2컬럼. `post`가 있으면 수정, 없으면 작성이다.
  * 노출 중지·심사 중인 게시물은 여기로 오지 않는다 — 잠금 분기를 화면 전체에 뿌리지 않기
  * 위해 조치 화면(`PostSuspendedPage`)을 따로 뒀다.
+ *
+ * 계정 이용 정지(시안 13 S5) — 새 게시물 작성은 막힌다. URL로 `/posts/new`에 들어오면 빈 상태 +
+ * [운영팀에 소명하기]. 기존 게시물 수정 · 삭제는 허용하되, 작성중 게시물의 첫 [게시하기]는 비활성 + 툴팁
+ * (서버 `POST_PUBLISH` 409가 받친다).
  */
 export default function PostEditorPage(props: { post?: PostDetailResponse }) {
   const { post } = props
@@ -49,6 +56,7 @@ export default function PostEditorPage(props: { post?: PostDetailResponse }) {
   usePageSubtitle(post ? "수정" : "새 게시물")
 
   const { data: showroom } = useGetShowroomName()
+  const { isSuspended, isLoading: isAccountLoading } = useAccountStatus()
   const [content, setContent] = useState(post?.content ?? "")
   const [cropTargetId, setCropTargetId] = useState<string | null>(null)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
@@ -117,6 +125,21 @@ export default function PostEditorPage(props: { post?: PostDetailResponse }) {
   }
 
   const previewUrls = photos.map(photo => photo.previewUrl)
+
+  if (!post && isAccountLoading) {
+    return null
+  }
+
+  if (!post && isSuspended) {
+    return (
+      <SuspendedBlockedState
+        feature="게시물 작성"
+        description="정지가 해제되면 바로 작성할 수 있습니다. 올린 게시물의 수정 · 삭제는 게시물 목록에서 계속할 수 있습니다."
+        backLabel="게시물 목록으로"
+        onBack={() => navigate("/posts")}
+      />
+    )
+  }
 
   return (
     <div className="flex items-start gap-4">
@@ -224,15 +247,17 @@ export default function PostEditorPage(props: { post?: PostDetailResponse }) {
                   {isPublished ? "수정 완료" : "임시저장"}
                 </Button>
                 {!isPublished && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    isLoading={isSaving}
-                    disabled={!canPublish}
-                    onClick={() => void save("PUBLISH")}
-                  >
-                    게시하기
-                  </Button>
+                  <SuspendedTooltip active={isSuspended}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      isLoading={isSaving}
+                      disabled={!canPublish || isSuspended}
+                      onClick={() => void save("PUBLISH")}
+                    >
+                      게시하기
+                    </Button>
+                  </SuspendedTooltip>
                 )}
               </>
             ) : (

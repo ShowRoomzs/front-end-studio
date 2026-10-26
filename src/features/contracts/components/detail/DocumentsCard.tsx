@@ -21,7 +21,7 @@ interface DocumentsCardProps {
 /**
  * 시안 S6 「계약 문서」 — 서명 PDF · 감사추적인증서 카드 2장. 체결완료 화면에서 인플루언서가
  * 실제로 하는 유일한 행동이 이 두 파일을 받아 두는 것이라 본문 카드로 올린다(§27-6).
- * 운영자가 모두싸인에서 내려받아 업로드한 파일이며 등록 시각이 곧 체결 처리 시각이다.
+ * 운영자가 모두싸인에서 내려받아 업로드한 파일이며 등록 시각이 곧 공구 생성 처리 시각이다.
  */
 export default function DocumentsCard(props: DocumentsCardProps) {
   const { contractId, contractNumber, concludedAt, documents } = props
@@ -29,7 +29,7 @@ export default function DocumentsCard(props: DocumentsCardProps) {
   return (
     <DetailCard
       title="계약 문서"
-      note={`운영자가 체결 완료 처리 시 등록 · ${formatDateTimeShort(concludedAt)}`}
+      note={`운영자가 공구 생성 처리 시 등록 · ${formatDateTimeShort(concludedAt)}`}
     >
       <div className="grid grid-cols-2 gap-3">
         <DocumentTile
