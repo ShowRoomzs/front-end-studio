@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input"
 import CounterpartAvatar from "@/features/connections/components/CounterpartAvatar/CounterpartAvatar"
+import { issueListPreview } from "@/features/connections/components/IssueThread/issueView"
 import type { ConnectionRequestItem } from "@/features/connections/services/connectionService"
 import type { ThreadListItem } from "@/features/connections/services/threadService"
 import {
@@ -129,11 +130,18 @@ export default function ThreadListPanel(props: ThreadListPanelProps) {
                     : "hover:bg-sz-n-50"
                 )}
               >
-                <CounterpartAvatar
-                  name={thread.counterpartName}
-                  imageUrl={thread.counterpartImageUrl}
-                  isOperator={thread.operatorChannel}
-                />
+                {/* 정산 조정 이슈 스레드(시안 ui-studio-11 `.cs-item.iss`) — 같은 상대의 1:1 줄과 따로 선다 */}
+                {thread.kind === "SETTLEMENT_ADJUSTMENT" ? (
+                  <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-sz-warning-bg text-[10px] font-bold text-sz-warning-text">
+                    이슈
+                  </span>
+                ) : (
+                  <CounterpartAvatar
+                    name={thread.counterpartName}
+                    imageUrl={thread.counterpartImageUrl}
+                    isOperator={thread.operatorChannel}
+                  />
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1.5">
                     <span className="truncate text-[13px] font-semibold text-sz-n-900">
@@ -145,7 +153,9 @@ export default function ThreadListPanel(props: ThreadListPanelProps) {
                   </div>
                   <div className="mt-[3px] flex items-center justify-between gap-2">
                     <span className="min-w-0 flex-1 truncate text-[12px] text-sz-n-500">
-                      {thread.lastMessagePreview ?? ""}
+                      {thread.kind === "SETTLEMENT_ADJUSTMENT"
+                        ? issueListPreview(thread.adjustment)
+                        : (thread.lastMessagePreview ?? "")}
                     </span>
                     {thread.unreadCount > 0 && (
                       <span className="inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-[9px] bg-sz-accent-500 px-[5px] text-[11px] font-semibold text-white">

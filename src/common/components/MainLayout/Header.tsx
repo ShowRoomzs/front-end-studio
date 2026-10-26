@@ -1,5 +1,6 @@
 import { HEADER_HEIGHT } from "@/common/components/MainLayout/config"
 import { Button } from "@/components/ui/button"
+import NotificationBell from "@/features/home/components/NotificationBell/NotificationBell"
 import { LogOut } from "lucide-react"
 
 interface HeaderProps {
@@ -12,6 +13,8 @@ interface HeaderProps {
   isSidebarOpen: boolean
   onToggleSidebar: () => void
   onLogout: () => void
+  /** 계정 이용 정지(ui-studio-13) — 계정 배지가 「정지」(위험 톤)로 바뀐다 */
+  isSuspended?: boolean
 }
 
 /**
@@ -26,6 +29,7 @@ export default function Header(props: HeaderProps) {
     isSidebarOpen,
     onToggleSidebar,
     onLogout,
+    isSuspended = false,
   } = props
 
   return (
@@ -69,18 +73,21 @@ export default function Header(props: HeaderProps) {
       </div>
 
       <div className="flex shrink-0 items-center gap-3">
+        {/* 시안 14 H1a — 모든 페이지 공통 알림 종 */}
+        <NotificationBell />
         {showroomName && (
           <div className="flex items-center gap-[7px] text-[12px] text-sz-n-600">
             <span className="max-w-[180px] truncate">{showroomName}</span>
-            {/*
-              시안의 상태 배지. 지금은 세션에서 파생된 값이다 — role=CREATOR가
-              아니면 이 셸에 들어올 수 없으므로(router.ts) 여기 서 있다는 것
-              자체가 활성 계정이라는 뜻이다. 서버가 계정 상태를 따로 내려주기
-              시작하면 그 값으로 바꿔야 한다(정지·휴면을 구분할 수 없다).
-            */}
-            <span className="rounded-[10px] bg-sz-success-bg px-2.5 py-0.5 text-[11px] font-medium text-sz-success-text">
-              활성
-            </span>
+            {/* 시안 상태 배지 — 계정 상태 API(`/creator/account-status`) 기준 활성 · 정지(ui-studio-13) */}
+            {isSuspended ? (
+              <span className="rounded-[10px] bg-sz-danger-bg px-2.5 py-0.5 text-[11px] font-medium text-sz-danger-text">
+                정지
+              </span>
+            ) : (
+              <span className="rounded-[10px] bg-sz-success-bg px-2.5 py-0.5 text-[11px] font-medium text-sz-success-text">
+                활성
+              </span>
+            )}
           </div>
         )}
 

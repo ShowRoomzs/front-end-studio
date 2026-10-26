@@ -2,7 +2,11 @@ import Notice from "@/common/components/Notice/Notice"
 import RecordNav from "@/common/components/RecordNav/RecordNav"
 import StatusBadge from "@/common/components/StatusBadge/StatusBadge"
 import Btn from "@/features/contracts/components/shared/Btn"
-import { B, Grp } from "@/features/settlement/components/detail/DetailParts"
+import {
+  B,
+  Grp,
+  SubBadge,
+} from "@/features/settlement/components/detail/DetailParts"
 import {
   AdjustmentCard,
   AdjustmentHold,
@@ -23,6 +27,8 @@ import AdjustmentRequestModal, {
   type AdjustmentFieldErrors,
 } from "@/features/settlement/components/modals/AdjustmentRequestModal"
 import {
+  CONNECTIONS_PATH,
+  PAYOUT_HOLD_SANCTION_LABEL,
   SETTLEMENT_LIST_PATH,
   TONE_VARIANT,
 } from "@/features/settlement/constants/params"
@@ -57,9 +63,10 @@ import {
   useParams as useRouteParams,
 } from "react-router-dom"
 
-/** 화면이 아직 없는 목적지 — 이슈 스레드(§42) · 성과 관리 · 기본정보 관리 */
-const notReadyToast = (screen: string) =>
-  toast(`${screen} 화면은 준비 중입니다.`)
+/** 정산 정보(계좌 확인) — 기본정보 관리 정산 탭(ui-studio-06) */
+const BASIC_INFO_SETTLEMENT_PATH = "/basic-info?tab=settlement"
+/** 공구 성과 상세(ui-studio-10 D1~D4) */
+const performancePath = (groupBuyId: number) => `/performance/${groupBuyId}`
 
 /** 한 몫이라도 이미 나갔는가(사업자 대기 중에도 브랜드 몫은 원래 날짜에 지급) — 소제목 시제 */
 const anyPayoutPaid = (detail: SettlementDetail) =>
@@ -96,11 +103,30 @@ export default function SettlementDetailPage() {
   const goList = () =>
     navigate({ pathname: SETTLEMENT_LIST_PATH, search: location.search })
 
-  return <SettlementDetailView id={id} onList={goList} />
+  return (
+    <SettlementDetailView
+      id={id}
+      onList={goList}
+      onOpenThread={threadId =>
+        navigate(`${CONNECTIONS_PATH}?threadId=${threadId}`)
+      }
+      onOpenAccount={() => navigate(BASIC_INFO_SETTLEMENT_PATH)}
+      onOpenPerformance={groupBuyId => navigate(performancePath(groupBuyId))}
+    />
+  )
 }
 
-function SettlementDetailView(props: { id: number; onList: () => void }) {
-  const { id, onList } = props
+function SettlementDetailView(props: {
+  id: number
+  onList: () => void
+  /** 이슈 스레드(ui-studio-11) — 연결·소통에서 그 스레드를 연다 */
+  onOpenThread: (threadId: number) => void
+  /** 정산 정보 확인 — 기본정보 관리 정산 탭 */
+  onOpenAccount: () => void
+  /** 이 공구의 성과 상세 */
+  onOpenPerformance: (groupBuyId: number) => void
+}) {
+  const { id, onList, onOpenThread, onOpenAccount, onOpenPerformance } = props
   const {
     data: detail,
     isLoading,
@@ -159,8 +185,10 @@ function SettlementDetailView(props: { id: number; onList: () => void }) {
   const { settlement } = detail
   const settlementNumber = settlement.settlementNumber
   const business = settlement.creatorBusinessType === "BUSINESS"
-  // 이슈 스레드 화면이 아직 없다 — `adjustment.threadId`로 이동할 자리만 남겨 둔다
-  const openThread = () => notReadyToast("이슈 스레드")
+  // 이슈 스레드(ui-studio-11) — 연결·소통에서 그 스레드를 연다
+  const openThread = () => {
+    if (detail.adjustment) onOpenThread(detail.adjustment.threadId)
+  }
 
   const handleAdjustmentSubmit = (body: AdjustmentRequestBody) => {
     setAdjustErrors({})
@@ -243,6 +271,10 @@ function SettlementDetailView(props: { id: number; onList: () => void }) {
             <StatusBadge variant={TONE_VARIANT[settlement.statusTone]}>
               {settlement.statusLabel}
             </StatusBadge>
+            {/* 13 S6 — 상태는 「지급 예정」 그대로 + 보조 배지 */}
+            {settlement.payoutHold?.sanction && (
+              <SubBadge>{PAYOUT_HOLD_SANCTION_LABEL}</SubBadge>
+            )}
           </span>
         }
         right={
@@ -256,6 +288,9 @@ function SettlementDetailView(props: { id: number; onList: () => void }) {
                 setIsAdjustOpen(true)
               }}
               onOpenThread={openThread}
+              onOpenPerformance={() =>
+                onOpenPerformance(detail.settlement.groupBuyId)
+              }
             />
           </div>
         }
@@ -320,10 +355,7 @@ function SettlementDetailView(props: { id: number; onList: () => void }) {
       />
       <div className="mb-4 grid grid-cols-2 items-start gap-3">
         <DistributionCard detail={detail} />
-        <PayoutInfoCard
-          detail={detail}
-          onOpenAccount={() => notReadyToast("기본정보 관리")}
-        />
+        <PayoutInfoCard detail={detail} onOpenAccount={onOpenAccount} />
       </div>
 
       {/* 사업자 증빙은 상단 세금계산서 발행 카드가 맡는다(서버도 사업자에게 withholding을 내리지 않는다) */}
@@ -383,8 +415,9 @@ function HeaderAction(props: {
   detail: SettlementDetail
   onRequestAdjustment: () => void
   onOpenThread: () => void
+  onOpenPerformance: () => void
 }) {
-  const { detail, onRequestAdjustment, onOpenThread } = props
+  const { detail, onRequestAdjustment, onOpenThread, onOpenPerformance } = props
   const status = detail.settlement.status
 
   if (status === "REVIEWING") {
@@ -406,7 +439,7 @@ function HeaderAction(props: {
     )
   }
   return (
-    <Btn variant="secondary" onClick={() => notReadyToast("성과 관리")}>
+    <Btn variant="secondary" onClick={onOpenPerformance}>
       성과 관리에서 보기
     </Btn>
   )

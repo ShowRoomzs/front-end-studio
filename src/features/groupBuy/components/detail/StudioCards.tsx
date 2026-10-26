@@ -1,5 +1,6 @@
 import DetailCard from "@/common/components/DetailCard/DetailCard"
 import Notice from "@/common/components/Notice/Notice"
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { FLINK_CLASS } from "@/features/contracts/components/shared/styles"
 import { TermRow, Terms } from "@/features/contracts/components/shared/Terms"
@@ -32,6 +33,8 @@ import {
   d,
   dt,
   dutyText,
+  kstDt,
+  kstMd,
   localDate,
   localMonthDay,
   md,
@@ -66,6 +69,7 @@ function lifecycleSteps(detail: Detail): Array<GbStep> {
     ENDED: 3,
     SETTLED: 4,
     SUSPENDED: 2,
+    TERMINATED: 0,
   }[groupBuy.status]
   return LIFECYCLE.map((label, index) => ({
     label,
@@ -113,14 +117,17 @@ export function SituationTopCard(props: {
   detail: Detail
   situation: SellingSituation
   canRespond: boolean
+  /** 시안 13 S4a — 계정 이용 정지 중이면 [수락]만 비활성 + 툴팁(거절은 허용) */
+  acceptBlocked: boolean
   onAccept: () => void
   onReject: () => void
 }) {
-  const { detail, situation, canRespond, onAccept, onReject } = props
+  const { detail, situation, canRespond, acceptBlocked, onAccept, onReject } =
+    props
   const { post, adminSuspension, activeRequest, extension, brand, timeline } =
     detail
 
-  if (situation === "hidden" && post.hidden) {
+  if (situation === "suspendedPost" && post.hidden) {
     const hidden = post.hidden
     return (
       <AlertCard
@@ -134,7 +141,7 @@ export function SituationTopCard(props: {
           수 없습니다.
         </Notice>
         <Terms className="mt-3">
-          <TermRow label="숨김 사유" labelWidth={96}>
+          <TermRow label="노출 중지 사유" labelWidth={96}>
             {hidden.detail ?? POST_REASON_LABEL[hidden.code] ?? hidden.code}
             <FSub>{dt(hidden.hiddenAt)} · 운영자</FSub>
           </TermRow>
@@ -145,7 +152,7 @@ export function SituationTopCard(props: {
           <B>
             이미 접수된 주문의 배송 · 환불 · 소비자 응대는 브랜드가 계속 처리
           </B>
-          하므로, 숨김 중에도 기존 주문은 정상적으로 진행됩니다.
+          하므로, 노출 중지 중에도 기존 주문은 정상적으로 진행됩니다.
         </Notice>
       </AlertCard>
     )
@@ -169,7 +176,7 @@ export function SituationTopCard(props: {
           <TermRow label="집행 예정 일시" labelWidth={110}>
             <span className="tabular-nums">
               <B className="text-sz-warning-text">
-                {dt(adminSuspension.executeScheduledAt)}
+                {kstDt(adminSuspension.executeScheduledAt)}
               </B>
               {days !== null && ` · 영업일 기준 ${days}일 뒤`}
             </span>
@@ -180,6 +187,28 @@ export function SituationTopCard(props: {
             </span>
           </TermRow>
         </Terms>
+        {/* 시안 B13 · 기-21 — 사전 통지 › 소명(운영팀 채널) › 집행 / 철회 */}
+        <div className="mt-4">
+          <GbStepper
+            steps={[
+              {
+                label: "사전 통지",
+                who: md(adminSuspension.noticedAt),
+                tone: "done",
+              },
+              {
+                label: "소명",
+                who: `운영팀 채널 · 기한 ${adminSuspension.appealDeadlineAt ? kstMd(adminSuspension.appealDeadlineAt) : "N영업일"}`,
+                tone: "cur",
+              },
+              {
+                label: "집행 / 철회",
+                who: `예정 ${kstMd(adminSuspension.executeScheduledAt)}`,
+                tone: "todo",
+              },
+            ]}
+          />
+        </div>
         <Notice tone="warn" className="mt-4">
           <B>집행 전까지 공구는 계속 팔립니다 · 배송을 멈추지 마세요.</B> 지금
           들어오는 주문은 정상 주문이며, 접수된 주문의{" "}
@@ -292,9 +321,15 @@ export function SituationTopCard(props: {
           </div>
           {canRespond && (
             <div className="mt-3.5 flex gap-2">
-              <Btn variant="primary" onClick={onAccept}>
-                수락
-              </Btn>
+              <SuspendedTooltip active={acceptBlocked}>
+                <Btn
+                  variant="primary"
+                  disabled={acceptBlocked}
+                  onClick={onAccept}
+                >
+                  수락
+                </Btn>
+              </SuspendedTooltip>
               <Btn variant="secondary" onClick={onReject}>
                 거절
               </Btn>
@@ -451,14 +486,15 @@ export function ReadinessCard(props: {
       )}
       <Checklist className="mt-4" rows={rows} />
       {isReady && post.hidden ? (
-        // 준비완료에서도 운영자가 숨길 수 있다 — 숨긴 채로 시작되면 소비자에게 보이지 않는다
+        // 준비완료에서도 운영자가 노출 중지할 수 있다 — 그대로 시작되면 소비자에게 보이지 않는다
         <Notice tone="warn" className="mt-4">
-          <B>운영자가 내 게시물을 숨겼습니다.</B> 공구는 {dt(timeline.startAt)}
-          에 그대로 시작되지만 <B>게시물이 소비자에게 보이지 않습니다</B> —
-          사유를 반영해 게시물을 수정하면 운영자가 확인하고 숨김을 해제합니다.
+          <B>운영자가 내 게시물의 노출을 중지했습니다.</B> 공구는{" "}
+          {dt(timeline.startAt)}에 그대로 시작되지만{" "}
+          <B>게시물이 소비자에게 보이지 않습니다</B> — 사유를 반영해 게시물을
+          수정하면 운영자가 확인하고 노출 중지를 해제합니다.
           <br />
           <br />
-          <B>숨김 사유</B> ·{" "}
+          <B>노출 중지 사유</B> ·{" "}
           {post.hidden.detail ??
             POST_REASON_LABEL[post.hidden.code] ??
             post.hidden.code}
@@ -531,7 +567,7 @@ export function SellingProgressCard(props: { detail: Detail }) {
         { label: "진행중", who: `${md(timeline.startAt)} 시작`, tone: "done" },
         {
           label: "중단 예정",
-          who: `집행 ${md(adminSuspension.executeScheduledAt)}`,
+          who: `집행 ${kstMd(adminSuspension.executeScheduledAt)}`,
           tone: "cur",
         },
         { label: "중단", who: "집행 시 확정", tone: "todo" },
@@ -569,12 +605,12 @@ export function SalesCard(props: { detail: Detail }) {
   const amount = sales ? num(sales.amount) : "—"
   const reward = sales ? num(sales.myReward) : "—"
   const unclosed = orderClosure?.unclosed.total
-  // 시안 B5a — 숨김 중에는 「주문」 아래에 숨김 이후 들어온 건수를 쓴다
+  // 시안 B5a — 노출 중지 중에는 「주문」 아래에 노출 중지 이후 들어온 건수를 쓴다
   const sinceHidden =
-    detail.post.status === "HIDDEN" &&
+    detail.post.status === "EXPOSURE_SUSPENDED" &&
     sales?.ordersSinceHidden !== null &&
     sales?.ordersSinceHidden !== undefined
-      ? `숨김 이후 ${num(sales.ordersSinceHidden)}건`
+      ? `노출 중지 이후 ${num(sales.ordersSinceHidden)}건`
       : null
 
   let title = "판매 실적"
@@ -1046,8 +1082,8 @@ export function PayoutCard(props: { detail: Detail }) {
         <div className="mt-1 text-[11px] leading-[1.6] text-sz-n-600">
           이 금액은 <B className="text-sz-n-900">브랜드가 직접 지급</B>합니다.
           플랫폼은 지급을 보증하지 않으며, 지급이 이루어지지 않으면{" "}
-          <B className="text-sz-n-900">이슈 스레드에서 운영자 중재</B>를 요청할
-          수 있습니다. <B className="text-sz-n-900">계약서가 근거</B>가 됩니다.
+          <B className="text-sz-n-900">브랜드와의 1:1 스레드</B>에서 해결하며{" "}
+          <B className="text-sz-n-900">계약서가 근거</B>가 됩니다.
         </div>
       </div>
       {payout.salesReward && (
@@ -1087,8 +1123,8 @@ function postFooter(detail: Detail): ReactNode {
     case "SCHEDULED":
       return (
         <>
-          승인 이후에는 <B>자유롭게 수정할 수 있습니다</B> — 다시 승인받을
-          필요가 없습니다. 검토는 <B>최초 등록 때 한 번</B>만 합니다.
+          준비완료(예약) 구간에는 <B>게시물을 수정할 수 없습니다</B> — 공구가
+          열린 뒤 <B>본문만</B> 수정할 수 있습니다(재승인 없음).
           <br />
           <B>승인 후 수정한 내용으로 생기는 법적 책임은 나에게 있으며</B>,
           운영자는 법령 준수 · 소비자 보호를 위해{" "}
@@ -1096,12 +1132,12 @@ function postFooter(detail: Detail): ReactNode {
         </>
       )
     case "EXPOSED":
-    case "HIDDEN":
+    case "EXPOSURE_SUSPENDED":
       return (
         <>
-          진행 중에도 <B>제목 · 본문은 자유롭게 수정</B>할 수 있고{" "}
-          <B>재승인 없이 바로 반영</B>됩니다. 다만{" "}
-          <B>가격 · 상품 구성은 계약 확정값</B>이라 바꿀 수 없습니다.
+          진행 중에는 <B>본문만 수정</B>할 수 있고 <B>재승인 없이 바로 반영</B>
+          됩니다. <B>제목</B>과 <B>가격 · 상품 구성</B>(계약 확정값)은 바꿀 수
+          없습니다.
           <br />
           <B>승인 후 수정한 내용으로 생기는 법적 책임은 나에게 있으며</B>,
           운영자는 법령 준수 · 소비자 보호를 위해{" "}
@@ -1129,13 +1165,16 @@ export function PostCard(props: { detail: Detail; onWritePost: () => void }) {
     meta.push(`반려 ${dt(post.rejection?.rejectedAt ?? post.reviewedAt)}`)
   } else if (post.status === "SCHEDULED") {
     meta.push(`오픈 ${dt(timeline.startAt)}`)
-  } else if (post.status === "EXPOSED" || post.status === "HIDDEN") {
+  } else if (
+    post.status === "EXPOSED" ||
+    post.status === "EXPOSURE_SUSPENDED"
+  ) {
     meta.push(`오픈 ${dt(post.openedAt ?? groupBuy.openedAt)}`)
   }
   if (
     post.lastEditedAt &&
     (post.status === "EXPOSED" ||
-      post.status === "HIDDEN" ||
+      post.status === "EXPOSURE_SUSPENDED" ||
       post.status === "SCHEDULED")
   ) {
     meta.push(`최근 수정 ${dt(post.lastEditedAt)}`)

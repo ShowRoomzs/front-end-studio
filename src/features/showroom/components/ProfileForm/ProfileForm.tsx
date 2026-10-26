@@ -1,3 +1,5 @@
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
+import { useAccountStatus } from "@/features/home/hooks/useAccountStatus"
 import AvatarUploader from "@/features/showroom/components/ProfileForm/AvatarUploader"
 import { Field } from "@/features/showroom/components/ProfileForm/FormField"
 import { inputClass } from "@/features/showroom/components/ProfileForm/formStyles"
@@ -45,12 +47,16 @@ function toFormValues(profile: ShowroomProfile): FormValues {
  *
  * 에러 문구를 띄우는 건 **중복 · 형식 · 파일** 셋뿐이다(§22-2). 쇼룸명이 비었을 때는
  * 문구 없이 버튼만 비활성으로 둔다. 중복과 형식 오류는 **동시에** 뜰 수 있다.
+ *
+ * 계정 이용 정지(시안 13) — 쇼룸명만 잠근다. 이름을 바꾸면 소비자 · 브랜드가 정지된 계정을 다른 계정으로
+ * 오인한다. 소개글 · 프로필 이미지는 정지 사유를 고치는 수단일 수 있어 그대로 둔다(서버 `SHOWROOM_NAME_CHANGE` 409).
  */
 export default function ProfileForm(props: { profile: ShowroomProfile }) {
   const { profile } = props
 
   const [values, setValues] = useState<FormValues>(() => toFormValues(profile))
   const [nameError, setNameError] = useState<string | null>(null)
+  const { isSuspended } = useAccountStatus()
 
   const { mutateAsync: checkName } = useCheckShowroomName()
   const { mutateAsync: updateProfile, isPending: isSaving } =
@@ -129,7 +135,8 @@ export default function ProfileForm(props: { profile: ShowroomProfile }) {
 
     try {
       await updateProfile({
-        showroomName: trimmedName,
+        // 정지 중에는 쇼룸명을 원래 값 그대로 보낸다(바뀌면 서버가 409)
+        showroomName: isSuspended ? profile.showroomName : trimmedName,
         // 삭제는 빈 문자열이다 — null을 보내면 서버가 "안 바꿈"으로 읽는다
         profileImageUrl: values.profileImageUrl,
         introduction: values.introduction.trim(),
@@ -174,14 +181,17 @@ export default function ProfileForm(props: { profile: ShowroomProfile }) {
           error={nameError}
           hint="특수문자 없이 2~20자 · 중복 불가 · 소비자에게 보이는 이름"
         >
-          <ShowroomNameInput
-            value={values.showroomName}
-            onChange={showroomName =>
-              setValues(prev => ({ ...prev, showroomName }))
-            }
-            onBlur={() => void handleNameBlur()}
-            hasError={!!nameError}
-          />
+          <SuspendedTooltip active={isSuspended} className="flex w-full">
+            <ShowroomNameInput
+              value={values.showroomName}
+              onChange={showroomName =>
+                setValues(prev => ({ ...prev, showroomName }))
+              }
+              onBlur={() => void handleNameBlur()}
+              hasError={!!nameError}
+              disabled={isSuspended}
+            />
+          </SuspendedTooltip>
         </Field>
 
         {/*

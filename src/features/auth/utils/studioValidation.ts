@@ -40,6 +40,34 @@ export const validateBusinessRegistrationNumber = (value: string) => {
   return true
 }
 
+/** 주민등록번호 앞자리 · 뒷자리 길이(온보딩 rev.3 — 앞 6 + 뒤 7 마스킹) */
+export const RESIDENT_NUMBER_FRONT_LENGTH = 6
+export const RESIDENT_NUMBER_BACK_LENGTH = 7
+
+/** 서버 거절 문구(`CreatorAuthService#validateBusinessFields`)와 같은 문구 */
+export const RESIDENT_NUMBER_INVALID_MESSAGE =
+  "주민등록번호를 정확히 입력해 주세요."
+
+/**
+ * 주민등록번호 형식 — 백엔드 `ResidentRegistrationNumber.normalize`와 같은 규칙.
+ * 13자리 숫자 · 앞 6자리의 월 1~12 · 일 1~31 · 뒷자리 첫 숫자 1~8. 체크섬은 보지 않는다
+ * (2020.10 이후 발급분은 뒷자리가 임의 번호라 맞지 않는다).
+ */
+export const isValidResidentNumber = (digits: string) => {
+  if (!/^\d{13}$/.test(digits)) return false
+  const month = Number(digits.slice(2, 4))
+  const day = Number(digits.slice(4, 6))
+  const gender = digits.charAt(6)
+  return (
+    month >= 1 &&
+    month <= 12 &&
+    day >= 1 &&
+    day <= 31 &&
+    gender >= "1" &&
+    gender <= "8"
+  )
+}
+
 /** 백엔드 @Pattern ^[a-z0-9._]+$ 와 동일. 최대 30자(@Size). */
 export const ACCOUNT_ID_MAX_LENGTH = 30
 

@@ -19,7 +19,11 @@ import {
   Sec,
   WaitTag,
 } from "@/features/settlement/components/detail/DetailParts"
-import { CONFIRM_REASON_TEXT } from "@/features/settlement/constants/params"
+import {
+  CONFIRM_REASON_TEXT,
+  PAYOUT_HOLD_SANCTION_LABEL,
+  REWARD_FORMULA,
+} from "@/features/settlement/constants/params"
 import { useGetSettlementItems } from "@/features/settlement/hooks/useSettlementQueries"
 import type {
   AmountCount,
@@ -57,14 +61,41 @@ const withholdingRatio = (detail: SettlementDetail) =>
   detail.breakdown.withholdingIncomeRate + detail.breakdown.withholdingLocalRate
 
 /**
- * 내 몫 지급 예정일 — 서버가 내 행 기준으로 날짜 또는 문장을 준다(사업자 발행 전 「발행 확인 후 + 3영업일」 ·
- * 주민등록번호 미등록 「주민등록번호 등록 후 지급」). 날짜가 있으면 문장은 그 근거다.
+ * 내 몫 지급 예정일 — 서버가 내 행 기준으로 날짜 또는 문장을 준다(사업자 발행 전 「발행 확인 후 + 3영업일」 등).
+ * 날짜가 있으면 문장은 그 근거다. 문장의 숫자(N영업일)는 서버 설정값 그대로 보인다(사용자 결정 10-21).
+ *
+ * 내 행이 보류(`payoutHold`)면 날짜가 지워진다 — 지급일 문구는 서버 문장, 근거는 「원래 2026.09.09」
+ * (13 S6 · 정지면 「브랜드 몫은 예정대로 지급」을 덧붙인다). `original`은 요약 바가 쓰는 원래 예정일이다.
  */
 function payoutDue(detail: SettlementDetail) {
   const { payoutDueDate, payoutDueNote } = detail.timeline
+  const hold = detail.settlement.payoutHold
+  if (!payoutDueDate && hold) {
+    const basis = [
+      hold.originalDueDate && `원래 ${formatFullDate(hold.originalDueDate)}`,
+      hold.sanction && "브랜드 몫은 예정대로 지급",
+    ]
+      .filter(Boolean)
+      .join(" · ")
+    return {
+      value: payoutDueNote ?? hold.scheduleLabel,
+      basis: basis || null,
+      original: hold.originalDueDate,
+    }
+  }
   return payoutDueDate
-    ? { value: formatFullDate(payoutDueDate), basis: payoutDueNote }
-    : { value: payoutDueNote ?? "—", basis: null }
+    ? {
+        value: formatFullDate(payoutDueDate),
+        basis: payoutDueNote,
+        original: null,
+      }
+    : { value: payoutDueNote ?? "—", basis: null, original: null }
+}
+
+/** 요약 바 지급 예정일 — 보류로 날짜가 지워졌으면 원래 예정일(13 S6 「지급 예정일 2026.09.09」) */
+function summaryPayoutDue(detail: SettlementDetail) {
+  const due = payoutDue(detail)
+  return due.original ? formatFullDate(due.original) : due.value
 }
 
 // ── 상단 요약 바 ─────────────────────────────────────
@@ -120,7 +151,7 @@ export function SummaryBar({ detail }: Props) {
         {formatFullDate(timeline.confirmedAt)}
       </InlineItem>
       <InlineItem label={paid ? "지급일" : "지급 예정일"}>
-        {paid ? formatFullDate(timeline.paidAt) : payoutDue(detail).value}
+        {paid ? formatFullDate(timeline.paidAt) : summaryPayoutDue(detail)}
       </InlineItem>
       <InlineItem label="정산 근거">
         주문 종결 {formatMonthDay(timeline.ordersClosedAt)}
@@ -254,8 +285,10 @@ export function AdjustmentCard({ detail }: Props) {
       </MTable>
       {open && (
         <Note>
-          응답(동의 · 다른 금액 제안 · 반대)은 <B>이슈 스레드에서만</B> 할 수
-          있습니다 — 이 화면은 진행 상황을 보여주기만 합니다.
+          응답(동의 · 다른 금액 제안 · 반대)과 <B>요청 철회</B>는{" "}
+          <B>이슈 스레드에서만</B> 할 수 있습니다 — 철회하면{" "}
+          <B>원래 금액으로 바로 확정</B>됩니다. 이 화면은 진행 상황을 보여주기만
+          합니다.
         </Note>
       )}
     </Sec>
@@ -307,11 +340,12 @@ export function BreakdownCard({ detail }: Props) {
     ? `차감 후 금액(${formatWon(b.rewardAfterClawback)})으로 원천징수 · ${formatRatio(withholdingRatio(detail))}`
     : `소득세 ${formatRatio(b.withholdingIncomeRate)} + 지방세 ${formatRatio(b.withholdingLocalRate)} · 비사업자`
 
+  // 기-11 — 판매 리워드 = 확정 거래액 × 리워드율(rev.4). 협의 · 합의 반영 문구는 그 뒤에 붙인다.
   const rewardNote = adjusting
-    ? "원래 금액 · 합의 결과에 따라 바뀝니다"
+    ? `${REWARD_FORMULA} · 원래 금액 · 합의 결과에 따라 바뀝니다`
     : changed
-      ? `조정 합의 반영 · 원래 ${formatWon(b.originalRewardAmount)}`
-      : undefined
+      ? `${REWARD_FORMULA} · 조정 합의 반영 · 원래 ${formatWon(b.originalRewardAmount)}`
+      : REWARD_FORMULA
 
   return (
     <Sec title="내 리워드 분해" note={caption}>
@@ -394,8 +428,12 @@ export function BreakdownCard({ detail }: Props) {
           교환 · 반려 재발송비는 브랜드 몫이라 리워드 계산에 포함되지 않습니다.
         </B>
         <br />
-        <B>정산이 끝난 뒤</B> 구매확정 상품의 하자로 환불이 생기면, 그 주문분
-        리워드는 <B>다음 정산에서 자동 차감</B>됩니다.
+        {/* 기-13 【잠정】 — 차감 규칙 · 지급 전 환불 재계산 */}
+        <B>정산이 끝난 뒤</B> 환불이 생기면 그 주문분 리워드(
+        <B>원래 받은 금액 그대로</B>)를{" "}
+        <B>내 다음 정산 — 다른 브랜드 정산 포함 — 에서 자동 차감</B>합니다.{" "}
+        <B>지급 전</B>에 생긴 환불은 정산을 <B>다시 계산</B>하고{" "}
+        <B>확인 기간이 다시 시작</B>됩니다.
       </Note>
     </Sec>
   )
@@ -465,9 +503,9 @@ export function DeductionCard({ detail }: Props) {
         </tbody>
       </table>
       <Note>
-        이미 지급된 정산에서 <B>구매확정 후 하자로 환불</B>이 생기면, 그 주문분
-        리워드는 <B>다음 정산의 리워드에서 자동 차감</B>됩니다 — 이미 받은 돈을
-        돌려보낼 필요는 없습니다.{" "}
+        이미 지급된 정산에서 <B>환불</B>이 생기면, 그 주문분 리워드는{" "}
+        <B>원래 받은 금액 그대로</B> <B>내 다음 정산(다른 브랜드 정산 포함)</B>
+        에서 자동 차감됩니다 — 이미 받은 돈을 돌려보낼 필요는 없습니다.{" "}
         {business ? "세금계산서 공급가는" : "원천징수는"} <B>차감 후 리워드</B>
         를 기준으로 계산합니다. <WaitTag>[자문대기-법률 J]</WaitTag> 차감 근거
         조항.
@@ -537,7 +575,9 @@ export function DistributionCard({ detail }: Props) {
                     </MNote>
                   </td>
                   <td className={cn(LTAB_CELL, myRowToneClass(detail, row))}>
-                    {row.statusLabel}
+                    {row.hold?.sanction
+                      ? PAYOUT_HOLD_SANCTION_LABEL
+                      : row.statusLabel}
                   </td>
                 </tr>
               )

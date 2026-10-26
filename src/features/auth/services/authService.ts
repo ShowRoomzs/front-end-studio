@@ -39,8 +39,13 @@ export type TokenResponse = {
   /** ACCOUNT_ROLE_MISMATCH | ACCOUNT_REJECTED */
   code?: string
   message?: string
+  /** 반려 정형 사유 코드(`CreatorRejectionReasonType`) */
   rejectReasonType?: string
-  rejectReasonDetail?: string
+  // rejectReasonDetail(운영자 상세 사유)은 서버에서 폐지됐다(기-36 · 항상 null). 내부용이라 타입에도 두지 않는다.
+  /** 반려 사유 — 신청자 통지 라벨. 화면 표시는 이 값(「채널 운영 기준 미충족」 등) */
+  rejectReasonLabel?: string
+  /** 반려일시 */
+  rejectedAt?: string
   /** 반려일 + 14일 */
   reapplyAvailableAt?: string
 }
@@ -100,6 +105,11 @@ export type CompleteRegistrationRequest = {
   businessRegistrationNumber?: string
   /** BUSINESS일 때만 */
   businessLicenseImageUrl?: string
+  /**
+   * 주민등록번호 13자리(숫자만) — INDIVIDUAL 필수 · BUSINESS는 보내지 않는다.
+   * 원천징수 신고용. 서버가 암호화해 저장하고 원문은 어떤 응답에도 내리지 않는다.
+   */
+  residentRegistrationNumber?: string
   /** 은행명이 아니라 금융결제원 표준 3자리 코드 */
   bankCode: string
   /** 하이픈 없이 숫자 10~16자리 */

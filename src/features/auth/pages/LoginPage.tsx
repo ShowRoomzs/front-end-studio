@@ -105,7 +105,7 @@ export default function LoginPage() {
   return (
     <AuthShell variant="auth" subtitle="쇼룸 스튜디오">
       <p className="mb-5 text-center text-[12px] leading-[1.7] text-sz-n-600">
-        인플루언서 전용 활동 공간입니다.
+        인플루언서 전용 작업 공간입니다.
         <br />
         <b className="text-sz-n-900">소비자 계정</b>으로 로그인해 주세요.
       </p>
@@ -168,10 +168,8 @@ export default function LoginPage() {
           }
         >
           <p>
-            <b className="text-sz-n-900">사유:</b>{" "}
-            {result.rejectReasonDetail ||
-              result.rejectReasonType ||
-              "관리자 확인 필요"}
+            {/* 기-36 — 정형 사유(통지 라벨) 1개만. 운영자 상세 사유는 보이지 않는다. */}
+            <b className="text-sz-n-900">반려 사유:</b> {result.reasonLabel}
             <br />
             이번 신청 건은 종료되었으며,{" "}
             <b className="text-sz-n-900">반려일로부터 14일 후</b>

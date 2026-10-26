@@ -1,7 +1,7 @@
 import type { BaseParams } from "@/common/types/page"
 
 /*
-  쇼룸 스튜디오 정산 관리(ui-studio-12 rev.3) — 서버 DTO 그대로.
+  쇼룸 스튜디오 정산 관리(ui-studio-12 rev.4) — 서버 DTO 그대로.
 
   원본: back-end `api/creator/settlement/dto/CreatorSettlementDto.java`
   · `api/common/settlement/dto/SettlementPartyDto.java` · `SettlementAdjustmentDto.java`
@@ -71,6 +71,28 @@ export interface SettlementListItem {
   /** 내 행의 지급 예정일 · 지급일 — 확인 중 · 협의 · 보류 · 실패면 null */
   payoutDate: string | null
   payoutDateKind: "SCHEDULED" | "PAID" | null
+  /**
+   * 내 지급 행 보류 이유 — 상태는 「지급 예정」 그대로 · `sanction`이면 보조 배지
+   * 「지급 정지 · 계정 이용 정지」(13 S6). 보류가 아니면 null
+   */
+  payoutHold: PayoutHoldView | null
+}
+
+/**
+ * 내 지급 행 보류 이유(1017 설계서 8-8 · `api/common/settlement/dto/PayoutHoldView.java`).
+ * 정산 상태 라벨은 바꾸지 않고 이 보조 정보로 보인다 — 「보류」는 조정 협의 전용이다.
+ */
+export interface PayoutHoldView {
+  /** `PayoutBlockReason` 코드 — 「BRAND_SUSPENDED」 · 「CREATOR_SUSPENDED」 · 「TAX_INVOICE_UNVERIFIED」 등 */
+  reason: string
+  /** 「계정 이용 정지 · 정산 정보 불일치」 */
+  label: string
+  /** 지급일 문구 — 「정지 해제 다음 영업일 지급」 · 「발행 확인 후 + 3영업일」(서버 문장) */
+  scheduleLabel: string
+  /** 원래 지급 예정일(LocalDate) — 「원래 2026.09.09」 · 사업자 확인 전이면 null */
+  originalDueDate: string | null
+  /** 계정 이용 정지로 인한 보류인가 — 보조 배지는 이때만 */
+  sanction: boolean
 }
 
 // ── 요약(2-3) ───────────────────────────────────────
@@ -105,6 +127,8 @@ export interface SettlementSummary {
   statusCounts: SettlementStatusCounts
   /** GNB 배지 = 요청 가능 창이 열린 정산 확인 중 + 세금계산서 입력 대기 · 반려 */
   attentionCount: number
+  /** `TAX_INVOICE_UNVERIFIED`면 지급 예정 중 세금계산서 확인 전이라 보류된 건이 있다 · 없으면 null */
+  payoutCondition: string | null
 }
 
 // ── 상세(2-4) ───────────────────────────────────────
@@ -124,10 +148,13 @@ export interface SettlementHeader {
   /** 정산 생성 시점의 세무 구분 스냅샷 */
   creatorBusinessType: CreatorBusinessType
   taxInvoiceRequired: boolean
+  /** 내 지급 행 보류 이유 — 지급 예정일 「정지 해제 다음 영업일 · 원래 09.09」 */
+  payoutHold: PayoutHoldView | null
 }
 
-/** 확정 사유 — 자동 확정 · 합의 확정 · 기한 만료 확정 */
-export type SettlementConfirmReason = "AUTO" | "AGREED" | "EXPIRED"
+/** 확정 사유 — 자동 확정 · 합의 확정 · 기한 만료 확정 · 철회 확정 */
+export type SettlementConfirmReason =
+  "AUTO" | "AGREED" | "EXPIRED" | "WITHDRAWN"
 
 export interface SettlementTimeline {
   createdAt: string
@@ -231,6 +258,8 @@ export interface SettlementPayoutRow {
   /** 「10.12 지급 예정」 · 「보류 중」 · 「발행 필요」 */
   statusLabel: string
   date: string | null
+  /** [내 행] 보류 이유 — 남의 행은 null */
+  hold: PayoutHoldView | null
 }
 
 export interface SettlementPayouts {
@@ -254,7 +283,7 @@ export interface SettlementPayment {
 
 export type SettlementParty = "SELLER" | "CREATOR"
 
-export type AdjustmentStatus = "OPEN" | "AGREED" | "EXPIRED"
+export type AdjustmentStatus = "OPEN" | "AGREED" | "EXPIRED" | "WITHDRAWN"
 
 /** 뷰어(나) 기준 차례 */
 export type AdjustmentTurn = "MY_TURN" | "THEIR_TURN" | "OPEN_FLOOR" | "CLOSED"
@@ -319,13 +348,14 @@ export type TaxInvoiceCardStatus =
 export type TaxInvoiceRejectReason =
   "AMOUNT_MISMATCH" | "RECIPIENT_MISMATCH" | "NOT_FOUND"
 
-/** 공급받는자 = SHOWROOMZ(설정) */
+/** 공급받는자 = SHOWROOMZ(서버 `company.*` 설정 · 기-35) */
 export interface TaxInvoiceSupplier {
   name: string
   representative: string
   registrationNumber: string
   address: string
-  taxEmail: string
+  /** 세금계산서 수신 — 설정 전이면 빈 문자열 · 화면은 「[확인 필요]」 */
+  taxEmail: string | null
 }
 
 /** 사업자 ∧ 확정 후만 */

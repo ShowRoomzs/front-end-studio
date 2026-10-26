@@ -1,5 +1,6 @@
 import { usePageSubtitle } from "@/common/components/MainLayout/usePageSubtitle"
 import RecordNav from "@/common/components/RecordNav/RecordNav"
+import SuspensionNotice from "@/common/components/Suspension/SuspensionNotice"
 import Btn from "@/features/contracts/components/shared/Btn"
 import {
   ClosedProgressCard,
@@ -40,6 +41,7 @@ import {
   isSelling,
   sellingSituation,
 } from "@/features/groupBuy/utils/view"
+import { useAccountStatus } from "@/features/home/hooks/useAccountStatus"
 import { useCallback, useMemo, useState } from "react"
 import toast from "react-hot-toast"
 import {
@@ -79,6 +81,8 @@ export default function GroupBuyDetailPage() {
     isError,
   } = useGetCreatorGroupBuyDetail(groupBuyId, navParams)
   const [modal, setModal] = useState<ModalKind>(null)
+  // 시안 13 — 연장 수락 · 공구 게시물 등록은 정지 중 막힌다. 서버 permissions가 정지를 보지 않아 계정 상태로 가른다
+  const { isSuspended } = useAccountStatus()
 
   const { mutate: saveDraft, isPending: isSaving } = useSaveDraft()
   const { mutate: submitPost, isPending: isSubmitting } = useSubmitPost()
@@ -144,13 +148,25 @@ export default function GroupBuyDetailPage() {
     navigate(threadId ? `/connections?threadId=${threadId}` : "/connections")
   }
   const openPairThread = () => openThread(detail.brand.pairThreadId)
-  // 게시물이 승인된 뒤(예약·노출중·숨김)의 수정은 PATCH — 재승인 없이 바로 반영된다
+  // 내 운영팀 채널 — 직권 중단 예고(B13)는 서버가 스레드 id를 준다. 노출 중지(B5a)에는 id가 없어 연결·소통 첫 화면으로 간다
+  const openOperatorChannel = () =>
+    openThread(detail.adminSuspension?.operatorChannelThreadId)
+  // 게시물이 승인된 뒤(노출중·노출 중지)의 수정은 PATCH — 재승인 없이 바로 반영된다
   const isEditMode =
     detail.permissions.canEditPost && !detail.permissions.canWritePost
   const meta = headerMeta(detail)
 
   return (
     <>
+      {/* 시안 13 R2 — 상대 브랜드 정지로 오픈 보류(서버 kind = COUNTERPARTY · 오픈 전 공구만). 정지 사실은 말하지 않는다 */}
+      {detail.sanctionHold?.kind === "COUNTERPARTY" && (
+        <SuspensionNotice tone="neutral" className="mb-3">
+          <b>상대 브랜드 사정으로 공구 오픈이 잠시 보류되었습니다.</b> 시작 예정
+          시각이 지나도 자동으로 열리지 않으며, 재개되면 일정을 다시 안내해
+          드릴게요.
+        </SuspensionNotice>
+      )}
+
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <h1 className="text-[20px] font-semibold text-sz-n-900">
@@ -182,6 +198,7 @@ export default function GroupBuyDetailPage() {
               detail={detail}
               situation={situation}
               canRespond={detail.permissions.canRespondExtension}
+              acceptBlocked={isSuspended}
               onAccept={() => setModal("accept")}
               onReject={() => setModal("reject")}
             />
@@ -223,9 +240,11 @@ export default function GroupBuyDetailPage() {
           <StudioStatusRail
             detail={detail}
             situation={situation}
+            suspended={isSuspended}
             actions={{
               onWritePost: () => setModal("post"),
               onOpenThread: openPairThread,
+              onOpenOperatorChannel: openOperatorChannel,
               onOpenFulfillmentThread: () =>
                 openThread(detail.afterEnd?.fulfillment?.threadId),
               onAcceptExtension: () => setModal("accept"),
@@ -245,6 +264,7 @@ export default function GroupBuyDetailPage() {
           isEdit={isEditMode}
           isPending={isEditMode ? isEditing : isSubmitting}
           isSaving={isSaving}
+          submitBlocked={isSuspended}
           onClose={closeModal}
           onSaveDraft={body =>
             saveDraft(
@@ -266,10 +286,10 @@ export default function GroupBuyDetailPage() {
                   {
                     onSuccess: () => {
                       closeModal()
-                      // 숨김 중 수정은 자동으로 다시 노출되지 않는다 — 운영자가 확인하고 해제한다
+                      // 노출 중지 중 수정은 자동으로 다시 노출되지 않는다 — 운영자가 확인하고 해제한다
                       toast.success(
-                        detail.post.status === "HIDDEN"
-                          ? "게시물을 수정했습니다. 운영자가 확인한 뒤 숨김을 해제합니다."
+                        detail.post.status === "EXPOSURE_SUSPENDED"
+                          ? "게시물을 수정했습니다. 운영자가 확인한 뒤 노출 중지를 해제합니다."
                           : "게시물을 수정했습니다. 바로 반영됩니다."
                       )
                     },

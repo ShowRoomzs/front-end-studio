@@ -6,6 +6,8 @@ import dayjs from "dayjs"
 interface MyDutiesCardProps {
   content: CreatorContractContent
   isConcluded: boolean
+  /** 해지(S10)면 「계약 해지로 효력 없음」 — 계약은 성립했다가 끝난 것이라 「성립하지 않아」가 아니다 */
+  isTerminated?: boolean
 }
 
 /**
@@ -13,7 +15,7 @@ interface MyDutiesCardProps {
  * 종결 3종에서도 카드는 남기되 「계약이 성립하지 않아 효력 없음」으로 표기한다(§27-7).
  */
 export default function MyDutiesCard(props: MyDutiesCardProps) {
-  const { content, isConcluded } = props
+  const { content, isConcluded, isTerminated = false } = props
   const alive = content.obligationAlive
   // 0개인 포맷은 빼고 적는다 — 「릴스 0 · 스토리 0」은 약속이 아니라 군더더기다(시안은 올리는 포맷만 나열)
   const formats =
@@ -30,7 +32,9 @@ export default function MyDutiesCard(props: MyDutiesCardProps) {
       title={alive ? "내가 해야 할 일" : "콘텐츠 의무"}
       note={
         !alive
-          ? "계약이 성립하지 않아 효력 없음"
+          ? isTerminated
+            ? "계약 해지로 효력 없음"
+            : "계약이 성립하지 않아 효력 없음"
           : isConcluded
             ? "콘텐츠 의무 · 체결로 확정된 약속"
             : "콘텐츠 의무 · 서명하면 이 내용에 동의하게 됩니다"

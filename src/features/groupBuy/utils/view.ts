@@ -52,6 +52,18 @@ export function localMonthDay(value: string | null | undefined): string {
   return value ? dayjs(value).format("MM.DD") : "—"
 }
 
+/**
+ * 운영자가 고른 시각 · 거기서 나온 기한(집행 예정 · 소명 기한) — KST 벽시계라 UTC로 바꾸지 않는다.
+ * 이벤트 시각(now() — 통지 일시 등)은 `dt` / `md`(UTC 벽시계)를 쓴다.
+ */
+export function kstDt(value: string | null | undefined): string {
+  return value ? dayjs(value).format("YYYY.MM.DD HH:mm") : "—"
+}
+
+export function kstMd(value: string | null | undefined): string {
+  return value ? dayjs(value).format("MM.DD HH:mm") : "—"
+}
+
 export function isSelling(detail: Detail) {
   return (
     detail.groupBuy.status === "IN_PROGRESS" ||
@@ -177,10 +189,10 @@ export function quantityText(detail: Detail) {
 
 /**
  * 진행중에 무엇이 걸려 있는지 — 시안 B5 변종을 하나만 고른다.
- * 숨김 > 직권 중단 예고 > 검토 중 요청 > 연장 요청 응답 대기 순이다.
+ * 노출 중지 > 직권 중단 예고 > 검토 중 요청 > 연장 요청 응답 대기 순이다.
  */
 export type SellingSituation =
-  | "hidden"
+  | "suspendedPost"
   | "notice"
   | "brandRequest"
   | "myRequest"
@@ -188,8 +200,8 @@ export type SellingSituation =
   | "none"
 
 export function sellingSituation(detail: Detail): SellingSituation {
-  if (detail.post.status === "HIDDEN") {
-    return "hidden"
+  if (detail.post.status === "EXPOSURE_SUSPENDED") {
+    return "suspendedPost"
   }
   if (
     detail.groupBuy.status === "SUSPENSION_SCHEDULED" &&
@@ -223,7 +235,7 @@ export function headerMeta(detail: Detail): {
         brand.name,
         `진행 ${timeline.elapsedDays}일차`,
       ].join(" · "),
-      warn: `중단 예정 ${dt(detail.adminSuspension?.executeScheduledAt)}`,
+      warn: `중단 예정 ${kstDt(detail.adminSuspension?.executeScheduledAt)}`,
     }
   }
   return { text: headerMetaText(detail), warn: null }
@@ -252,8 +264,8 @@ function headerMetaText(detail: Detail): string {
     case "SUSPENSION_SCHEDULED": {
       const situation = sellingSituation(detail)
       const tail =
-        situation === "hidden"
-          ? `게시물 숨김 ${post.hidden?.hiddenDays ?? "—"}일차`
+        situation === "suspendedPost"
+          ? `게시물 노출 중지 ${post.hidden?.hiddenDays ?? "—"}일차`
           : situation === "brandRequest" || situation === "myRequest"
             ? "중단 요청 검토 중"
             : situation === "extensionPending"

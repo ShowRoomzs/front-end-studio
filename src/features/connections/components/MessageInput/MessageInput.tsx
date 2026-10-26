@@ -14,6 +14,8 @@ import toast from "react-hot-toast"
 
 interface MessageInputProps {
   onSend: (content: string, files: Array<File>) => void
+  /** 입력 잠금 문구 — 종결된 이슈 스레드(시안 `.th-field.off`). 있으면 첨부 · 전송이 모두 막힌다 */
+  lockedText?: string
 }
 
 /**
@@ -24,7 +26,7 @@ interface MessageInputProps {
  * 여기 검증은 즉시 피드백용이고, 서버가 전송 시 다시 판정한다.
  */
 export default function MessageInput(props: MessageInputProps) {
-  const { onSend } = props
+  const { onSend, lockedText } = props
   const [content, setContent] = useState("")
   const [staged, setStaged] = useState<Array<StagedFile>>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -33,6 +35,7 @@ export default function MessageInput(props: MessageInputProps) {
   const isOverCount = staged.length > ATTACHMENT_COUNT_MAX
   const isOverSize = totalSize > ATTACHMENT_TOTAL_SIZE_MAX
   const canSend =
+    !lockedText &&
     !isOverCount &&
     !isOverSize &&
     (content.trim().length > 0 || staged.length > 0)
@@ -108,25 +111,32 @@ export default function MessageInput(props: MessageInputProps) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           aria-label="파일 첨부"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] border border-sz-n-300 text-sz-n-500 hover:bg-sz-n-100"
+          disabled={Boolean(lockedText)}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] border border-sz-n-300 text-sz-n-500 hover:bg-sz-n-100 disabled:cursor-not-allowed disabled:text-sz-n-300 disabled:hover:bg-transparent"
         >
           <AttachIcon />
         </button>
 
-        <textarea
-          value={content}
-          onChange={event => setContent(event.target.value)}
-          onKeyDown={event => {
-            // 줄바꿈은 Shift+Enter — 채팅에서 Enter는 전송이다
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault()
-              handleSend()
-            }
-          }}
-          rows={1}
-          placeholder="메시지 입력…"
-          className="h-10 flex-1 resize-none rounded-[20px] border border-sz-n-300 px-4 py-[9px] text-[13px] text-sz-n-900 placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:outline-none"
-        />
+        {lockedText ? (
+          <div className="flex h-10 flex-1 items-center rounded-[20px] border border-sz-n-300 bg-sz-n-100 px-4 text-[13px] text-sz-n-400">
+            {lockedText}
+          </div>
+        ) : (
+          <textarea
+            value={content}
+            onChange={event => setContent(event.target.value)}
+            onKeyDown={event => {
+              // 줄바꿈은 Shift+Enter — 채팅에서 Enter는 전송이다
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault()
+                handleSend()
+              }
+            }}
+            rows={1}
+            placeholder="메시지 입력…"
+            className="h-10 flex-1 resize-none rounded-[20px] border border-sz-n-300 px-4 py-[9px] text-[13px] text-sz-n-900 placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:outline-none"
+          />
+        )}
 
         <Button
           type="button"

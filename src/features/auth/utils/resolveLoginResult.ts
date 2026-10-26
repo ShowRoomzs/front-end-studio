@@ -1,4 +1,5 @@
 import { isAxiosError } from "axios"
+import { rejectionNoticeLabel } from "@/features/auth/constants/rejectionReasons"
 import type { TokenResponse } from "@/features/auth/services/authService"
 
 /**
@@ -21,8 +22,8 @@ export type LoginResult =
   | { kind: "pendingReview" }
   | {
       kind: "rejected"
-      rejectReasonType?: string
-      rejectReasonDetail?: string
+      /** 통지 라벨 — 서버 값 · 없으면 코드 대체 표 · 모르면 「기타」 */
+      reasonLabel: string
       reapplyAvailableAt?: string
     }
   /**
@@ -39,8 +40,10 @@ export function resolveLoginResult(res: TokenResponse): LoginResult {
   if (res.code === "ACCOUNT_REJECTED") {
     return {
       kind: "rejected",
-      rejectReasonType: res.rejectReasonType,
-      rejectReasonDetail: res.rejectReasonDetail,
+      reasonLabel: rejectionNoticeLabel(
+        res.rejectReasonLabel,
+        res.rejectReasonType
+      ),
       reapplyAvailableAt: res.reapplyAvailableAt,
     }
   }

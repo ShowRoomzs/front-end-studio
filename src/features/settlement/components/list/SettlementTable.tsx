@@ -1,6 +1,12 @@
 import StatusBadge from "@/common/components/StatusBadge/StatusBadge"
-import { MNote } from "@/features/settlement/components/detail/DetailParts"
-import { TONE_VARIANT } from "@/features/settlement/constants/params"
+import {
+  MNote,
+  SubBadge,
+} from "@/features/settlement/components/detail/DetailParts"
+import {
+  PAYOUT_HOLD_SANCTION_LABEL,
+  TONE_VARIANT,
+} from "@/features/settlement/constants/params"
 import type { SettlementListItem } from "@/features/settlement/types"
 import {
   formatMinusWon,
@@ -18,7 +24,7 @@ const NUM_CELL = cn(CELL_CLASS, "text-center tabular-nums")
 
 /**
  * 지급(예정)일 칸 — 서버가 내 행 기준으로 준다: PAID = 「09.02」 · SCHEDULED = 「09.09 예정」.
- * 확인 중 · 협의 · 보류(사업자 발행 확인 전 · 주민등록번호 미등록) · 지급 확인 중이면 날짜가 없다.
+ * 확인 중 · 협의 · 보류(사업자 발행 확인 전 · 계정 이용 정지 · 계좌 확인 중) · 지급 확인 중이면 날짜가 없다.
  */
 function payoutDateCell(row: SettlementListItem) {
   if (!row.payoutDate) return null
@@ -121,9 +127,15 @@ export default function SettlementTable(props: {
                 </b>
               </td>
               <td className={cn(CELL_CLASS, "text-center")}>
-                <StatusBadge variant={TONE_VARIANT[row.statusTone]}>
-                  {row.statusLabel}
-                </StatusBadge>
+                {/* 13 S6 — 상태는 그대로 · 정지 보류면 보조 배지를 아래에 붙인다 */}
+                <div className="inline-flex flex-col items-center gap-1">
+                  <StatusBadge variant={TONE_VARIANT[row.statusTone]}>
+                    {row.statusLabel}
+                  </StatusBadge>
+                  {row.payoutHold?.sanction && (
+                    <SubBadge>{PAYOUT_HOLD_SANCTION_LABEL}</SubBadge>
+                  )}
+                </div>
               </td>
               <td
                 className={cn(

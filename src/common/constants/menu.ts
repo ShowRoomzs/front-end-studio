@@ -25,10 +25,15 @@ export const CREATOR_MENU: MenuConfig = {
       matchPaths: ["/group-buy"],
     },
     { id: "posts", label: "게시물", path: "/posts" },
-    { id: "sales", label: "성과 관리" },
+    {
+      id: "sales",
+      label: "성과 관리",
+      path: "/performance",
+      matchPaths: ["/performance"],
+    },
     // 목록 · 상세(/settlement/:id) — 공구 관리의 [정산 관리 열기 ↗]가 이곳으로 온다
     { id: "settlement", label: "정산 관리", path: "/settlement" },
     { id: "showroom", label: "쇼룸 관리", path: "/showroom" },
-    { id: "basic-info", label: "기본정보 관리" },
+    { id: "basic-info", label: "기본정보 관리", path: "/basic-info" },
   ],
 }

@@ -16,6 +16,8 @@ export type GroupBuyStatus =
   | "ENDED"
   | "SETTLED"
   | "SUSPENDED"
+  /** 계약 해지로 오픈 전 종결(1021 기-05) — 스튜디오 09 시안에 해지 화면은 없다(08 S10 소관) */
+  | "TERMINATED"
 
 export type GroupBuyPostStatus =
   | "NOT_WRITTEN"
@@ -24,6 +26,13 @@ export type GroupBuyPostStatus =
   | "REJECTED"
   | "SCHEDULED"
   | "EXPOSED"
+  /** 노출 중지 — 운영자 조치(1021 기-08 · 「노출 중지」 · 위험색) */
+  | "EXPOSURE_SUSPENDED"
+  /**
+   * 옛 이름(「숨김」 · 경고). 새 백엔드 배포 전 서버가 아직 이 값을 내린다 —
+   * 서비스가 받자마자 `EXPOSURE_SUSPENDED`로 바꾼다(`utils/postStatus.ts`).
+   * TODO: 새 백엔드 배포 확인 뒤 제거
+   */
   | "HIDDEN"
   | "CLOSED"
 
@@ -35,7 +44,8 @@ export type CreatorGroupBuySortType = "START_AT_ASC" | "ACTION_REQUIRED_FIRST"
 
 export type GroupBuyActorType = "SELLER" | "CREATOR" | "ADMIN" | "SYSTEM"
 
-export type GroupBuyCloseType = "COMPLETED" | "EARLY_CLOSED" | "SUSPENDED"
+export type GroupBuyCloseType =
+  "COMPLETED" | "EARLY_CLOSED" | "SUSPENDED" | "CONTRACT_TERMINATED"
 
 export type FulfillmentResult = "FULFILLED" | "UNFULFILLED"
 
@@ -78,6 +88,7 @@ export type GroupBuyEventType =
   | "SUSPENSION_WITHDRAWN"
   | "SUSPENDED_BY_ADMIN"
   | "SUSPENDED_EMERGENCY"
+  | "TERMINATED_BY_CONTRACT"
   | "ENDED"
   | "ISSUE_OPENED"
   | "FULFILLMENT_CONFIRMED"
@@ -113,6 +124,8 @@ export interface CreatorGroupBuyListItem {
   statusLabel: string
   statusTone: GroupBuyTone
   actionRequired: boolean
+  /** 정지 보류 보조 배지(시안 13 S4 · R2) — 오픈 전 공구만. 옛 배포 응답에는 없다 */
+  sanctionHold?: SanctionHoldView | null
 }
 
 export interface CreatorGroupBuySummaryResponse {
@@ -144,6 +157,21 @@ export interface FulfillmentTarget {
   party: "BRAND" | "CREATOR"
   duties: Array<FulfillmentDuty>
   counts: { feed: number; reels: number; story: number } | null
+}
+
+/**
+ * 정지 보류 보조 배지 — 서버 `api/common/sanction/SanctionHoldView`(1017 설계서 8-4 · 8-5).
+ * 공구는 오픈 전(준비중 · 준비완료)에만 붙는다. 상태는 바꾸지 않고 배지만 붙인다.
+ */
+export interface SanctionHoldView {
+  /** MINE(내 계정 이용 정지) · COUNTERPARTY(상대 계정 사정) · ADMIN(어드민 전용) */
+  kind: "MINE" | "COUNTERPARTY" | "ADMIN"
+  /** 배지 문구 — 「승인 보류 · 계정 이용 정지」 · 「오픈 보류 · 상대 브랜드 사정」 */
+  label: string
+  /** WARNING(내 정지) · NEUTRAL(상대 사정) */
+  tone: GroupBuyTone
+  /** 어드민만 — BRAND · CREATOR · BOTH */
+  party: string | null
 }
 
 export interface GroupBuyHistoryEntry {
@@ -301,8 +329,16 @@ export interface CreatorGroupBuyDetailResponse {
     reasonClause: string | null
     noticeBody: string
     noticedAt: string
+    /** 집행 예정 — 운영자가 고른 시각(KST 벽시계) */
     executeScheduledAt: string | null
     businessDaysUntilExecution: number | null
+    /**
+     * 소명 · 의견 기한 — 브랜드와 같은 기한(1021 기-21). 통지일 +N영업일 23:59:59라
+     * KST 벽시계다. 새 백엔드 배포 전 응답에는 없다(undefined)
+     */
+    appealDeadlineAt?: string | null
+    /** 의견을 남길 내 운영팀 채널 스레드 — 새 백엔드 배포 전 응답에는 없다 */
+    operatorChannelThreadId?: number | null
   } | null
   closure: {
     closeType: GroupBuyCloseType
@@ -351,12 +387,19 @@ export interface CreatorGroupBuyDetailResponse {
     canRequestSuspension: boolean
     canCheckFulfillment: boolean
     canOpenPairThread: boolean
+    /**
+     * [게시물 수정]에서 제목도 고칠 수 있는가 — 진행 중이면 false(본문만 · 1021 기-08),
+     * 노출 중지면 true. 새 백엔드 배포 전 응답에는 없어 서비스가 채운다
+     */
+    canEditPostTitle: boolean
   }
   history: Array<GroupBuyHistoryEntry>
   navigation: {
     prevGroupBuyId: number | null
     nextGroupBuyId: number | null
   } | null
+  /** 정지 보류 보조 배지 — 내 정지(MINE · 경고) · 상대 사정(COUNTERPARTY · 중립). 없으면 null */
+  sanctionHold?: SanctionHoldView | null
 }
 
 export interface DetailNavParams {

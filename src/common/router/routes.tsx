@@ -17,6 +17,9 @@ import GroupBuyListPage from "@/features/groupBuy/pages/GroupBuyListPage"
 import GroupBuyDetailPage from "@/features/groupBuy/pages/GroupBuyDetailPage"
 import SettlementListPage from "@/features/settlement/pages/SettlementListPage"
 import SettlementDetailPage from "@/features/settlement/pages/SettlementDetailPage"
+import PerformanceListPage from "@/features/performance/pages/PerformanceListPage"
+import PerformanceDetailPage from "@/features/performance/pages/PerformanceDetailPage"
+import BasicInfoPage from "@/features/basicInfo/pages/BasicInfoPage"
 
 /**
  * 크리에이터 권한을 아직 갖지 않은 사용자용 라우트.
@@ -56,10 +59,14 @@ export const mainRoutes: Array<RouteObject> = [
       { path: "posts/:postId", element: <PostDetailPage /> },
       // GNB #8 쇼룸 관리 — 탭·기간·정렬은 쿼리스트링으로 유지한다
       { path: "showroom", element: <ShowroomManagementPage /> },
-      // GNB #7 정산 관리(§44) — 목록 · 상세. 정산 API가 없어 개발 서버만 목업, 배포본은 「준비 중」.
-      // 공구 관리의 [정산 관리 열기 ↗]가 목록으로 온다
+      // GNB #6 성과 관리(§49) — 목록 · 공구별 상세. 정산 상세 [성과 관리에서 보기]가 상세로 온다
+      { path: "performance", element: <PerformanceListPage /> },
+      { path: "performance/:groupBuyId", element: <PerformanceDetailPage /> },
+      // GNB #7 정산 관리(§44) — 목록 · 상세. 공구 관리의 [정산 관리 열기 ↗]가 목록으로 온다
       { path: "settlement", element: <SettlementListPage /> },
       { path: "settlement/:settlementId", element: <SettlementDetailPage /> },
+      // GNB #9 기본정보 관리(§50) — 탭은 `?tab=settlement|account`
+      { path: "basic-info", element: <BasicInfoPage /> },
       { path: "*", element: <HomePage /> },
     ],
   },

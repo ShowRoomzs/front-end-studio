@@ -1,6 +1,8 @@
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import { Button } from "@/components/ui/button"
 import CounterpartAvatar from "@/features/connections/components/CounterpartAvatar/CounterpartAvatar"
 import { useRespondToRequest } from "@/features/connections/hooks/useRespondToRequest"
+import { useAccountStatus } from "@/features/home/hooks/useAccountStatus"
 import type { ConnectionRequestItem } from "@/features/connections/services/connectionService"
 import { formatElapsedDays } from "@/features/connections/utils/format"
 
@@ -9,16 +11,23 @@ interface RequestInboxPanelProps {
   requests: Array<ConnectionRequestItem>
 }
 
+/** 요청 브랜드가 정지된 요청(시안 13 R · 1017 설계서 8-6) — 상대의 정지 사실은 말하지 않는다 */
+const UNACCEPTABLE_REQUEST_TEXT = "현재 수락할 수 없는 요청"
+
 /**
  * 연결 요청함 (시안 S12·S13, `.req-panel`).
  *
  * 카드마다 개별로 수락/거절한다 — 일괄 처리는 없다. 수락 단계는 필수라
  * 자동 수락 옵션도 두지 않는다(거래플로우 §2: 인플루언서 모르게 연결되지 않도록).
  * 브랜드 업종·카테고리는 서버가 수집하지 않는 정보라 표기하지 않는다(v0.23 정정).
+ *
+ * 계정 이용 정지(시안 13 S2) — [수락]만 비활성 + 툴팁, [거절]은 허용(정리하는 일). 버튼은 숨기지 않는다.
+ * 요청 브랜드가 정지면 서버가 `acceptable = false`를 내린다 — 같은 자리에서 「현재 수락할 수 없는 요청」.
  */
 export default function RequestInboxPanel(props: RequestInboxPanelProps) {
   const { requests } = props
   const { respond, respondingId } = useRespondToRequest()
+  const { isSuspended } = useAccountStatus()
 
   if (requests.length === 0) {
     return (
@@ -39,6 +48,8 @@ export default function RequestInboxPanel(props: RequestInboxPanelProps) {
     <div className="flex flex-1 flex-col gap-3.5 overflow-y-auto bg-sz-n-50 p-5">
       {requests.map(request => {
         const isResponding = respondingId === request.connectionId
+        const isUnacceptable = request.acceptable === false
+        const acceptBlocked = isSuspended || isUnacceptable
 
         return (
           <div
@@ -57,6 +68,7 @@ export default function RequestInboxPanel(props: RequestInboxPanelProps) {
                 </div>
                 <div className="mt-[3px] text-[11px] text-sz-n-500">
                   {formatElapsedDays(request.requestedAt)} 요청
+                  {isUnacceptable && ` · ${UNACCEPTABLE_REQUEST_TEXT}`}
                 </div>
               </div>
               <div className="flex shrink-0 gap-2">
@@ -70,14 +82,19 @@ export default function RequestInboxPanel(props: RequestInboxPanelProps) {
                 >
                   거절
                 </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={respondingId !== null}
-                  onClick={() => void respond(request.connectionId, "accept")}
+                <SuspendedTooltip
+                  active={acceptBlocked}
+                  message={isSuspended ? undefined : UNACCEPTABLE_REQUEST_TEXT}
                 >
-                  수락
-                </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={respondingId !== null || acceptBlocked}
+                    onClick={() => void respond(request.connectionId, "accept")}
+                  >
+                    수락
+                  </Button>
+                </SuspendedTooltip>
               </div>
             </div>
           </div>

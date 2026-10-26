@@ -1,4 +1,5 @@
 import Notice from "@/common/components/Notice/Notice"
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import Btn from "@/features/contracts/components/shared/Btn"
 import {
   B,
@@ -203,6 +204,11 @@ export function PostEditorModal(
     /** 승인 후 수정(PATCH) — 임시저장이 없고 바로 반영된다 */
     isEdit: boolean
     isSaving: boolean
+    /**
+     * 시안 13 — 계정 이용 정지 중에는 [등록하고 검토 요청]만 막는다. 작성 · 임시저장은 허용
+     * (서버 `GROUP_BUY_POST_SUBMIT` 409가 받친다). 승인 후 수정(PATCH)은 막지 않는다
+     */
+    submitBlocked: boolean
     onSaveDraft: (body: { title: string; content: string }) => void
     onSubmit: (body: { title: string; content: string }) => void
   }
@@ -212,6 +218,7 @@ export function PostEditorModal(
     isPending,
     isSaving,
     isEdit,
+    submitBlocked,
     onClose,
     onSaveDraft,
     onSubmit,
@@ -225,6 +232,9 @@ export function PostEditorModal(
   // 임시저장은 제목·본문 중 하나만 있어도 된다(서버 규칙)
   const canSave = trimmedTitle !== "" || trimmedContent !== ""
   const isRewrite = post.status === "REJECTED" || post.status === "WRITING"
+  // 기-08 — 진행 중 수정은 본문만(서버 canEditPostTitle). 제목은 원래 값 그대로 보낸다(바꾸면 400)
+  const isTitleLocked = isEdit && !detail.permissions.canEditPostTitle
+  const submitTitle = isTitleLocked ? (post.title ?? "").trim() : trimmedTitle
 
   return (
     <GbModal
@@ -246,7 +256,7 @@ export function PostEditorModal(
               disabled={!canSubmit}
               isLoading={isPending}
               onClick={() =>
-                onSubmit({ title: trimmedTitle, content: trimmedContent })
+                onSubmit({ title: submitTitle, content: trimmedContent })
               }
             >
               수정 반영
@@ -263,16 +273,18 @@ export function PostEditorModal(
               >
                 임시저장
               </Btn>
-              <Btn
-                variant="primary"
-                disabled={!canSubmit}
-                isLoading={isPending}
-                onClick={() =>
-                  onSubmit({ title: trimmedTitle, content: trimmedContent })
-                }
-              >
-                등록하고 검토 요청
-              </Btn>
+              <SuspendedTooltip active={submitBlocked} placement="top">
+                <Btn
+                  variant="primary"
+                  disabled={!canSubmit || submitBlocked}
+                  isLoading={isPending}
+                  onClick={() =>
+                    onSubmit({ title: trimmedTitle, content: trimmedContent })
+                  }
+                >
+                  등록하고 검토 요청
+                </Btn>
+              </SuspendedTooltip>
             </>
           )}
         </>
@@ -305,10 +317,16 @@ export function PostEditorModal(
 
       <MLabel required>제목</MLabel>
       <input
-        className="h-[34px] w-full rounded-[6px] border border-sz-n-300 bg-white px-2.5 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+        className={cn(
+          "h-[34px] w-full rounded-[6px] border border-sz-n-300 bg-white px-2.5 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50",
+          isTitleLocked &&
+            "cursor-not-allowed bg-sz-n-50 text-sz-n-500 focus:border-sz-n-300 focus:ring-0"
+        )}
         placeholder="예) 여름 수분 세럼, 제가 쓰던 그 조합"
         maxLength={POST_TITLE_MAX}
         value={title}
+        readOnly={isTitleLocked}
+        aria-readonly={isTitleLocked}
         onChange={event => setTitle(event.target.value)}
       />
       <div className="mt-[5px] text-right text-[11px] tabular-nums text-sz-n-400">
@@ -343,7 +361,15 @@ export function PostEditorModal(
         </div>
       </div>
       <MHint>
-        {isEdit ? (
+        {isEdit && isTitleLocked ? (
+          <>
+            진행 중에는 <B className="text-sz-n-700">본문만 수정</B>할 수 있고{" "}
+            <B className="text-sz-n-700">재승인 없이 바로 반영</B>됩니다.{" "}
+            <B className="text-sz-n-700">제목</B>과{" "}
+            <B className="text-sz-n-700">가격 · 상품 구성</B>(계약 확정값)은
+            바꿀 수 없습니다.
+          </>
+        ) : isEdit ? (
           <>
             승인 후 수정은{" "}
             <B className="text-sz-n-700">재승인 없이 바로 반영</B>
@@ -568,6 +594,12 @@ export function SuspensionModal(
         value={memo}
         onChange={event => setMemo(event.target.value)}
       />
+      {/* 기-05 【잠정】 — 시작 전 종료는 계약 관리의 해지, 진행 중 종료만 중단이다 */}
+      <MHint>
+        이 요청은 <B className="text-sz-n-700">진행 중인 공구의 「중단」</B>
+        입니다 — 시작 전 공구를 끝내는 것은 계약 관리의{" "}
+        <B className="text-sz-n-700">「해지」</B>로 처리됩니다.
+      </MHint>
       <MHint>
         브랜드와 먼저 <B className="text-sz-n-700">스레드에서 협의</B>했다면 그
         내용도 함께 적어주세요 — 운영자가 판단하는 근거가 됩니다.

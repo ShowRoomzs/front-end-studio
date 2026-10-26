@@ -5,7 +5,11 @@ import {
   EVENT_LABEL,
   HISTORY_TONE,
 } from "@/features/contracts/constants/labels"
-import type { CreatorContractHistoryEntry } from "@/features/contracts/types"
+import type {
+  ContractStatus,
+  CreatorContractClosure,
+  CreatorContractHistoryEntry,
+} from "@/features/contracts/types"
 
 /**
  * 서버 이력 → 처리 이력 목록(최신순). 서버 정렬에 기대지 않고 시각으로 다시 정렬한다.
@@ -15,9 +19,12 @@ import type { CreatorContractHistoryEntry } from "@/features/contracts/types"
 export function toHistoryItems(
   history: Array<CreatorContractHistoryEntry>,
   signature: { brandSignedAt: string | null; creatorSignedAt: string | null },
-  myShowroomName: string | undefined
+  myShowroomName: string | undefined,
+  termination?: { status: ContractStatus; closure: CreatorContractClosure }
 ): Array<HistoryItem> {
-  return newestFirst(withCurrentSignatures(history, signature)).map(entry => {
+  return newestFirst(
+    withTermination(withCurrentSignatures(history, signature), termination)
+  ).map(entry => {
     // 취소 주체가 브랜드면 시안 S9 「브랜드 철회 · 취소」, 운영자면 「운영자 취소」
     const label =
       entry.eventType === null
@@ -76,6 +83,34 @@ function withCurrentSignatures<T extends { eventType: string | null }>(
     }
     return true
   })
+}
+
+/**
+ * 해지(S10) — 서버의 스튜디오 이력 화이트리스트에 `TERMINATED`가 아직 없다. 상태가 해지인데 그 행이 없으면
+ * 종결 블록(closedAt · 처리 주체)으로 「계약 해지 · 양측 동의 확인」 한 줄을 채운다. 서버가 내리기 시작하면 그 행을 쓴다.
+ */
+function withTermination(
+  history: Array<CreatorContractHistoryEntry>,
+  termination?: { status: ContractStatus; closure: CreatorContractClosure }
+): Array<CreatorContractHistoryEntry> {
+  if (
+    !termination ||
+    termination.status !== "TERMINATED" ||
+    !termination.closure.closedAt ||
+    history.some(entry => entry.eventType === "TERMINATED")
+  ) {
+    return history
+  }
+  return [
+    ...history,
+    {
+      eventType: "TERMINATED",
+      actorType: termination.closure.actorType ?? "ADMIN",
+      actorDisplayName: null,
+      detail: null,
+      occurredAt: termination.closure.closedAt,
+    },
+  ]
 }
 
 /** 이력 상세 문자열에 서버 시각(ISO)·null이 그대로 섞여 오면 화면 표기로 바꾼다 */

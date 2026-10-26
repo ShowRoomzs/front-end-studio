@@ -1,8 +1,10 @@
+import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import { Button } from "@/components/ui/button"
 import FilterTabs from "@/features/posts/components/FilterTabs"
 import PostCard from "@/features/posts/components/PostCard"
 import { useGetPostList } from "@/features/posts/hooks/useGetPostList"
 import type { PostStatus } from "@/features/posts/services/postService"
+import { useAccountStatus } from "@/features/home/hooks/useAccountStatus"
 import { Image as ImageIcon, Plus } from "lucide-react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
@@ -22,10 +24,13 @@ const STATUS_TO_TAB_PARAM: Record<string, string> = {
  *
  * 여기에는 **일반 게시물만** 온다. 공구 게시물은 공구 1건당 1개로 묶여 있어 공구 관리(#4)가
  * 다루며, 작성 규칙·상태 전이·수정 가능 시점이 전부 달라 한 목록에 섞지 않는다.
+ *
+ * 계정 이용 정지(시안 13 S5) — [+ 게시물 작성]만 비활성 + 툴팁. 기존 게시물의 수정 · 삭제는 그대로 연다.
  */
 export default function PostListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { isSuspended } = useAccountStatus()
 
   const tab = searchParams.get("tab") ?? ""
   const status = TAB_PARAM_TO_STATUS[tab]
@@ -58,16 +63,19 @@ export default function PostListPage() {
           빈 상태에서는 주 CTA가 목록 자리의 [+ 첫 게시물 작성] 하나뿐이라
           툴바 버튼을 보조 버튼으로 강등한다 — 파란 버튼이 두 개면 어디를 눌러야 할지 갈린다
         */}
-        <Button
-          type="button"
-          size="sm"
-          variant={isEmptyAccount ? "outline" : "default"}
-          className="mb-[9px]"
-          onClick={() => navigate("/posts/new")}
-        >
-          <Plus className="size-3.5" aria-hidden />
-          게시물 작성
-        </Button>
+        <SuspendedTooltip active={isSuspended} className="mb-[9px]">
+          <Button
+            type="button"
+            size="sm"
+            variant={isEmptyAccount ? "outline" : "default"}
+            className={isSuspended ? undefined : "mb-[9px]"}
+            disabled={isSuspended}
+            onClick={() => navigate("/posts/new")}
+          >
+            <Plus className="size-3.5" aria-hidden />
+            게시물 작성
+          </Button>
+        </SuspendedTooltip>
       </div>
 
       {isLoading ? (
@@ -82,6 +90,7 @@ export default function PostListPage() {
       ) : posts.length === 0 ? (
         <EmptyState
           isEmptyAccount={isEmptyAccount}
+          isCreateBlocked={isSuspended}
           onCreate={() => navigate("/posts/new")}
         />
       ) : (
@@ -117,8 +126,13 @@ export default function PostListPage() {
   )
 }
 
-function EmptyState(props: { isEmptyAccount: boolean; onCreate: () => void }) {
-  const { isEmptyAccount, onCreate } = props
+function EmptyState(props: {
+  isEmptyAccount: boolean
+  /** 계정 이용 정지 중 — [+ 첫 게시물 작성]도 툴바 버튼처럼 비활성 */
+  isCreateBlocked: boolean
+  onCreate: () => void
+}) {
+  const { isEmptyAccount, isCreateBlocked, onCreate } = props
 
   return (
     <div className="rounded-[8px] border border-sz-n-200 bg-white">
@@ -143,9 +157,16 @@ function EmptyState(props: { isEmptyAccount: boolean; onCreate: () => void }) {
           )}
         </div>
         {isEmptyAccount && (
-          <Button type="button" size="sm" onClick={onCreate}>
-            <Plus className="size-3.5" aria-hidden />첫 게시물 작성
-          </Button>
+          <SuspendedTooltip active={isCreateBlocked}>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isCreateBlocked}
+              onClick={onCreate}
+            >
+              <Plus className="size-3.5" aria-hidden />첫 게시물 작성
+            </Button>
+          </SuspendedTooltip>
         )}
       </div>
     </div>
