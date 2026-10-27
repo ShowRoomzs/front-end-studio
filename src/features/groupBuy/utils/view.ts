@@ -1,6 +1,7 @@
 import {
   formatDateOnly,
   formatDateTimeShort,
+  parseKstWallClock,
   parseServerDateTime,
 } from "@/common/utils/formatDate"
 import type {
@@ -57,11 +58,11 @@ export function localMonthDay(value: string | null | undefined): string {
  * 이벤트 시각(now() — 통지 일시 등)은 `dt` / `md`(UTC 벽시계)를 쓴다.
  */
 export function kstDt(value: string | null | undefined): string {
-  return value ? dayjs(value).format("YYYY.MM.DD HH:mm") : "—"
+  return value ? parseKstWallClock(value).format("YYYY.MM.DD HH:mm") : "—"
 }
 
 export function kstMd(value: string | null | undefined): string {
-  return value ? dayjs(value).format("MM.DD HH:mm") : "—"
+  return value ? parseKstWallClock(value).format("MM.DD HH:mm") : "—"
 }
 
 export function isSelling(detail: Detail) {
