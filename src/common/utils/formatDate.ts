@@ -15,6 +15,16 @@ export function parseServerDateTime(date: string) {
   return hasTimeZone ? dayjs(date) : dayjs.utc(date).local()
 }
 
+/**
+ * KST 벽시계 값(운영자가 고른 날짜 · 영업일로 계산한 기한 · 자동 해제 시각)을 그대로 읽는다.
+ *
+ * 서버 Jackson이 모든 LocalDateTime 뒤에 글자 'Z'를 붙여 내려서(`JacksonConfig`),
+ * `dayjs(value)`로 읽으면 UTC로 해석돼 9시간 밀린다 — 시간대 표기를 떼고 벽시계로 읽는다.
+ */
+export function parseKstWallClock(date: string) {
+  return dayjs(date.slice(0, 19))
+}
+
 /** 날짜만 (예: 2026.07.10) — 목록 등 밀도 높은 화면용 */
 export function formatDateOnly(date: string | null): string {
   if (!date) {

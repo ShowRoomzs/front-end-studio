@@ -1,4 +1,7 @@
-import { parseServerDateTime } from "@/common/utils/formatDate"
+import {
+  parseKstWallClock,
+  parseServerDateTime,
+} from "@/common/utils/formatDate"
 import dayjs from "dayjs"
 
 /** 시안 표기 그대로 — "245KB", "1.8MB", "18.4MB" */
@@ -108,15 +111,15 @@ export function formatDateTime(date: string) {
 
 /**
  * 합의 기한 — "2026.09.12". 기한은 정산 화면과 같은 값이라 정산 관리처럼 서버 값을 그대로 읽는다
- * (이벤트 시각과 달리 「그날 23:59:59」로 정해진 날짜다).
+ * (이벤트 시각과 달리 「그날 23:59:59」로 정해진 KST 벽시계 — 자동 해제 · 이의 신청 기한도 같다).
  */
 export function formatDeadline(date: string) {
-  return dayjs(date).format("YYYY.MM.DD")
+  return parseKstWallClock(date).format("YYYY.MM.DD")
 }
 
 /** D-1 안내의 마감 — "2026.09.12 23:59" */
 export function formatDeadlineTime(date: string) {
-  return dayjs(date).format("YYYY.MM.DD HH:mm")
+  return parseKstWallClock(date).format("YYYY.MM.DD HH:mm")
 }
 
 /** 증감 — "186,000원 감액" · "180,000원 증액" · 같으면 "변동 없음" */
