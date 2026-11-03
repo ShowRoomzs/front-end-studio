@@ -2,10 +2,23 @@ import type { HistoryDotTone } from "@/common/components/HistoryList/HistoryList
 import type {
   ContractActorType,
   ContractEventType,
+  ContractStatus,
   CreatorDeadlineDisplayType,
   CreatorFixedFeePaymentState,
   FixedFeeTrigger,
 } from "@/features/contracts/types"
+
+/**
+ * 상태 배지 — 서버 라벨 그대로, 단 CONCLUDED만 시안 08 배지 「체결완료」로 둔다.
+ * BE 58 6-8이 서버 라벨을 「계약 성립」으로 바꿨는데(다른 앱 요청), 스튜디오 시안은 「계약 성립」을 3단계
+ * 「양측 서명 완료 · 계약 성립」(성립 시점)에만 쓰고 상태 배지 · 탭은 「체결완료」다.
+ */
+export function contractStatusLabel(row: {
+  status: ContractStatus
+  statusLabel: string
+}): string {
+  return row.status === "CONCLUDED" ? "체결완료" : row.statusLabel
+}
 
 /** 스튜디오 호칭 — 운영자는 「운영자」(익명). 인플루언서가 보는 화면에 사내 용어를 쓰지 않는다(§25-10) */
 export const ACTOR_LABEL: Record<ContractActorType, string> = {

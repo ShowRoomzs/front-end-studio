@@ -22,9 +22,6 @@ export const SUSPENSION_CARD_WITHDRAWAL = "탈퇴 요청"
 export const SUSPENSION_CARD_WITHDRAWAL_NOTE =
   "탈퇴 조건(끝나지 않은 공구 · 체결 전 계약 · 미정산)은 그대로라 정산이 남아 있으면 신청할 수 없습니다"
 
-/** S8 이의 신청 기한 보조 줄 — 「통지 후 3영업일 이상」(기-02 【잠정】) */
-export const SUSPENSION_APPEAL_RULE = "3영업일 이상"
-
 /** S8 정산 줄 — 지급 정지 사유(정산 정보 불일치)면 배너 정산 줄과 같은 말, 아니면 시안 문구 */
 export const SUSPENSION_PAYOUT_HELD_TEXT =
   "확정까지 진행되며, 내 리워드는 정지가 풀리면 다음 영업일에 지급됩니다."

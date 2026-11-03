@@ -52,13 +52,14 @@ function Due(props: { children: ReactNode }) {
 
 /**
  * 우측 레일 「상태」 — 현재 상태 · 메타 · 액션 · 힌트. 버튼 노출은 서버 permissions로만 고른다.
- * 계정 이용 정지(시안 13 S4a)는 서버 permissions가 보지 않아 `suspended`로 [연장 수락]만 막는다 — 거절 · 중단 요청은 그대로.
+ * 계정 이용 정지(시안 13 S4a)는 `suspended`로 [연장 수락]만 막는다 — 거절 · 중단 요청은 그대로.
+ * 서버 `canAcceptExtension`(BE 58 3-2)이 그 판정이고, 막힌 안내는 `acceptExtensionBlockedMessage`다.
  */
 export function StudioStatusRail(props: {
   detail: Detail
   situation: SellingSituation | null
   actions: StudioRailActions
-  /** 내 계정 이용 정지 중 */
+  /** [연장 수락]이 계정 이용 정지로 막힘 */
   suspended: boolean
 }) {
   const { detail, situation, actions, suspended } = props
@@ -296,6 +297,7 @@ export function StudioStatusRail(props: {
           <SuspendedTooltip
             key="accept"
             active={suspended}
+            message={permissions.acceptExtensionBlockedMessage ?? undefined}
             className="flex w-full"
           >
             <Btn

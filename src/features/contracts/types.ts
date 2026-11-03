@@ -275,6 +275,11 @@ export interface CreatorContractPermissions {
   canOpenThread: boolean
   canDownloadDocuments: boolean
   canOpenGroupBuy: boolean
+  /**
+   * 계정 이용 정지로 막힌 버튼 안내(BE 58 3-2) — 정지 중이면 `canRequestResend`가 false이고 이 문구가 온다.
+   * 정지가 아니면 null. 옛 서버에는 필드가 없다
+   */
+  suspensionBlockedMessage?: string | null
 }
 
 export interface CreatorContractHistoryEntry {
@@ -312,6 +317,8 @@ export interface CreatorContractTerminationRequested {
   requestedAt: string
   /** 동의 확인 카드가 붙은 내 운영팀 채널 메시지 */
   consentCardMessageId: number | null
+  /** 요청자(BE 58 6-3) — 지금은 SELLER(브랜드)만 요청할 수 있다. 옛 서버에는 없다 */
+  requesterType?: ContractActorType
 }
 
 /** 초안 승인 기록 1건(1021 기-30) — 브랜드가 남긴 기록 · 읽기 전용(서버 파트너 DTO와 같은 모양) */

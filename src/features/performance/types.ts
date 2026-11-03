@@ -10,10 +10,10 @@ import type { BaseParams, PageResponse } from "@/common/types/page"
   값 규칙(서버): 값이 없으면 null(화면 「—」)이고 0은 측정된 0이다. 비율은 % 숫자(소수 1자리 · 5.8 = 5.8%)
   · 금액은 원 · 리워드는 세전. 돈은 정산 행 그대로라 FE가 계산하지 않는다.
 
-  날짜(두 종류가 섞인다)
-  - KST 벽시계(그대로 읽는다): 공구 시작 · 종료(`periodStartAt` · `periodEndAt`) · 합의 기한(`adjustmentDeadlineAt`)
-  - UTC 벽시계(`parseServerDateTime`): 제안 · 합의 시각(`Offer.at` · `Adjustment.agreedAt`) — 서버 now()
-  - LocalDate: 요약의 `periodFrom` · `periodTo`
+  날짜(BE 58 2단계 · 10-29)
+  - 시각(LocalDateTime)은 전부 UTC 순간 + "Z"(`parseServerDateTime`): 공구 시작 · 종료(`periodStartAt` · `periodEndAt`)
+    · 합의 기한(`adjustmentDeadlineAt` — 한국 날짜 23:59:59) · 제안 · 합의 시각(`Offer.at` · `Adjustment.agreedAt` — 서버 now())
+  - LocalDate(한국 날짜 그대로): 요약의 `periodFrom` · `periodTo`
 */
 
 /** 스튜디오 성과 상태 3종 — 공통 5종을 인플루언서 관점으로 접은 값(저장하지 않는다) */
@@ -55,9 +55,9 @@ export interface CreatorPerformanceListItem {
   groupBuyTitle: string
   brandName: string
   marketId: number
-  /** KST 벽시계 */
+  /** UTC 순간 */
   periodStartAt: string
-  /** KST 벽시계 — 조기 마감이면 실제 종료 시각 */
+  /** UTC 순간 — 조기 마감이면 실제 종료 시각 */
   periodEndAt: string
   status: CreatorPerformanceStatus
   statusLabel: string
@@ -223,6 +223,8 @@ export interface CreatorPerformanceFunnel {
   finalConversionRate: number | null
   /** 구간 2가 예정값인가 */
   estimated: boolean
+  /** 주문 전환율(%) = 주문 ÷ 쇼룸 방문 — 방문 0이면 null(BE 58 5-9) · 옛 서버는 없다 */
+  orderVisitRate?: number | null
 }
 
 export interface ProductRow {
@@ -296,6 +298,8 @@ export interface CreatorPerformanceConsumers {
   followerBuyerCount: number
   followerBuyerRate: number | null
   distribution: Distribution
+  /** 신규 소비자 비중(%) = 신규 ÷ 구매 소비자 — 구매 0이면 null(BE 58 5-9) · 옛 서버는 없다 */
+  newBuyerRate?: number | null
 }
 
 export interface FollowerSide {
@@ -318,14 +322,14 @@ export interface CreatorPerformanceFollowers {
 
 export interface Offer {
   amount: number
-  /** UTC 벽시계(now()) */
+  /** UTC 순간(now()) */
   at: string
 }
 
 export interface Adjustment {
   /** 합의 금액 − 원래 금액(음수 가능) */
   delta: number
-  /** UTC 벽시계(now()) */
+  /** UTC 순간(now()) */
   agreedAt: string
   /** 「브랜드 제안」 | 「내 요청」 | 「합의」 */
   agreedProposalLabel: string
@@ -352,7 +356,7 @@ export interface CreatorPerformanceReward {
   settlementId: number | null
   settlementStatusLabel: string | null
   adjustmentThreadId: number | null
-  /** KST 벽시계 — ADJUSTING에서만 */
+  /** 한국 날짜 23:59:59 · UTC 순간 — ADJUSTING에서만 */
   adjustmentDeadlineAt: string | null
 }
 

@@ -509,7 +509,10 @@ function HBar(props: {
  * 5단을 한 축에 그리면 주문 이후가 같은 굵기의 6% 막대가 돼 구별되지 않는다. 이탈은 숫자로만(붉게 칠하지 않는다).
  */
 export function FunnelCard({ funnel }: { funnel: CreatorPerformanceFunnel }) {
-  const orderRatio = ratio(funnel.orderCount, funnel.visitorCount)
+  const orderRatio =
+    funnel.orderVisitRate !== undefined
+      ? funnel.orderVisitRate
+      : ratio(funnel.orderCount, funnel.visitorCount)
   return (
     <Card
       title="전환 퍼널"
@@ -852,7 +855,7 @@ export function ConsumersSection(props: {
             dim={dim}
             label="신규 소비자"
             value={`${formatNumber(consumers.newBuyerCount)}명`}
-            sub={`내 공구 첫 구매 · 구매 소비자의 ${formatRate(ratio(consumers.newBuyerCount, consumers.buyerCount))}`}
+            sub={`내 공구 첫 구매 · 구매 소비자의 ${formatRate(consumers.newBuyerRate !== undefined ? consumers.newBuyerRate : ratio(consumers.newBuyerCount, consumers.buyerCount))}`}
           />
           <MiniStat
             dim={dim}

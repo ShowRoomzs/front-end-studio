@@ -33,8 +33,8 @@ const CLOSED_PERMISSIONS: AdjustmentPermissions = {
   canWithdraw: false,
 }
 
-/** 서버 `now()` 이벤트 시각과 같은 모양 — UTC 벽시계 · 시간대 표기 없음 */
-const utcWallClockNow = () => new Date().toISOString().slice(0, 19)
+/** 서버 `now()` 이벤트 시각과 같은 모양 — UTC 순간 · 초 단위 + "Z" */
+const utcNow = () => `${new Date().toISOString().slice(0, 19)}Z`
 
 function toWithdrawnView(view: AdjustmentView, closedAt: string) {
   const closeProposal = (proposal: AdjustmentView["latestProposal"]) =>
@@ -59,7 +59,7 @@ function toWithdrawnView(view: AdjustmentView, closedAt: string) {
 
 /** 철회 성공을 흉내 낸다 — 서버 응답처럼 갱신된 고정 카드를 돌려준다 */
 export function mockWithdraw(view: AdjustmentView): AdjustmentView {
-  const closedAt = utcWallClockNow()
+  const closedAt = utcNow()
   withdrawnByThread.set(view.threadId, { view, closedAt })
   return toWithdrawnView(view, closedAt)
 }

@@ -1,12 +1,12 @@
 import { parseServerDateTime } from "@/common/utils/formatDate"
 import type { DocumentFile } from "@/features/basicInfo/types"
 
-/** 이벤트 시각(UTC 벽시계) → 「2026.09.05」 */
+/** 이벤트 시각(UTC 순간) → 「2026.09.05」 */
 export function formatEventDate(value: string | null | undefined) {
   return value ? parseServerDateTime(value).format("YYYY.MM.DD") : null
 }
 
-/** 이벤트 시각(UTC 벽시계) → 「2026.09.08 14:20」 */
+/** 이벤트 시각(UTC 순간) → 「2026.09.08 14:20」 */
 export function formatEventDateTime(value: string | null | undefined) {
   return value ? parseServerDateTime(value).format("YYYY.MM.DD HH:mm") : null
 }

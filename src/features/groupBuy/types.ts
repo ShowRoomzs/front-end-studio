@@ -276,6 +276,8 @@ export interface CreatorGroupBuyDetailResponse {
       detail: string | null
       hiddenAt: string
       hiddenDays: number
+      /** 소명 · 문의를 남길 내 운영팀 채널(B5a · BE 58 5-7) — 채널이 없거나 옛 서버면 null · 없음 */
+      operatorChannelThreadId?: number | null
     } | null
   }
   sales: {
@@ -329,12 +331,12 @@ export interface CreatorGroupBuyDetailResponse {
     reasonClause: string | null
     noticeBody: string
     noticedAt: string
-    /** 집행 예정 — 운영자가 고른 시각(KST 벽시계) */
+    /** 집행 예정 — 운영자가 고른 시각(UTC 순간) */
     executeScheduledAt: string | null
     businessDaysUntilExecution: number | null
     /**
-     * 소명 · 의견 기한 — 브랜드와 같은 기한(1021 기-21). 통지일 +N영업일 23:59:59라
-     * KST 벽시계다. 새 백엔드 배포 전 응답에는 없다(undefined)
+     * 소명 · 의견 기한 — 브랜드와 같은 기한(1021 기-21). 통지일 +N영업일 23:59:59(KST)를
+     * UTC 순간으로 내린다. 새 백엔드 배포 전 응답에는 없다(undefined)
      */
     appealDeadlineAt?: string | null
     /** 의견을 남길 내 운영팀 채널 스레드 — 새 백엔드 배포 전 응답에는 없다 */
@@ -392,6 +394,13 @@ export interface CreatorGroupBuyDetailResponse {
      * 노출 중지면 true. 새 백엔드 배포 전 응답에는 없어 서비스가 채운다
      */
     canEditPostTitle: boolean
+    /**
+     * [수락](연장) — `canRespondExtension` ∧ 계정 이용 정지 아님(BE 58 3-2). 정지 중에는 거절만 된다.
+     * 옛 서버에는 없다
+     */
+    canAcceptExtension?: boolean
+    /** 연장 수락이 정지로 막혔을 때의 안내 — 막히지 않았으면 null */
+    acceptExtensionBlockedMessage?: string | null
   }
   history: Array<GroupBuyHistoryEntry>
   navigation: {

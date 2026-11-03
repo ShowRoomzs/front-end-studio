@@ -4,7 +4,10 @@ import Pagination, {
 import StatusBadge from "@/common/components/StatusBadge/StatusBadge"
 import SanctionHoldBadge from "@/common/components/Suspension/SanctionHoldBadge"
 import { formatDateTimeShort } from "@/common/utils/formatDate"
-import { DEADLINE_TEXT } from "@/features/contracts/constants/labels"
+import {
+  contractStatusLabel,
+  DEADLINE_TEXT,
+} from "@/features/contracts/constants/labels"
 import type { CreatorContractListItem } from "@/features/contracts/types"
 import { periodText } from "@/features/contracts/utils/format"
 import { toneToVariant } from "@/features/contracts/utils/statusBadge"
@@ -101,7 +104,7 @@ export default function ContractTable(props: ContractTableProps) {
                 </td>
                 <td className={cn(CELL_CLASS, "text-center")}>
                   <StatusBadge variant={toneToVariant(row.statusTone)}>
-                    {row.statusLabel}
+                    {contractStatusLabel(row)}
                   </StatusBadge>
                 </td>
               </tr>

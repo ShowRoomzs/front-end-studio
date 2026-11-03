@@ -5,7 +5,10 @@ import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import { formatDateTimeShort } from "@/common/utils/formatDate"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { FLINK_CLASS } from "@/features/contracts/components/shared/styles"
-import { PAYMENT_STATE_TEXT } from "@/features/contracts/constants/labels"
+import {
+  contractStatusLabel,
+  PAYMENT_STATE_TEXT,
+} from "@/features/contracts/constants/labels"
 import type { CreatorContractDetailResponse } from "@/features/contracts/types"
 import {
   CLOSED_VIEWS,
@@ -272,7 +275,7 @@ export default function StatusSideCard(props: StatusSideCardProps) {
         {/* 시안 13 S3 · R1 — 상태는 그대로 두고 보류 보조 배지만 붙인다(서버 `sanctionHold`) */}
         <span className="flex flex-wrap items-center justify-end gap-1">
           <StatusBadge variant={toneToVariant(detail.statusTone)}>
-            {detail.statusLabel}
+            {contractStatusLabel(detail)}
           </StatusBadge>
           <SanctionHoldBadge hold={hold} />
         </span>
@@ -280,8 +283,14 @@ export default function StatusSideCard(props: StatusSideCardProps) {
       <div className="pt-2">{rows}</div>
 
       <div className="mt-4 flex flex-col gap-2">
-        {permissions.canRequestResend && (
-          <SuspendedTooltip active={resendBlocked} className="flex w-full">
+        {/* 정지 중이면 서버가 canRequestResend를 끄고 안내 문구를 준다 — 시안 13은 버튼을 숨기지 않고 막는다 */}
+        {(permissions.canRequestResend ||
+          !!permissions.suspensionBlockedMessage) && (
+          <SuspendedTooltip
+            active={resendBlocked}
+            message={permissions.suspensionBlockedMessage ?? undefined}
+            className="flex w-full"
+          >
             <Btn
               variant="secondary"
               className="w-full"

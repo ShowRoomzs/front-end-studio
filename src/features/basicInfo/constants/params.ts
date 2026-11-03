@@ -90,7 +90,7 @@ export const CONDITION_BREAKDOWN_LABEL_OVERRIDE: Record<string, string> = {
 
 /**
  * 계좌 확인 배지 — 서버 톤 그대로, 라벨은 시안(기-22 「운영자 확인」 계열).
- * 서버 VERIFIED 라벨은 「확인 완료」지만 시안 배지는 「운영자 확인 완료」다.
+ * 서버 VERIFIED 라벨도 BE 58 6-8부터 「운영자 확인 완료」로 같다.
  */
 export const ACCOUNT_VERIFICATION_LABEL: Record<
   AccountVerificationStatus,

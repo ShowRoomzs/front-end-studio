@@ -10,9 +10,9 @@ import { useNavigate } from "react-router-dom"
 
 /**
  * 「사유: 공구 게시물 허위·과장 표시 · 2026.10.08 14:20 ~ 10.22 · 10.22 자동 해제」(시안 13 · 14 H5 · 기-01 · 02 【잠정】).
- * 기간 없는 정지면 시작 시각까지만. 정지 시각은 now() 이벤트(UTC 벽시계).
+ * 기간 없는 정지면 시작 시각까지만. 정지 시각은 now() 이벤트(UTC 순간).
  * 끝 날짜는 종료일이 아니라 자동 해제일이다 — 시안 카드 「10.08 14:20 ~ 10.22 00:00 (14일)」과 배너 「~ 10.22」가
- * 같은 날짜다. 서버 `autoReleaseAt` = 종료일 다음 날 00:00(KST 벽시계).
+ * 같은 날짜다. 서버 `autoReleaseAt` = 종료일 다음 날 00:00(KST) · UTC 순간 — 한국 날짜로 바꿔 읽는다.
  */
 function periodText(sanction: MemberAccountSanction) {
   const start = formatEventDateTime(sanction.suspendedAt)

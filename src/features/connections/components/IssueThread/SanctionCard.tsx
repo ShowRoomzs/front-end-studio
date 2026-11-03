@@ -1,7 +1,7 @@
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import {
   POST_FIX_REASONS,
   SETTLEMENT_MISMATCH_REASON,
-  SUSPENSION_APPEAL_RULE,
   SUSPENSION_CARD_BLOCKED,
   SUSPENSION_CARD_CONTINUED,
   SUSPENSION_CARD_WITHDRAWAL,
@@ -48,7 +48,7 @@ function shortcutOf(reasonCode: string | undefined) {
  * 인플루언서 고정 문구다(서버가 `memberType`만 준다). 소명은 별도 폼 없이 이 카드 아래 일반 답글로 한다 —
  * 입력창은 정지 중에도 그대로다. 1017 이전 카드는 `sanction`이 없어 사유 한 줄로 그린다.
  *
- * 시각: 처리 시각은 now() 이벤트(UTC 벽시계), 자동 해제 · 이의 신청 기한은 KST 벽시계다.
+ * 시각: 처리 시각(now() 이벤트) · 자동 해제 · 이의 신청 기한 모두 UTC 순간이다 — 로컬 시각으로 읽는다.
  */
 export default function SanctionCard(props: {
   message: MessageItem
@@ -57,6 +57,7 @@ export default function SanctionCard(props: {
   const { message, card } = props
   const navigate = useNavigate()
   const { sanction: current } = useAccountStatus()
+  const policy = usePolicyValues()
   const detail = card.detail
   const sanction = detail?.sanction
   const processedAt = detail?.processedAt ?? message.createdAt
@@ -126,8 +127,11 @@ export default function SanctionCard(props: {
             {formatDeadline(sanction.appealDeadlineAt)}까지
           </span>
           <Sub>
-            통지 후 <b className="font-semibold">{SUSPENSION_APPEAL_RULE}</b> ·
-            이 카드 아래 답글로 신청
+            통지 후{" "}
+            <b className="font-semibold">
+              {policy.sanctionAppealBusinessDays}영업일 이상
+            </b>{" "}
+            · 이 카드 아래 답글로 신청
           </Sub>
         </ResRow>
       )}

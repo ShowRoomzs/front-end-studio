@@ -321,7 +321,12 @@ export function SituationTopCard(props: {
           </div>
           {canRespond && (
             <div className="mt-3.5 flex gap-2">
-              <SuspendedTooltip active={acceptBlocked}>
+              <SuspendedTooltip
+                active={acceptBlocked}
+                message={
+                  detail.permissions.acceptExtensionBlockedMessage ?? undefined
+                }
+              >
                 <Btn
                   variant="primary"
                   disabled={acceptBlocked}

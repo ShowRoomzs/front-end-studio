@@ -147,6 +147,9 @@ export interface MessageCardAdjustment {
   agreedByType?: SettlementParty
   agreedByName?: string
   closedAt?: string
+  /** [철회] 요청을 철회한 쪽 · 이름(BE 58 5-10) — 옛 서버는 `agreedBy*`에 담았다(1릴리스 병행) */
+  withdrawnByType?: SettlementParty
+  withdrawnByName?: string
 }
 
 /**
@@ -165,11 +168,11 @@ export interface MessageCardSanction {
   payoutHeld?: boolean
   /** [정지 카드] 정지 종료일(포함) · LocalDate — 기간 없는 정지 · 1021 이전 카드는 없다 */
   endsOn?: string
-  /** [정지 카드] 자동 해제 시각 = 종료일 다음 날 00:00 · KST 벽시계 */
+  /** [정지 카드] 자동 해제 시각 = 종료일 다음 날 00:00(KST) · UTC 순간 */
   autoReleaseAt?: string
   /** [정지 카드] 정지 기간(일) — 「(14일)」 */
   periodDays?: number
-  /** [정지 카드] 이의 신청 기한 — 통지 + N영업일 23:59:59 · KST 벽시계 */
+  /** [정지 카드] 이의 신청 기한 — 통지 + N영업일 23:59:59(KST) · UTC 순간 */
   appealDeadlineAt?: string
 }
 
@@ -179,7 +182,7 @@ export interface MessageCardDetail {
   requestedAt?: string
   /** [직권 취소] 사유 · [정지] 옛 카드의 사유 한 문장 */
   reasonLabel?: string
-  /** [직권 취소 · 정지 · 해제] 처리 시각 — now() 이벤트(UTC 벽시계) */
+  /** [직권 취소 · 정지 · 해제] 처리 시각 — now() 이벤트(UTC 순간) */
   processedAt?: string
   notifiedBothParties?: boolean
   adjustment?: MessageCardAdjustment

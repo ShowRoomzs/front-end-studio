@@ -1,5 +1,6 @@
 import DetailCard from "@/common/components/DetailCard/DetailCard"
 import Notice from "@/common/components/Notice/Notice"
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import StatusBadge from "@/common/components/StatusBadge/StatusBadge"
 import { TermRow, Terms } from "@/features/contracts/components/shared/Terms"
 import { FSUB_CLASS } from "@/features/contracts/components/shared/styles"
@@ -28,6 +29,8 @@ const B = "font-semibold text-sz-n-900"
  */
 export default function PayoutCard(props: PayoutCardProps) {
   const { payout, fixedFee, settlement, isConcluded } = props
+  // 확인 기간 · 지급 영업일 — 공용 정책값(BE 58 6-1)
+  const policy = usePolicyValues()
   const triggerLabel = payout.fixedFeeTriggerLabel ?? "—"
   // 기-28 — 지급 시점의 정의. 시안이 정한 문구가 먼저, 없으면 서버 정의
   const triggerDefinition =
@@ -100,11 +103,10 @@ export default function PayoutCard(props: PayoutCardProps) {
           </TermRow>
         )}
         <TermRow label="정산 시점">
-          주문이 모두 종결되면 <b className={B}>정산 관리</b>에서 3영업일 확인 →
-          자동 확정 → <b className={B}>N영업일 후</b> 지급{" "}
-          <span className="whitespace-nowrap rounded-[4px] bg-sz-n-100 px-1.5 py-px text-[10px] font-medium text-sz-n-500">
-            [정책값 미정]
-          </span>
+          주문이 모두 종결되면 <b className={B}>정산 관리</b>에서{" "}
+          {policy.settlementReviewBusinessDays}영업일 확인 → 자동 확정 →{" "}
+          <b className={B}>{policy.settlementPayoutBusinessDays}영업일 후</b>{" "}
+          지급
         </TermRow>
       </Terms>
 

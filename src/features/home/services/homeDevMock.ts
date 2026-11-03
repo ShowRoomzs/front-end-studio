@@ -10,7 +10,7 @@
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { mockDelay } from "@/common/utils/devMock"
-import { kstDateKey } from "@/features/home/utils/date"
+import { dateKey, kstDateKey } from "@/features/home/utils/date"
 import type {
   CreatorHome,
   HolidayItem,
@@ -31,12 +31,16 @@ type Scenario = string | null
 const today = () => dayjs(kstDateKey(Date.now()))
 /** 오늘 + n일 "YYYY-MM-DD" */
 const day = (offset: number) => today().add(offset, "day").format("YYYY-MM-DD")
-/** 오늘 + n일 KST 벽시계 */
-const kst = (offset: number, time: string) => `${day(offset)}T${time}`
+/** 오늘 + n일의 한국 시각 → 서버처럼 UTC 순간 + Z(BE 58 2단계) */
+const kst = (offset: number, time: string) =>
+  dayjs
+    .utc(`${day(offset)}T${time}`)
+    .subtract(9, "hour")
+    .format("YYYY-MM-DDTHH:mm:ss[Z]")
 const md = (offset: number) => today().add(offset, "day").format("MM.DD")
-/** n분 전 UTC 벽시계(now() 이벤트) */
+/** n분 전 UTC 순간 + Z(now() 이벤트) */
 const utcAgo = (minutes: number) =>
-  dayjs.utc().subtract(minutes, "minute").format("YYYY-MM-DDTHH:mm:ss")
+  dayjs.utc().subtract(minutes, "minute").format("YYYY-MM-DDTHH:mm:ss[Z]")
 
 const scene = (scenario: Scenario) => scenario ?? "h1"
 
@@ -58,7 +62,7 @@ function suspended(): MemberAccountStatus {
         "공구 게시물에 근거 없는 효능 표현(「3일 만에 주름 개선」)이 반복해서 확인됐습니다.",
       suspendedAt: dayjs
         .utc(`${day(-12)}T05:20:00`)
-        .format("YYYY-MM-DDTHH:mm:ss"),
+        .format("YYYY-MM-DDTHH:mm:ss[Z]"),
       payoutHeld: false,
       operatorChannelThreadId: 44,
       suspendCardMessageId: 1203,
@@ -447,7 +451,7 @@ export function mockCalendar(scenario: Scenario, month: string) {
     to,
     holidays: HOLIDAYS.filter(h => h.date >= from && h.date <= to),
     groupBuys: all.filter(
-      g => g.endAt.slice(0, 10) >= from && g.startAt.slice(0, 10) <= to
+      g => dateKey(g.endAt) >= from && dateKey(g.startAt) <= to
     ),
     deadlines: deadlines.filter(d => d.date >= from && d.date <= to),
   }

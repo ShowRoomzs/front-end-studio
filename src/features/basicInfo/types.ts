@@ -3,7 +3,7 @@
 
   시각 필드는 두 종류다(서버 JVM = UTC).
   - `LocalDateTime` 이벤트 시각(요청 · 반려 · 처리 · 확인 · 등록 · 제출) — 모두 `LocalDateTime.now()`로 찍는다
-    → UTC 벽시계 → `parseServerDateTime`.
+    → UTC 순간 → `parseServerDateTime`.
   - `LocalDate` 기한(`dueDate`) · 생년월일(`birthday`) — 날짜 그대로(KST 달력 날짜).
 */
 
@@ -54,7 +54,7 @@ export interface WithdrawalCondition {
 
 export interface PendingWithdrawal {
   requestId: number
-  /** 이벤트 시각(UTC 벽시계) */
+  /** 이벤트 시각(UTC 순간) */
   requestedAt: string
   /** 신청 사유(입력 그대로) */
   reasonText: string
@@ -64,7 +64,7 @@ export interface PendingWithdrawal {
 
 export interface WithdrawalRejection {
   requestId: number
-  /** 이벤트 시각(UTC 벽시계) */
+  /** 이벤트 시각(UTC 순간) */
   rejectedAt: string
   reasonCode: string
   /** 「미정산 남음」 */
@@ -118,14 +118,14 @@ export interface BusinessTypeInfo {
   value: CreatorBusinessType
   /** 「개인 (비사업자)」 · 「개인사업자」 */
   label: string
-  /** 최근 승인된 구분 변경의 처리 시각(UTC 벽시계) — 없으면 null(온보딩 값) */
+  /** 최근 승인된 구분 변경의 처리 시각(UTC 순간) — 없으면 null(온보딩 값) */
   confirmedAt: string | null
 }
 
 export interface ResidentNumberInfo {
   /** 뒤 7자리 전부 마스킹 — 「900101-*******」 */
   masked: string
-  /** 등록 시각(UTC 벽시계) — 이전 등록분은 null */
+  /** 등록 시각(UTC 순간) — 이전 등록분은 null */
   registeredAt: string | null
 }
 
@@ -134,7 +134,7 @@ export interface DocumentFile {
   url: string
   fileName: string | null
   fileSize: number | null
-  /** 제출 시각(UTC 벽시계) */
+  /** 제출 시각(UTC 순간) */
   submittedAt: string | null
 }
 
@@ -165,7 +165,7 @@ export interface AccountVerification {
   /** 확인 전 · 운영자 확인 중 · 확인 완료 · 확인 실패 · 변경 필요 */
   label: string
   tone: AccountVerificationTone
-  /** VERIFIED일 때만 — UTC 벽시계 */
+  /** VERIFIED일 때만 — UTC 순간 */
   verifiedAt: string | null
   /** FAILED일 때만 */
   failReason: string | null
@@ -199,9 +199,9 @@ export interface BusinessTypeChangeBanner {
   requestCode: string
   type: BusinessTypeChangeType
   status: BusinessTypeChangeStatus
-  /** UTC 벽시계 */
+  /** UTC 순간 */
   requestedAt: string
-  /** 승인 · 반려 시각(UTC 벽시계) — PENDING이면 null */
+  /** 승인 · 반려 시각(UTC 순간) — PENDING이면 null */
   processedAt: string | null
   /** TO_BUSINESS 요청 값 */
   businessRegistrationNumber: string | null
@@ -241,7 +241,7 @@ export interface PendingAccountChange {
   /** 예금주 = 본인 실명(마스킹) */
   holderName: string
   bankbookFileName: string | null
-  /** UTC 벽시계 */
+  /** UTC 순간 */
   requestedAt: string
   /** 운영자 확인 N영업일 — [정책값 미정]이면 null */
   reviewBusinessDays: number | null

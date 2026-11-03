@@ -9,7 +9,7 @@
   T2 · T3 · T6 · T7 · T8 · S3 · S6은 입력 · 모달 상태라 화면에서 눌러 연다.
   요청 · 취소 · 확인은 메모리 상태를 바꿔 다음 상태로 넘어간다(새로고침하면 처음으로).
 
-  시각은 서버처럼 UTC 벽시계 문자열로 만든다 — 시안의 KST 값(「2026.09.08 14:20」)을 9시간 당겨 둔다.
+  시각은 서버처럼 UTC 순간("…Z")으로 만든다 — 시안의 KST 값(「2026.09.08 14:20」)을 9시간 당겨 둔다.
 */
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
@@ -29,13 +29,13 @@ import type {
 
 dayjs.extend(utc)
 
-/** 시안의 KST 시각 → 서버가 내려 주는 UTC 벽시계 */
+/** 시안의 KST 시각 → 서버가 내려 주는 UTC 순간("…Z") */
 function kst(value: string) {
-  return dayjs(`${value}+09:00`).utc().format("YYYY-MM-DDTHH:mm:ss")
+  return dayjs(`${value}+09:00`).utc().format("YYYY-MM-DDTHH:mm:ss[Z]")
 }
 
 function nowUtc() {
-  return dayjs().utc().format("YYYY-MM-DDTHH:mm:ss")
+  return dayjs().utc().format("YYYY-MM-DDTHH:mm:ss[Z]")
 }
 
 function addBusinessDays(days: number) {
