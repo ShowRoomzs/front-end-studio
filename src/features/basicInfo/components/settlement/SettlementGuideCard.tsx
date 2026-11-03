@@ -1,19 +1,20 @@
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import {
   InfoCard,
   KvList,
   KvRow,
   NoteBox,
-  PolicyTbdTag,
 } from "@/features/basicInfo/components/parts"
 import type { CreatorBusinessType } from "@/features/basicInfo/types"
 
 /**
  * 오른쪽 「정산은 이렇게 진행됩니다」 — 절차 설명만, 금액은 없다(정산 관리가 단일 소스 · 50 설계서 5-1).
- * 세금 줄만 사업자 구분으로 갈린다. 지급 시점은 기-10 「자동 확정일 + N영업일」 [정책값 미정](이 API는 숫자를 내리지 않는다).
+ * 세금 줄만 사업자 구분으로 갈린다. 확인 기간 · 지급 영업일(기-10 「자동 확정일 + N영업일」)은 공용 정책값 API(BE 58 6-1).
  */
 export default function SettlementGuideCard(props: {
   businessType: CreatorBusinessType
 }) {
+  const policy = usePolicyValues()
   return (
     <InfoCard title="정산은 이렇게 진행됩니다">
       <KvList>
@@ -21,7 +22,8 @@ export default function SettlementGuideCard(props: {
           label="확정 시점"
           sub="확인 기간에 금액이 맞지 않으면 정산 조정을 요청할 수 있습니다."
         >
-          주문 종결 후 3영업일 확인 → 자동 확정
+          주문 종결 후 {policy.settlementReviewBusinessDays}영업일 확인 → 자동
+          확정
         </KvRow>
         <KvRow
           label="지급"
@@ -32,7 +34,7 @@ export default function SettlementGuideCard(props: {
             </>
           }
         >
-          자동 확정일 + N영업일 <PolicyTbdTag />
+          자동 확정일 + {policy.settlementPayoutBusinessDays}영업일
         </KvRow>
         {props.businessType === "BUSINESS" ? (
           <KvRow

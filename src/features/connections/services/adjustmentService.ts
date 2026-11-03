@@ -61,13 +61,13 @@ export interface AdjustmentView {
   latestProposal: AdjustmentProposal
   agreedRewardAmount: number | null
   finalRewardAmount: number | null
-  /** 개설 시각 — 이벤트 시각(UTC 벽시계) */
+  /** 개설 시각 — 이벤트 시각(UTC 순간) */
   openedAt: string
-  /** 합의 기한 — 개설 + N영업일 23:59:59(KST 벽시계) */
+  /** 합의 기한 — 개설 + N영업일 23:59:59(KST) · UTC 순간 */
   deadlineAt: string
   /** D-N — 종결 뒤 null */
   remainingBusinessDays: number | null
-  /** 종결 시각 — 이벤트 시각(UTC 벽시계) */
+  /** 종결 시각 — 이벤트 시각(UTC 순간) */
   closedAt: string | null
   permissions: AdjustmentPermissions
   /** seq 오름차순 전량 */

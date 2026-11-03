@@ -226,7 +226,10 @@ export default function ContractDetailPage() {
     시안 13 S3 — 정지 중 [서명 안내 다시 받기]는 비활성(서버 `CONTRACT_RESEND_REQUEST` 409가 받친다).
     서버 permissions는 정지를 보지 않아 내 보류 배지 · 계정 상태로 가른다.
   */
-  const resendBlocked = isSuspended || detail.sanctionHold?.kind === "MINE"
+  const resendBlocked =
+    !!detail.permissions.suspensionBlockedMessage ||
+    isSuspended ||
+    detail.sanctionHold?.kind === "MINE"
 
   const headerEvent = (() => {
     switch (view) {

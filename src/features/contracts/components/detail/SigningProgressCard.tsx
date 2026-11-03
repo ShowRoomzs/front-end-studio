@@ -4,6 +4,7 @@ import SuspensionNotice from "@/common/components/Suspension/SuspensionNotice"
 import { formatDateTimeShort } from "@/common/utils/formatDate"
 import SignatureBoxes from "@/features/contracts/components/detail/SignatureBoxes"
 import Stepper from "@/features/contracts/components/detail/Stepper"
+import { ACTOR_LABEL } from "@/features/contracts/constants/labels"
 import type { CreatorContractDetailResponse } from "@/features/contracts/types"
 import {
   buildStepper,
@@ -104,7 +105,8 @@ export default function SigningProgressCard(props: SigningProgressCardProps) {
       {detail.terminationRequested && (
         <Notice tone="neutral" className="mb-4">
           <b className="font-semibold">
-            브랜드가 이 계약의 해지를 요청했습니다.
+            {ACTOR_LABEL[detail.terminationRequested.requesterType ?? "SELLER"]}
+            가 이 계약의 해지를 요청했습니다.
           </b>{" "}
           사유 {detail.terminationRequested.reasonLabel}
           {detail.terminationRequested.memo &&

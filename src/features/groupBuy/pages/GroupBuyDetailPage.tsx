@@ -141,6 +141,9 @@ export default function GroupBuyDetailPage() {
   const selling = isSelling(detail)
   const isTerminal = !isPreparing && !selling
   const situation = selling ? sellingSituation(detail) : null
+  // [연장 수락]만 정지로 막힌다 — 서버 판정(BE 58 3-2)이 우선, 옛 서버면 계정 상태로
+  const acceptBlocked =
+    detail.permissions.canAcceptExtension === false || isSuspended
   const prevId = detail.navigation?.prevGroupBuyId ?? null
   const nextId = detail.navigation?.nextGroupBuyId ?? null
 
@@ -148,9 +151,13 @@ export default function GroupBuyDetailPage() {
     navigate(threadId ? `/connections?threadId=${threadId}` : "/connections")
   }
   const openPairThread = () => openThread(detail.brand.pairThreadId)
-  // 내 운영팀 채널 — 직권 중단 예고(B13)는 서버가 스레드 id를 준다. 노출 중지(B5a)에는 id가 없어 연결·소통 첫 화면으로 간다
+  // 내 운영팀 채널 — 직권 중단 예고(B13) · 노출 중지(B5a · BE 58 5-7) 모두 서버가 스레드 id를 준다.
+  // 없으면 연결·소통 첫 화면으로 간다
   const openOperatorChannel = () =>
-    openThread(detail.adminSuspension?.operatorChannelThreadId)
+    openThread(
+      detail.adminSuspension?.operatorChannelThreadId ??
+        detail.post.hidden?.operatorChannelThreadId
+    )
   // 게시물이 승인된 뒤(노출중·노출 중지)의 수정은 PATCH — 재승인 없이 바로 반영된다
   const isEditMode =
     detail.permissions.canEditPost && !detail.permissions.canWritePost
@@ -198,7 +205,7 @@ export default function GroupBuyDetailPage() {
               detail={detail}
               situation={situation}
               canRespond={detail.permissions.canRespondExtension}
-              acceptBlocked={isSuspended}
+              acceptBlocked={acceptBlocked}
               onAccept={() => setModal("accept")}
               onReject={() => setModal("reject")}
             />
@@ -240,7 +247,7 @@ export default function GroupBuyDetailPage() {
           <StudioStatusRail
             detail={detail}
             situation={situation}
-            suspended={isSuspended}
+            suspended={acceptBlocked}
             actions={{
               onWritePost: () => setModal("post"),
               onOpenThread: openPairThread,

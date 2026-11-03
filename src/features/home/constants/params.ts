@@ -1,3 +1,4 @@
+import type { PolicyValues } from "@/common/services/policyService"
 import type { ChecklistKey } from "@/features/home/types"
 
 export const HOME_QUERY_KEYS = {
@@ -47,12 +48,11 @@ export const HOME_PATHS = {
     tab ? `/basic-info?tab=${tab}` : "/basic-info",
 }
 
-/** 시작 가이드 5단계(H3) — 시안 문구 그대로. 5단계 지급 문구는 기-10 「N영업일」 [정책값 미정] */
+/** 시작 가이드 5단계(H3) — 시안 문구 그대로. 5단계 영업일은 공용 정책값(BE 58 6-1 · 기-10) */
 export const GUIDE_STEPS: Array<{
   title: string
-  description: string
+  description: string | ((policy: PolicyValues) => string)
   who: string
-  policyPending?: boolean
 }> = [
   {
     title: "연결 요청 받기",
@@ -76,10 +76,9 @@ export const GUIDE_STEPS: Array<{
   },
   {
     title: "정산 · 지급",
-    description:
-      "주문이 끝나면 3영업일 확인 → 자동 확정 → N영업일 후 SHOWROOMZ가 지급해요",
+    description: policy =>
+      `주문이 끝나면 ${policy.settlementReviewBusinessDays}영업일 확인 → 자동 확정 → ${policy.settlementPayoutBusinessDays}영업일 후 SHOWROOMZ가 지급해요`,
     who: "SHOWROOMZ",
-    policyPending: true,
   },
 ]
 

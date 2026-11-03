@@ -56,17 +56,16 @@ export function notificationDestination(
       return id == null ? null : { path: HOME_PATHS.post(id), label: "게시물" }
     case "SHOWROOM":
       return { path: HOME_PATHS.SHOWROOM, label: "쇼룸 관리" }
-    case "BASIC_INFO_TAB":
+    case "BASIC_INFO_TAB": {
+      // 탭 키 — BE 58 6-4부터 소문자(account · settlement · 변경 요청 유형). 옛 행의 대문자도 받는다
+      const tab = sub?.toLowerCase()
       return {
         path: HOME_PATHS.basicInfo(
-          sub === "ACCOUNT"
-            ? "account"
-            : sub === "SETTLEMENT"
-              ? "settlement"
-              : undefined
+          tab === "account" || tab === "settlement" ? tab : undefined
         ),
         label: "기본정보 관리",
       }
+    }
     default:
       return null
   }

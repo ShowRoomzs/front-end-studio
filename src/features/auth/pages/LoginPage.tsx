@@ -19,6 +19,7 @@ import {
   type LoginResult,
 } from "@/features/auth/utils/resolveLoginResult"
 import { useCookie } from "@/common/hooks/useCookie"
+import { formatDateOnly } from "@/common/utils/formatDate"
 import { COOKIE_NAME } from "@/common/constants/cookie"
 
 /**
@@ -178,7 +179,7 @@ export default function LoginPage() {
           </p>
           {result.reapplyAvailableAt && (
             <p className="mt-2 text-sz-n-500">
-              재신청 가능일: {result.reapplyAvailableAt.slice(0, 10)}
+              재신청 가능일: {formatDateOnly(result.reapplyAvailableAt)}
             </p>
           )}
         </AlertModal>

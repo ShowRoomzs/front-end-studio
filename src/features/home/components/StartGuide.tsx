@@ -7,18 +7,10 @@ import {
 } from "@/features/home/constants/params"
 import type { HomeChecklistItem, HomeGuide } from "@/features/home/types"
 import { cn } from "@/lib/utils"
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
-
-/** 시안 `.tag-tbd` */
-function PolicyPendingTag() {
-  return (
-    <span className="whitespace-nowrap rounded-[4px] bg-sz-n-100 px-1.5 py-px text-[10px] font-medium text-sz-n-500">
-      [정책값 미정]
-    </span>
-  )
-}
 
 /** 시안 `.ck` — 체크 표시 */
 function Check(props: { on: boolean }) {
@@ -46,6 +38,7 @@ function readLinkCopied() {
 
 /** 공구 진행 5단계 + 단계별 담당(H3 위) — 시안 `.hm-guide` */
 function GuideSteps() {
+  const policy = usePolicyValues()
   return (
     <div className="mt-4 rounded-[8px] border border-sz-n-200 bg-white px-[18px] py-4">
       <div className="text-[12px] font-semibold text-sz-n-900">
@@ -64,13 +57,9 @@ function GuideSteps() {
               {step.title}
             </div>
             <div className="flex-1 text-[11px] leading-[1.55] text-sz-n-600">
-              {step.description}
-              {step.policyPending && (
-                <>
-                  {" "}
-                  <PolicyPendingTag />
-                </>
-              )}
+              {typeof step.description === "function"
+                ? step.description(policy)
+                : step.description}
             </div>
             <div className="border-t border-sz-n-200 pt-1.5 text-[10px] font-semibold text-sz-n-500">
               {step.who}

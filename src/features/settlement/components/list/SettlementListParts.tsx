@@ -1,3 +1,4 @@
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { INPUT_CLASS } from "@/features/contracts/components/shared/styles"
 import { SETTLEMENT_STATUS_LABEL } from "@/features/settlement/constants/params"
@@ -263,6 +264,7 @@ export function SettlementEmptyState(props: {
   onGoGroupBuy: () => void
 }) {
   const { hasCondition, keyword, onReset, onGoGroupBuy } = props
+  const policy = usePolicyValues()
 
   if (hasCondition) {
     return (
@@ -291,8 +293,11 @@ export function SettlementEmptyState(props: {
       }
     >
       공구가 종료되고 <b className="font-semibold">모든 주문 처리가 끝나면</b>{" "}
-      정산이 생성되고, <b className="font-semibold">3영업일 확인 기간</b>을 거쳐
-      자동 확정됩니다.
+      정산이 생성되고,{" "}
+      <b className="font-semibold">
+        {policy.settlementReviewBusinessDays}영업일 확인 기간
+      </b>
+      을 거쳐 자동 확정됩니다.
     </EmptyBox>
   )
 }

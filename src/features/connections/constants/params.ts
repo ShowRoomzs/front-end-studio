@@ -83,12 +83,6 @@ export const ISSUE_CLOSED_NOTICE_TEXT = ISSUE_NOTICE_TEXT
 export const ISSUE_CLOSED_INPUT_TEXT =
   "종결된 이슈에는 메시지를 보낼 수 없습니다"
 
-/**
- * 합의 기한 = 개설 + N영업일(시안 「(10영업일)」). 서버 설정 `settlement.adjustment.deadline-business-days`(기본 10)가
- * 응답에 실려 오지 않아 여기 한 곳에 둔다 — 서버가 내려 주면 그 값으로 바꾼다(백엔드 요청).
- */
-export const ADJUSTMENT_DEADLINE_BUSINESS_DAYS = 10
-
 /** 이 화면을 보는 쪽 — 카드의 「누가」를 내 쪽 · 상대 쪽으로 나눌 때 쓴다 */
 export const VIEWER_PARTY = "CREATOR" as const
 

@@ -1,3 +1,4 @@
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import StatusBadge from "@/common/components/StatusBadge/StatusBadge"
 import {
   ResCard,
@@ -13,7 +14,6 @@ import {
 } from "@/features/connections/components/IssueThread/issueView"
 import SanctionCard from "@/features/connections/components/IssueThread/SanctionCard"
 import {
-  ADJUSTMENT_DEADLINE_BUSINESS_DAYS,
   PARTY_LABEL,
   VIEWER_PARTY,
 } from "@/features/connections/constants/params"
@@ -47,6 +47,7 @@ export default function SystemCard(props: {
 }) {
   const { message, view, pendingResponse, onRespond } = props
   const card = message.card
+  const policy = usePolicyValues()
 
   if (!card) {
     return message.content ? <SysBar>{message.content}</SysBar> : null
@@ -72,7 +73,7 @@ export default function SystemCard(props: {
             <>
               {" "}
               · 합의 기한 <b>{formatDeadline(deadline)}</b>(
-              {ADJUSTMENT_DEADLINE_BUSINESS_DAYS}영업일)까지 합의가 없으면{" "}
+              {policy.adjustmentDeadlineBusinessDays}영업일)까지 합의가 없으면{" "}
               <b>원래 금액</b>으로 확정됩니다
             </>
           )}
@@ -296,9 +297,9 @@ export default function SystemCard(props: {
 
     case "SETTLEMENT_ADJUSTMENT_WITHDRAWN": {
       // 시안에 없는 결과 카드 — 기한 만료(T4) · 합의 완료(T3) 카드의 행 구성을 따른다.
-      // 철회한 쪽 · 시각은 결과 카드 스냅샷의 agreedBy* · closedAt(서버 SettlementAdjustmentCards.withdrawn)
+      // 철회한 쪽 · 시각은 결과 카드의 withdrawnBy*(BE 58 5-10) · closedAt — 옛 카드는 agreedBy*에 담겼다
       const final = adjustment.finalRewardAmount ?? original
-      const withdrawnBy = adjustment.agreedByType
+      const withdrawnBy = adjustment.withdrawnByType ?? adjustment.agreedByType
       const closedAt = adjustment.closedAt ?? view?.closedAt ?? null
       return (
         <ResCard badge="요청 철회" head="원래 금액 확정 · 이슈 종결">

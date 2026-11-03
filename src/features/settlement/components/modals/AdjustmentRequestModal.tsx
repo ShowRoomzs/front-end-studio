@@ -1,3 +1,4 @@
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import useDebounce from "@/common/hooks/useDebounce"
 import Btn from "@/features/contracts/components/shared/Btn"
 import {
@@ -64,6 +65,7 @@ export default function AdjustmentRequestModal(props: {
   const business = detail.settlement.creatorBusinessType === "BUSINESS"
   const clawback = detail.breakdown.rewardClawbackAmount
 
+  const policy = usePolicyValues()
   const [amountText, setAmountText] = useState("")
   const [reason, setReason] = useState("")
   const reasonId = useId()
@@ -236,7 +238,8 @@ export default function AdjustmentRequestModal(props: {
         근거 자료는 요청 후 <B>이슈 스레드에 올려 주세요</B>. 요청하면 이 공구
         정산이 <B>전액 보류</B>되고 브랜드와의 <B>이슈 스레드</B>가 열립니다.
         차액을 먼저 지급하지 않습니다. 브랜드가 동의하면 바로 반영되며,{" "}
-        <B>10영업일</B> 안에 합의가 없으면 <B>원래 금액</B>으로 확정됩니다.
+        <B>{policy.adjustmentDeadlineBusinessDays}영업일</B> 안에 합의가 없으면{" "}
+        <B>원래 금액</B>으로 확정됩니다.
       </MHint>
     </GbModal>
   )

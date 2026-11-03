@@ -47,7 +47,7 @@ export function formatRewardRate(value: number) {
   return `${Number(Number(value).toFixed(2))}%`
 }
 
-/** 화면이 직접 나누는 비율(퍼널 구간 1 · 신규 소비자 비중) — 분모 0이면 null */
+/** 서버 비율이 없을 때(옛 서버) 화면이 나누는 비율 — 퍼널 구간 1 · 신규 소비자 비중. 분모 0이면 null */
 export function ratio(numerator: number, denominator: number) {
   if (denominator <= 0) return null
   return Math.round((numerator / denominator) * 1000) / 10
@@ -61,25 +61,22 @@ export function barWidth(numerator: number, denominator: number) {
 
 // ------------------------------------------------------------------ 날짜
 
-/** KST 벽시계(공구 시작 · 종료 · 합의 기한) — 시간대를 바꾸지 않는다 */
-const kst = (value: string) => dayjs(value.replace(/Z$/, ""))
-
-/** 목록 08.24 ~ 08.31 · 상세 2026.08.24 ~ 08.31(해가 바뀌면 끝에도 연도) */
+/** 목록 08.24 ~ 08.31 · 상세 2026.08.24 ~ 08.31(해가 바뀌면 끝에도 연도) — 공구 시작 · 종료(UTC 순간) */
 export function formatPeriod(start: string, end: string, withYear = false) {
-  const s = kst(start)
-  const e = kst(end)
+  const s = parseServerDateTime(start)
+  const e = parseServerDateTime(end)
   if (!withYear) return `${s.format("MM.DD")} ~ ${e.format("MM.DD")}`
   const tail =
     s.year() === e.year() ? e.format("MM.DD") : e.format("YYYY.MM.DD")
   return `${s.format("YYYY.MM.DD")} ~ ${tail}`
 }
 
-/** 합의 기한 09.16 — KST 벽시계 */
+/** 합의 기한 09.16 — 한국 날짜 23:59:59를 UTC 순간으로 내린다 */
 export function formatKstMonthDay(value: string | null) {
-  return value ? kst(value).format("MM.DD") : DASH
+  return value ? parseServerDateTime(value).format("MM.DD") : DASH
 }
 
-/** 제안 · 합의 시각 09.07 — 서버 now()(UTC 벽시계) */
+/** 제안 · 합의 시각 09.07 — 서버 now()(UTC 순간) */
 export function formatEventMonthDay(value: string | null) {
   return value ? parseServerDateTime(value).format("MM.DD") : DASH
 }

@@ -6,10 +6,11 @@
   - `api/common/calendar/dto/HolidayItem.java`(1017 설계서 4-5)
   - `api/common/sanction/SanctionHoldView.java`
 
-  시각은 두 종류다(공통 규칙 5절).
-  - now()로 찍는 이벤트(`live.asOf` · 알림 `createdAt` · 정지 `suspendedAt`) — UTC 벽시계 → `parseServerDateTime`
-  - 입력값 · 거기서 나온 기한(공구 시작/종료 · 서명 기한 · 오픈일 · 이의 신청 기한 · 자동 해제) — KST 벽시계 그대로
-  - `LocalDate`(yyyy-MM-dd)는 시간대와 무관한 날짜
+  시각(BE 58 2단계 · 10-29)
+  - `LocalDateTime`은 전부 UTC 순간 + "Z" → `parseServerDateTime` — now() 이벤트(`live.asOf` · 알림 `createdAt` ·
+    정지 `suspendedAt`)도, 입력값 · 거기서 나온 기한(공구 시작/종료 · 서명 기한 · 오픈일 · 이의 신청 기한 · 자동 해제)도 같다.
+    날짜 칸 · D-day는 그 순간의 한국 날짜로 센다(`utils/date`).
+  - `LocalDate`(yyyy-MM-dd)는 한국 날짜 그대로
 */
 
 // ------------------------------------------------------------------ 계정 상태(H5 정지 배너)
@@ -18,10 +19,10 @@
 export interface MemberSanctionTerm {
   /** 정지 종료일(포함) · LocalDate */
   endsOn: string | null
-  /** 자동 해제 시각 = 종료일 다음 날 00:00 · KST 벽시계 */
+  /** 자동 해제 시각 = 종료일 다음 날 00:00(KST) · UTC 순간 */
   autoReleaseAt: string | null
   periodDays: number | null
-  /** 통지 + N영업일 23:59:59 · KST 벽시계 */
+  /** 통지 + N영업일 23:59:59(KST) · UTC 순간 */
   appealDeadlineAt: string | null
   /** 소명 검토 N영업일 — [정책값 미정]이면 null */
   appealReviewBusinessDays: number | null
@@ -33,7 +34,7 @@ export interface MemberAccountSanction {
   reasonLabel: string
   /** 운영자가 입력한 경우만 — [자세히]로 펼친다 */
   reasonDetail: string | null
-  /** 정지 시각 · UTC 벽시계(now()) */
+  /** 정지 시각 · UTC 순간(now()) */
   suspendedAt: string
   /** 지급 정지 사유 — 배너에 정산 줄을 붙인다 */
   payoutHeld: boolean
@@ -102,7 +103,7 @@ export type HomeTodoKind =
 /** 할 일 카드 한 장 — 정렬 · 문구 · 정지 중 막힘은 서버가 정한다 */
 export interface HomeTodo {
   kind: HomeTodoKind
-  /** 기한 · KST 벽시계 — 게시물 작성 · 재등록은 오픈일. 없으면 null */
+  /** 기한 · UTC 순간 — 게시물 작성 · 재등록은 오픈일. 없으면 null */
   dueAt: string | null
   /** 기한 칩 문구 「서명 기한 10.24」 · 「오픈 10.28」 · 「지급 대기」 · 「보류 중」 */
   dueLabel: string | null
@@ -164,14 +165,14 @@ export interface CreatorHome {
 
 /** 진행 중 공구 실시간 띠 — 공구 관리 잠정 실적과 같은 정의(취소 · 반품 제외) */
 export interface HomeLive {
-  /** 집계 시각 · UTC 벽시계(now()) */
+  /** 집계 시각 · UTC 순간(now()) */
   asOf: string
   groupBuyId: number
   name: string
   brandName: string
-  /** KST 벽시계 */
+  /** UTC 순간 */
   startAt: string
-  /** KST 벽시계 */
+  /** UTC 순간 */
   endAt: string
   salesAmount: number
   salesAmountToday: number
@@ -194,9 +195,9 @@ export interface CalendarGroupBuy {
   groupBuyId: number
   name: string
   brandName: string
-  /** KST 벽시계 */
+  /** UTC 순간 */
   startAt: string
-  /** KST 벽시계 — 조기 마감 · 중단이면 실제 종료 시각 */
+  /** UTC 순간 — 조기 마감 · 중단이면 실제 종료 시각 */
   endAt: string
   status: "IN_PROGRESS" | "UPCOMING" | "ENDED"
   hold: SanctionHoldView | null
@@ -268,10 +269,10 @@ export interface NotificationItem {
   imageUrl: string | null
   liveGroupBuy: boolean
   advertising: boolean
-  /** KST 벽시계 */
+  /** UTC 순간 */
   todoDueAt: string | null
   read: boolean
-  /** UTC 벽시계(now()) */
+  /** UTC 순간(now()) */
   createdAt: string
 }
 
