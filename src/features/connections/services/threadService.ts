@@ -276,12 +276,6 @@ export const threadService = {
       "/creator/connections/threads",
       { params }
     )
-    // DEV — 철회 API 404 목업(adjustmentDevMock)이 바꾼 이슈 줄을 덧씌운다. 배포 번들에서는 빠진다
-    if (import.meta.env.DEV) {
-      const mock =
-        await import("@/features/connections/services/adjustmentDevMock")
-      return mock.overlayThreads(data)
-    }
     return data
   },
 
@@ -300,11 +294,6 @@ export const threadService = {
       `/creator/threads/${threadId}/messages`,
       { params }
     )
-    if (import.meta.env.DEV) {
-      const mock =
-        await import("@/features/connections/services/adjustmentDevMock")
-      return mock.overlayMessages(threadId, data, params.cursor === undefined)
-    }
     return data
   },
 

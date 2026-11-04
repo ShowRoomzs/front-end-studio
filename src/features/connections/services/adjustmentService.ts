@@ -5,8 +5,6 @@ import type {
   AdjustmentTurn,
   SettlementParty,
 } from "@/features/connections/services/threadService"
-import axios from "axios"
-import toast from "react-hot-toast"
 
 /** 제안 상태 — 백엔드 `ProposalStatus`. CLOSED = 응답 없이 종결(기한 만료 · 요청 철회) */
 export type ProposalStatus =
@@ -80,21 +78,6 @@ export interface AdjustmentCounterBody {
   reason?: string
 }
 
-const SERVER_ERROR_MESSAGE =
-  "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
-
-/**
- * 개발 서버에 철회 API가 아직 없다(라우트 404 — 협의가 없을 때의 `SETTLEMENT_ADJUSTMENT_NOT_FOUND`와 다르다).
- * DEV에서만 목업으로 넘긴다.
- */
-function isWithdrawRouteMissing(error: unknown) {
-  return (
-    axios.isAxiosError<{ code?: string }>(error) &&
-    error.response?.status === 404 &&
-    error.response.data?.code !== "SETTLEMENT_ADJUSTMENT_NOT_FOUND"
-  )
-}
-
 /**
  * 정산 조정 협의(44 이슈 스레드 설계서 3-1) — 스레드 화면 쪽 5개.
  * 요청 · 미리보기는 정산 관리(`settlementService`)가 쓴다.
@@ -105,11 +88,6 @@ export const adjustmentService = {
     const { data } = await apiInstance.get<AdjustmentView>(
       `/creator/threads/${threadId}/adjustment`
     )
-    if (import.meta.env.DEV) {
-      const mock =
-        await import("@/features/connections/services/adjustmentDevMock")
-      return mock.overlayAdjustment(data)
-    }
     return data
   },
 
@@ -136,32 +114,12 @@ export const adjustmentService = {
   },
 
   /**
-   * 요청 철회(1021 기-14) — 입력 없음. 원래 금액 확정 · 보류 해제 · 종결(`status = WITHDRAWN`).
-   * 배포본은 실패하면 인터셉터가 서버 문구를 띄운다. DEV는 라우트가 없을 때(404)만 목업으로 성공을 흉내 내고,
-   * 그 밖의 실패는 여기서 같은 문구를 띄운다(목업 판정 전에 토스트가 먼저 뜨지 않도록 인터셉터 토스트를 끈다).
+   * 요청 철회(1021 기-14) — 입력 없음. 원래 금액 확정 · 보류 해제 · 종결(`status = WITHDRAWN`)
    */
   withdraw: async (view: AdjustmentView) => {
-    try {
-      const { data } = await apiInstance.post<AdjustmentView>(
-        `/creator/settlement-adjustments/${view.adjustmentId}/withdraw`,
-        undefined,
-        { suppressErrorToast: import.meta.env.DEV }
-      )
-      return data
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        if (isWithdrawRouteMissing(error)) {
-          const mock =
-            await import("@/features/connections/services/adjustmentDevMock")
-          return mock.mockWithdraw(view)
-        }
-        toast.error(
-          (axios.isAxiosError<{ message?: string }>(error) &&
-            error.response?.data?.message) ||
-            SERVER_ERROR_MESSAGE
-        )
-      }
-      throw error
-    }
+    const { data } = await apiInstance.post<AdjustmentView>(
+      `/creator/settlement-adjustments/${view.adjustmentId}/withdraw`
+    )
+    return data
   },
 }
