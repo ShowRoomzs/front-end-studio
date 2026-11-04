@@ -83,20 +83,7 @@ export function issueListPreview(badge: ThreadAdjustmentBadge | null) {
 export const proposalNoun = (seq: number | undefined) =>
   seq === undefined || seq === 1 ? "요청" : "제안"
 
-/**
- * [요청 철회] 노출(1021 기-14) — 서버 `permissions.canWithdraw`를 그대로 쓴다.
- * 10-24 이전 배포는 이 값을 내려 주지 않는다. 배포본은 그때 버튼을 숨기고(호출해도 404다),
- * DEV만 설계서 6-4 조건(협의 중 ∧ 처음 요청한 쪽 = 나 ∧ 최신 제안이 내 것 ∧ 응답 대기)으로 대신 판정해
- * 철회 목업(404 대체)을 확인할 수 있게 한다.
- */
+/** [요청 철회] 노출(1021 기-14) — 서버 `permissions.canWithdraw`(처음 요청한 쪽 ∧ 최신 제안이 내 것 ∧ 응답 대기) */
 export function canWithdrawOf(view: AdjustmentView) {
-  const { canWithdraw } = view.permissions
-  if (canWithdraw !== undefined) return canWithdraw
-  if (!import.meta.env.DEV) return false
-  return (
-    view.status === "OPEN" &&
-    view.requesterType === VIEWER_PARTY &&
-    view.latestProposal.proposerType === VIEWER_PARTY &&
-    view.latestProposal.status === "PENDING"
-  )
+  return view.permissions.canWithdraw === true
 }
