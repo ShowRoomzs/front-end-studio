@@ -85,7 +85,7 @@ export interface SettlementListItem {
 export interface PayoutHoldView {
   /** `PayoutBlockReason` 코드 — 「BRAND_SUSPENDED」 · 「CREATOR_SUSPENDED」 · 「TAX_INVOICE_UNVERIFIED」 등 */
   reason: string
-  /** 「계정 이용 정지 · 정산 정보 불일치」 */
+  /** 「지급 정지 · 계정 이용 정지」(BE 58 6-8) */
   label: string
   /** 지급일 문구 — 「정지 해제 다음 영업일 지급」 · 「발행 확인 후 + 3영업일」(서버 문장) */
   scheduleLabel: string

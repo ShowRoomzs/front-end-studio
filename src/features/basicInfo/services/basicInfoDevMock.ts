@@ -97,7 +97,7 @@ function individualBase(): SettlementInfoResponse {
       },
       verification: {
         status: "VERIFIED",
-        label: "확인 완료",
+        label: "운영자 확인 완료",
         tone: "SUCCESS",
         verifiedAt: kst("2026-07-02T10:15:00"),
         failReason: null,
@@ -147,7 +147,7 @@ function businessBase(): SettlementInfoResponse {
       },
       verification: {
         status: "VERIFIED",
-        label: "확인 완료",
+        label: "운영자 확인 완료",
         tone: "SUCCESS",
         verifiedAt: kst("2026-09-09T14:05:00"),
         failReason: null,
@@ -366,7 +366,7 @@ function conditionsBlocked(): Array<WithdrawalCondition> {
       count: 1,
       satisfied: false,
       resolution: "연결된 공구가 끝나야 합니다",
-      breakdown: [{ key: "CONCLUDED", label: "체결완료", count: 1 }],
+      breakdown: [{ key: "CONCLUDED", label: "계약 성립", count: 1 }],
     },
     {
       code: "UNSETTLED",
