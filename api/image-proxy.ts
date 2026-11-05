@@ -7,7 +7,7 @@
 // ⚠️ 환경변수(선택): IMAGE_PROXY_ALLOWED_HOSTS — 커스텀 CDN 도메인을 쓸 때만.
 //    VITE_ 접두사를 붙이지 않는다(브라우저 번들에 들어갈 값이 아니다).
 
-import { fetchProxiedImage, resolveProxyTarget } from "./_imageProxy"
+import { fetchProxiedImage, resolveProxyTarget } from "./_imageProxy.js"
 
 type VercelRequest = {
   method?: string
