@@ -88,7 +88,7 @@ export default function MainLayout() {
   const { data: threadSummary } = useGetThreadSummary()
   // 계약 GNB 배지 — 내 서명이 필요한 계약 건수. 놓치면 만료라 계약 화면 밖에서도 폴링한다
   const { data: contractSummary } = useGetCreatorContractSummary()
-  // 공구 GNB 배지 — 게시물 작성·재등록 · 숨김 게시물 수정 · 연장 응답 · 이행 확인이 필요한 공구 수
+  // 공구 GNB 배지 — 게시물 작성·재등록 · 노출 중지 게시물 수정 · 연장 응답이 필요한 공구 수(서버 actionRequiredCount)
   const { data: groupBuySummary } = useGetCreatorGroupBuySummary()
   // 정산 GNB 배지 — 서버 attentionCount = 조정 요청 가능 창이 열린 정산 확인 중 + 세금계산서 입력 대기 · 반려.
   // 조정 협의의 「내 응답 필요」는 연결·소통 배지(스레드 안 읽음)가 센다 — 같은 조치를 두 번 세지 않는다

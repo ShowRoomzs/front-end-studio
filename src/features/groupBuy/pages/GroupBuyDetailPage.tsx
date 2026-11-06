@@ -4,7 +4,6 @@ import SuspensionNotice from "@/common/components/Suspension/SuspensionNotice"
 import Btn from "@/features/contracts/components/shared/Btn"
 import {
   ClosedProgressCard,
-  FulfillmentCard,
   InfoCard,
   ItemsCard,
   PayoutCard,
@@ -20,7 +19,6 @@ import {
 } from "@/features/groupBuy/components/detail/StudioRail"
 import {
   AcceptExtensionModal,
-  FulfillmentModal,
   PostEditorModal,
   RejectExtensionModal,
   SuspensionModal,
@@ -28,7 +26,6 @@ import {
 import { GROUP_BUY_LIST_PATH } from "@/features/groupBuy/constants/params"
 import {
   useAcceptExtension,
-  useCheckFulfillment,
   useEditPost,
   useGetCreatorGroupBuyDetail,
   useRejectExtension,
@@ -36,6 +33,7 @@ import {
   useSaveDraft,
   useSubmitPost,
 } from "@/features/groupBuy/hooks/useCreatorGroupBuy"
+import { useEndedSettlement } from "@/features/groupBuy/hooks/useEndedSettlement"
 import {
   headerMeta,
   isSelling,
@@ -50,8 +48,7 @@ import {
   useParams as useRouteParams,
 } from "react-router-dom"
 
-type ModalKind =
-  "post" | "accept" | "reject" | "suspension" | "fulfillment" | null
+type ModalKind = "post" | "accept" | "reject" | "suspension" | null
 
 /**
  * `/group-buy/:groupBuyId` — 상세 B1~B13이 모두 이 한 화면이다.
@@ -83,6 +80,8 @@ export default function GroupBuyDetailPage() {
   const [modal, setModal] = useState<ModalKind>(null)
   // 시안 13 — 연장 수락 · 공구 게시물 등록은 정지 중 막힌다. 서버 permissions가 정지를 보지 않아 계정 상태로 가른다
   const { isSuspended } = useAccountStatus()
+  // 시안 B11 — 종료 공구에 정산이 생겼는지(공구 상세는 정산완료에서만 정산을 준다)
+  const endedSettlement = useEndedSettlement(detail)
 
   const { mutate: saveDraft, isPending: isSaving } = useSaveDraft()
   const { mutate: submitPost, isPending: isSubmitting } = useSubmitPost()
@@ -93,8 +92,6 @@ export default function GroupBuyDetailPage() {
     useRejectExtension()
   const { mutate: requestSuspension, isPending: isSuspending } =
     useRequestSuspension()
-  const { mutate: checkFulfillment, isPending: isChecking } =
-    useCheckFulfillment()
 
   const closeModal = useCallback(() => setModal(null), [])
 
@@ -161,7 +158,12 @@ export default function GroupBuyDetailPage() {
   // 게시물이 승인된 뒤(노출중·노출 중지)의 수정은 PATCH — 재승인 없이 바로 반영된다
   const isEditMode =
     detail.permissions.canEditPost && !detail.permissions.canWritePost
-  const meta = headerMeta(detail)
+  const meta = headerMeta(detail, endedSettlement !== null)
+  // B11 [정산 보기] · B8 [정산 명세 보기] — 그 정산 상세로. id를 모르면 정산 목록
+  const settlementId =
+    endedSettlement?.settlementId ?? detail.settlement?.settlementId ?? null
+  const goSettlement = () =>
+    navigate(settlementId ? `/settlement/${settlementId}` : "/settlement")
 
   return (
     <>
@@ -218,16 +220,17 @@ export default function GroupBuyDetailPage() {
             />
           )}
           {selling && <SellingProgressCard detail={detail} />}
-          {isTerminal && <ClosedProgressCard detail={detail} />}
-
-          {status === "ENDED" && (
-            <FulfillmentCard
+          {isTerminal && (
+            <ClosedProgressCard
               detail={detail}
-              onCheck={() => setModal("fulfillment")}
+              settlement={endedSettlement}
+              onOpenSettlement={goSettlement}
             />
           )}
 
-          {!isPreparing && <SalesCard detail={detail} />}
+          {!isPreparing && (
+            <SalesCard detail={detail} settled={endedSettlement !== null} />
+          )}
 
           <InfoCard
             detail={detail}
@@ -248,17 +251,15 @@ export default function GroupBuyDetailPage() {
             detail={detail}
             situation={situation}
             suspended={acceptBlocked}
+            settlement={endedSettlement}
             actions={{
               onWritePost: () => setModal("post"),
               onOpenThread: openPairThread,
               onOpenOperatorChannel: openOperatorChannel,
-              onOpenFulfillmentThread: () =>
-                openThread(detail.afterEnd?.fulfillment?.threadId),
               onAcceptExtension: () => setModal("accept"),
               onRejectExtension: () => setModal("reject"),
               onSuspension: () => setModal("suspension"),
-              onCheckFulfillment: () => setModal("fulfillment"),
-              onGoSettlement: () => navigate("/settlement"),
+              onGoSettlement: goSettlement,
             }}
           />
           <StudioHistoryCard detail={detail} />
@@ -368,24 +369,6 @@ export default function GroupBuyDetailPage() {
                   toast.success(
                     "중단을 요청했습니다. 검토 중에도 공구는 계속 진행됩니다."
                   )
-                },
-              }
-            )
-          }
-        />
-      )}
-      {modal === "fulfillment" && (
-        <FulfillmentModal
-          detail={detail}
-          isPending={isChecking}
-          onClose={closeModal}
-          onConfirm={body =>
-            checkFulfillment(
-              { groupBuyId, body },
-              {
-                onSuccess: () => {
-                  closeModal()
-                  toast.success("계약 이행 확인을 제출했습니다.")
                 },
               }
             )

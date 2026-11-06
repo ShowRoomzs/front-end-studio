@@ -3,10 +3,7 @@ import {
   formatDateTimeShort,
   parseServerDateTime,
 } from "@/common/utils/formatDate"
-import type {
-  CreatorGroupBuyDetailResponse,
-  FulfillmentTarget,
-} from "@/features/groupBuy/types"
+import type { CreatorGroupBuyDetailResponse } from "@/features/groupBuy/types"
 import dayjs from "dayjs"
 
 export type Detail = CreatorGroupBuyDetailResponse
@@ -69,42 +66,6 @@ export function isSelling(detail: Detail) {
     detail.groupBuy.status === "IN_PROGRESS" ||
     detail.groupBuy.status === "SUSPENSION_SCHEDULED"
   )
-}
-
-/** 서버 의무 코드 → 시안 문구 「주문 배송 완료 · 고정 지급비 지급」 · 「쇼룸 공구 게시물 · 인스타그램 피드 1 · …」 */
-export function dutyText(target: FulfillmentTarget | null | undefined): string {
-  if (!target) {
-    return "—"
-  }
-  const counts = target.counts
-  const insta: Array<string> = []
-  const parts: Array<string> = []
-  for (const duty of target.duties) {
-    switch (duty) {
-      case "ORDER_DELIVERY":
-        parts.push("주문 배송 완료")
-        break
-      case "FIXED_FEE_PAYMENT":
-        parts.push("고정 지급비 지급")
-        break
-      case "SHOWROOM_POST":
-        parts.push("쇼룸 공구 게시물")
-        break
-      case "FEED":
-        insta.push(`피드 ${counts?.feed ?? ""}`.trim())
-        break
-      case "REELS":
-        insta.push(`릴스 ${counts?.reels ?? ""}`.trim())
-        break
-      case "STORY":
-        insta.push(`스토리 ${counts?.story ?? ""}`.trim())
-        break
-    }
-  }
-  if (insta.length > 0) {
-    parts.push(`인스타그램 ${insta.join(" · ")}`)
-  }
-  return parts.join(" · ") || "—"
 }
 
 /** 「공구 종료 후 · 브랜드 직접」 — 상태 카드 한 줄용 */
@@ -222,7 +183,11 @@ export function sellingSituation(detail: Detail): SellingSituation {
  * 상세 헤더 `.page-d` — 시안 B13은 「중단 예정 …」 꼬리만 경고색 굵게 쓴다.
  * 그 꼬리를 `warn`으로 따로 돌려주고 나머지는 `text`로 이어 붙인다.
  */
-export function headerMeta(detail: Detail): {
+/** `settlementHandedOff` — 종료 공구에 정산이 생겼다(시안 09 B11 「정산으로 이관」) */
+export function headerMeta(
+  detail: Detail,
+  settlementHandedOff = false
+): {
   text: string
   warn: string | null
 } {
@@ -238,11 +203,11 @@ export function headerMeta(detail: Detail): {
       warn: `중단 예정 ${kstDt(detail.adminSuspension?.executeScheduledAt)}`,
     }
   }
-  return { text: headerMetaText(detail), warn: null }
+  return { text: headerMetaText(detail, settlementHandedOff), warn: null }
 }
 
-function headerMetaText(detail: Detail): string {
-  const { groupBuy, timeline, brand, post, afterEnd } = detail
+function headerMetaText(detail: Detail, settlementHandedOff: boolean): string {
+  const { groupBuy, timeline, brand, post } = detail
   const head = [groupBuy.groupBuyNumber, brand.name]
   const startText =
     timeline.daysUntilStart !== null
@@ -277,19 +242,13 @@ function headerMetaText(detail: Detail): string {
         .filter(Boolean)
         .join(" · ")
     }
-    case "ENDED": {
-      const fulfillment = afterEnd?.fulfillment
-      const disputed =
-        fulfillment?.mine?.result === "UNFULFILLED" ||
-        fulfillment?.theirs?.result === "UNFULFILLED"
-      const tail =
-        disputed && fulfillment?.onHold
-          ? "이행 이슈 진행 중"
-          : fulfillment?.mine && fulfillment.theirs
-            ? "이행 확인 완료"
-            : "정산 대기"
-      return [...head, `${d(groupBuy.endedAt)} 종료`, tail].join(" · ")
-    }
+    case "ENDED":
+      // 시안 B7 · B11 — 정산이 생기기 전에는 주문 종결 대기
+      return [
+        ...head,
+        `${d(groupBuy.endedAt)} 종료`,
+        settlementHandedOff ? "정산으로 이관" : "주문 종결 대기",
+      ].join(" · ")
     case "SETTLED":
       return [
         ...head,
