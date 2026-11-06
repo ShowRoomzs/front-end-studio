@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { useState } from "react"
 
 interface CounterpartAvatarProps {
   name: string
@@ -11,6 +12,7 @@ interface CounterpartAvatarProps {
 /** 시안 `.cs-avatar` — 기본 38px, 쓰이는 자리마다 className으로 크기만 덮어쓴다 */
 export default function CounterpartAvatar(props: CounterpartAvatarProps) {
   const { name, imageUrl, isOperator = false, className } = props
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
 
   if (isOperator) {
     return (
@@ -25,11 +27,13 @@ export default function CounterpartAvatar(props: CounterpartAvatarProps) {
     )
   }
 
-  if (imageUrl) {
+  // 주소가 있어도 못 불러오면(도메인 정지 · 삭제된 파일) 이니셜로 돌아간다
+  if (imageUrl && failedUrl !== imageUrl) {
     return (
       <img
         src={imageUrl}
         alt={name}
+        onError={() => setFailedUrl(imageUrl)}
         className={cn(
           "h-[38px] w-[38px] shrink-0 rounded-full object-cover",
           className
