@@ -21,16 +21,8 @@ import {
 import type {
   CreatorSuspensionReason,
   ExtensionRejectReason,
-  FulfillmentResult,
 } from "@/features/groupBuy/types"
-import {
-  type Detail,
-  dt,
-  dutyText,
-  md,
-  num,
-  won,
-} from "@/features/groupBuy/utils/view"
+import { type Detail, dt, md, num, won } from "@/features/groupBuy/utils/view"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 
@@ -389,136 +381,6 @@ export function PostEditorModal(
           </>
         )}
       </MHint>
-    </GbModal>
-  )
-}
-
-// ── C5 · C6 계약 이행 확인 ───────────────────────────
-
-export function FulfillmentModal(
-  props: BaseProps & {
-    onConfirm: (body: { result: FulfillmentResult; reason?: string }) => void
-  }
-) {
-  const { detail, isPending, onClose, onConfirm } = props
-  const [result, setResult] = useState<FulfillmentResult | null>(null)
-  const [reason, setReason] = useState("")
-  const isUnfulfilled = result === "UNFULFILLED"
-  const isValid =
-    result === "FULFILLED" || (isUnfulfilled && reason.trim() !== "")
-  const brandDuty = dutyText(detail.afterEnd?.fulfillment?.myTarget)
-  // 시안 C5 「312건 중 18건 배송 중」 — 판단 근거가 되는 배송 현황. 지급비 입금은 플랫폼이 모른다
-  const closure = detail.orderClosure
-  const shipping = closure?.unclosed.awaitingShipment ?? null
-  const currentStatus =
-    closure && closure.totalCount === 0
-      ? "접수된 주문 없음"
-      : closure && shipping !== null
-        ? `${num(closure.totalCount)}건 중 ${num(shipping)}건 배송 중`
-        : null
-
-  return (
-    <GbModal
-      title="브랜드가 계약을 이행했나요?"
-      width={560}
-      onClose={onClose}
-      footer={
-        <>
-          <Btn variant="ghost" onClick={onClose}>
-            닫기
-          </Btn>
-          <Btn
-            variant={isUnfulfilled ? "danger" : "primary"}
-            disabled={!isValid}
-            isLoading={isPending}
-            onClick={() =>
-              result &&
-              onConfirm(
-                isUnfulfilled ? { result, reason: reason.trim() } : { result }
-              )
-            }
-          >
-            {isUnfulfilled ? "미이행 제출 · 스레드 열기" : "확인 완료"}
-          </Btn>
-        </>
-      }
-    >
-      <MSum>
-        <MSumRow label="브랜드">{detail.brand.name}</MSumRow>
-        <MSumRow label="브랜드 의무">{brandDuty}</MSumRow>
-        {currentStatus && <MSumRow label="현재 상황">{currentStatus}</MSumRow>}
-      </MSum>
-      <div className="rounded-[6px] border border-sz-n-200 px-[13px] py-[11px]">
-        <div className="text-[12px] font-medium text-sz-n-900">
-          브랜드가 계약을 이행했나요?
-        </div>
-        <div className="mt-[2px] text-[11px] leading-[1.6] text-sz-n-500">
-          {brandDuty} 등 계약서에 적힌 브랜드 의무 전체를 기준으로 판단해
-          주세요.
-        </div>
-        <div className="mt-[9px] flex gap-[7px]">
-          {(["FULFILLED", "UNFULFILLED"] as const).map(value => {
-            const isOn = result === value
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setResult(value)}
-                className={cn(
-                  "flex h-8 flex-1 items-center justify-center rounded-[6px] border text-[11px] font-medium",
-                  !isOn && "border-sz-n-300 bg-white text-sz-n-600",
-                  isOn &&
-                    value === "FULFILLED" &&
-                    "border-sz-accent-500 bg-sz-accent-50 text-sz-accent-600",
-                  isOn &&
-                    value === "UNFULFILLED" &&
-                    "border-sz-danger-text bg-sz-danger-bg text-sz-danger-text"
-                )}
-              >
-                {value === "FULFILLED" ? "이행" : "미이행"}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-      {isUnfulfilled ? (
-        <>
-          <MLabel required>어떤 점이 이행되지 않았나요?</MLabel>
-          <MTextarea
-            maxLength={2000}
-            value={reason}
-            onChange={event => setReason(event.target.value)}
-          />
-          <MWarn danger>
-            <div>
-              <B className="text-sz-n-900">
-                «미이행»으로 제출하면 연결·소통에 스레드가 열립니다.
-              </B>
-              <br />· <B className="text-sz-n-900">나 · 브랜드 · 운영자</B>가
-              참여하는 스레드에서 합의합니다
-              <br />· 합의가 끝날 때까지{" "}
-              <B className="text-sz-n-900">정산은 보류</B>
-              되고 리워드 지급도 미뤄집니다
-              <br />· 위에 적은 내용이{" "}
-              <B className="text-sz-n-900">스레드 첫 글로 등록</B>됩니다
-              <br />· 회사의{" "}
-              <B className="text-sz-n-900">
-                중재 의견에는 금액 조정이 포함되지 않으며
-              </B>
-              , 금액은 <B className="text-sz-n-900">당사자 합의</B>로 정합니다
-              <br />· <B className="text-sz-n-900">양측이 모두 동의해야 종결</B>
-              되고, 한쪽이라도 반대하면{" "}
-              <B className="text-sz-n-900">보류가 계속</B>됩니다
-            </div>
-          </MWarn>
-        </>
-      ) : (
-        <Notice tone="consent" className="mt-4">
-          <B className="text-sz-n-900">이행</B>으로 확인하면 되돌릴 수 없으며,
-          브랜드 쪽 확인이 끝나는 대로{" "}
-          <B className="text-sz-n-900">정산 절차가 시작</B>됩니다.
-        </Notice>
-      )}
     </GbModal>
   )
 }

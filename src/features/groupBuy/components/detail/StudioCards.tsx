@@ -1,5 +1,6 @@
 import DetailCard from "@/common/components/DetailCard/DetailCard"
 import Notice from "@/common/components/Notice/Notice"
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { FLINK_CLASS } from "@/features/contracts/components/shared/styles"
@@ -8,8 +9,6 @@ import { formatPercent, periodText } from "@/features/contracts/utils/format"
 import {
   B,
   Checklist,
-  DutyList,
-  DutyRow,
   FRow,
   FSub,
   GbBadge,
@@ -26,13 +25,11 @@ import {
   POST_REASON_LABEL,
   SUSPENSION_CLAUSE_TEXT,
 } from "@/features/groupBuy/constants/params"
-import type { FulfillmentCheck } from "@/features/groupBuy/types"
 import {
   type Detail,
   type SellingSituation,
   d,
   dt,
-  dutyText,
   kstDt,
   kstMd,
   localDate,
@@ -43,11 +40,16 @@ import {
   quantityText,
   won,
 } from "@/features/groupBuy/utils/view"
+import type { EndedSettlement } from "@/features/groupBuy/hooks/useEndedSettlement"
+import {
+  formatFullDate,
+  formatMonthDayTime,
+} from "@/features/settlement/utils/format"
 import type { ReactNode } from "react"
 
 /*
   시안 ui-studio-09-groupbuys 상세 카드 — 파트너센터와 같은 마크업이고 주체만 반대다.
-  내 몫은 게시물 작성·연장 응답·이행 확인이며, 금액은 「내는 돈」이 아니라 「받는 돈」이다.
+  내 몫은 게시물 작성·연장 응답·중단 요청이며, 금액은 「내는 돈」이 아니라 「받는 돈」이다.
 */
 
 const LIFECYCLE = ["준비중", "준비완료", "진행중", "종료", "정산완료"] as const
@@ -593,8 +595,12 @@ export function SellingProgressCard(props: { detail: Detail }) {
 
 // ── 판매 실적 KPI ───────────────────────────────────
 
-export function SalesCard(props: { detail: Detail }) {
-  const { detail } = props
+export function SalesCard(props: {
+  detail: Detail
+  /** 종료 공구에 정산이 생겼다(B11) — 주문이 다 끝나 금액이 확정이다 */
+  settled?: boolean
+}) {
+  const { detail, settled = false } = props
   const { sales, orderClosure, groupBuy } = detail
   const basis =
     groupBuy.status === "SETTLED"
@@ -625,6 +631,17 @@ export function SalesCard(props: { detail: Detail }) {
 
   switch (basis) {
     case "PROVISIONAL":
+      if (settled) {
+        title = "판매 실적"
+        note = "주문 종결 기준 · 확정"
+        items = [
+          { value: orders, label: "주문", sub: "누적" },
+          { value: quantity, label: "판매 수량", sub: breakdown || "—" },
+          { value: amount, label: "판매 금액(원)", sub: "확정" },
+          { value: reward, label: "내 리워드(원)", sub: "확정" },
+        ]
+        break
+      }
       title = "판매 실적(잠정)"
       note = orderClosure
         ? `주문 ${num(orderClosure.totalCount)}건 전체 기준 · ${num(unclosed)}건 미확정`
@@ -709,11 +726,17 @@ export function SalesCard(props: { detail: Detail }) {
   )
 }
 
-// ── 종결 후 진행 상황(B7 · B11 · B12 · B8 · B9) ───────
+// ── 종결 후 진행 상황(B7 · B11 · B8 · B9) ───────
 
-export function ClosedProgressCard(props: { detail: Detail }) {
-  const { detail } = props
-  const { groupBuy, orderClosure, closure, afterEnd } = detail
+export function ClosedProgressCard(props: {
+  detail: Detail
+  /** 종료 공구에 생긴 정산(B11) — 없으면 B7 */
+  settlement: EndedSettlement | null
+  onOpenSettlement: () => void
+}) {
+  const { detail, settlement, onOpenSettlement } = props
+  const { groupBuy, orderClosure, closure } = detail
+  const policy = usePolicyValues()
 
   if (groupBuy.status === "SUSPENDED") {
     const isAdmin =
@@ -796,35 +819,63 @@ export function ClosedProgressCard(props: { detail: Detail }) {
     )
   }
 
-  // ENDED
+  // ENDED — 시안 B7(주문 종결 대기) · B11(정산으로 이관). rev.3의 계약 이행 확인(B12 · C5 · C6)은 폐기됐다
+  if (settlement) {
+    return (
+      <DetailCard title="진행 상황" note="주문 종결 · 정산 진행 중">
+        <GbStepper steps={lifecycleSteps(detail)} />
+        <Notice tone="success" className="mt-4">
+          <B>주문이 모두 종결되어 정산으로 넘어갔습니다.</B> 이제 금액 확인 ·
+          조정 요청 · 지급은 <B>정산 관리</B>에서 진행됩니다.
+        </Notice>
+        <Terms className="mt-4">
+          <TermRow label="정산 단계" labelWidth={110}>
+            <GbBadge tone={settlement.statusTone}>
+              {settlement.statusLabel}
+            </GbBadge>
+            {settlement.status === "REVIEWING" && settlement.reviewDueAt && (
+              <span className="ml-1.5">
+                {formatMonthDayTime(settlement.reviewDueAt)}까지 확인 · 요청이
+                없으면 다음 날 자동 확정
+              </span>
+            )}
+          </TermRow>
+          {orderClosure && (
+            <TermRow label="주문 종결" labelWidth={110}>
+              <span className="tabular-nums">
+                {num(orderClosure.closedCount)} / {num(orderClosure.totalCount)}
+                건
+                {settlement.ordersClosedAt &&
+                  ` · ${formatFullDate(settlement.ordersClosedAt)}`}
+              </span>
+            </TermRow>
+          )}
+        </Terms>
+        <div className="mt-4 flex justify-end">
+          <Btn variant="primary" onClick={onOpenSettlement}>
+            정산 보기
+          </Btn>
+        </div>
+      </DetailCard>
+    )
+  }
+
   const unclosed = orderClosure?.unclosed
   const awaiting = unclosed?.awaitingShipment
   const returning = unclosed?.inReturnOrExchange
-  const onHold = afterEnd?.fulfillment?.onHold ?? false
 
   return (
-    <DetailCard title="진행 상황" note="판매 종료 · 리워드 확정 대기">
+    <DetailCard title="진행 상황" note="판매 종료 · 주문 종결 대기">
       <GbStepper steps={lifecycleSteps(detail)} />
       <Notice tone="info" className="mt-4">
-        {onHold ? (
-          <>
-            <B>
-              배송 · 반품이 정리돼도 이행 합의가 끝나기 전에는 실적 확정 ·
-              정산이 진행되지 않습니다.
-            </B>{" "}
-            {unclosed &&
-              `배송중 ${num(awaiting)}건 · 반품 처리중 ${num(returning)}건이 남아 있고, `}
-            그 처리와 별개로 <B>연결·소통 스레드의 합의가 선행</B>되어야 합니다.
-          </>
-        ) : (
-          <>
-            <B>구매확정이 끝나야 내 리워드가 확정됩니다.</B>{" "}
-            {unclosed && unclosed.total > 0
-              ? `배송중 ${num(awaiting)}건과 반품 처리중 ${num(returning)}건이 남아 있어 금액이 아직 잠정치입니다. `
-              : ""}
-            처리 주체는 <B>브랜드</B>이며, 정리되면 자동으로 확정됩니다.
-          </>
-        )}
+        <B>주문이 모두 종결되면 정산으로 넘어갑니다.</B>{" "}
+        {unclosed && unclosed.total > 0
+          ? `배송중 ${num(awaiting)}건과 반품 처리중 ${num(returning)}건이 남아 있어 금액이 아직 잠정치입니다. `
+          : ""}
+        처리 주체는 <B>브랜드</B>이며, 정리되면 정산이 생성되고{" "}
+        <B>{policy.settlementReviewBusinessDays}영업일 정산 확인 기간</B>이
+        열립니다. 교환 건은 완료 후 구매확정 7일을 새로 세므로 그만큼 더 걸릴 수
+        있습니다.
       </Notice>
       {orderClosure && (
         <Checklist
@@ -853,147 +904,6 @@ export function ClosedProgressCard(props: { detail: Detail }) {
             },
           ]}
         />
-      )}
-    </DetailCard>
-  )
-}
-
-function checkValue(check: FulfillmentCheck | null) {
-  if (!check) {
-    return { value: "확인 전", tone: "none" as const }
-  }
-  return check.result === "FULFILLED"
-    ? { value: "이행", tone: "ok" as const }
-    : { value: "미이행", tone: "bad" as const }
-}
-
-/** B7 · B11 · B12 「계약 이행 확인」 — 확인 대상은 상대(브랜드)의 의무다 */
-export function FulfillmentCard(props: {
-  detail: Detail
-  onCheck: () => void
-}) {
-  const { detail, onCheck } = props
-  const fulfillment = detail.afterEnd?.fulfillment
-  if (!fulfillment) {
-    return null
-  }
-  const { mine, theirs, myTarget, theirTarget, dueAt, resolvedAt } = fulfillment
-  const brandName = detail.brand.name
-  const mineValue = checkValue(mine)
-  const theirsValue = checkValue(theirs)
-  const disputed =
-    mine?.result === "UNFULFILLED" || theirs?.result === "UNFULFILLED"
-
-  const note = !mine
-    ? "양측이 서로의 이행을 확인해야 정산이 시작됩니다"
-    : mine.result === "UNFULFILLED"
-      ? `미이행 제출 · ${dt(mine.checkedAt)}`
-      : `확인 완료 · ${dt(mine.checkedAt)}`
-
-  let banner: ReactNode
-  if (!mine) {
-    banner = (
-      <Notice tone="warn">
-        <B>브랜드가 계약을 이행했는지 확인해 주세요.</B> 내 이행 여부는 브랜드가
-        같은 방식으로 확인합니다. 판단은{" "}
-        <B>항목별이 아니라 계약 전체에 대해 한 번</B>입니다.{" "}
-        <B>양측이 모두 «이행»으로 확인하면 정산이 시작</B>되고, 한쪽이라도
-        «미이행»을 선택하면 <B>연결·소통에 3자 스레드</B>가 열려 브랜드 ·
-        운영자와 함께 합의하게 됩니다.
-      </Notice>
-    )
-  } else if (disputed && resolvedAt) {
-    banner = (
-      <Notice tone="success">
-        <B>3자 스레드에서 합의가 끝나 정산 보류가 해제되었습니다.</B> 실적이
-        확정되는 대로 정산이 진행됩니다.
-      </Notice>
-    )
-  } else if (mine.result === "UNFULFILLED") {
-    banner = (
-      <Notice tone="danger">
-        <B>브랜드 이행을 «미이행»으로 제출했습니다.</B> <B>연결·소통</B>에 나 ·{" "}
-        {brandName} · 운영자가 참여하는 스레드가 열렸고, 제출한 내용이 첫 글로
-        등록되었습니다.
-        <br />
-        <B>합의가 끝날 때까지 정산은 보류</B>되며 리워드 지급도 미뤄집니다.
-      </Notice>
-    )
-  } else if (theirs?.result === "UNFULFILLED") {
-    banner = (
-      <Notice tone="danger">
-        <B>브랜드가 내 이행을 «미이행»으로 제출했습니다.</B> <B>연결·소통</B>의
-        3자 스레드에서 합의가 끝날 때까지 <B>정산은 보류</B>됩니다.
-      </Notice>
-    )
-  } else if (theirs) {
-    banner = (
-      <Notice tone="success">
-        <B>브랜드 이행을 «이행»으로 확인했습니다.</B> 브랜드도 내 이행을
-        «이행»으로 확인해 <B>양측 확인이 끝났습니다</B> — 실적이 확정되는 대로
-        정산이 진행됩니다.
-      </Notice>
-    )
-  } else {
-    banner = (
-      <Notice tone="info">
-        <B>브랜드 이행을 «이행»으로 확인했습니다.</B> 브랜드가 내 이행을
-        확인하면 정산이 시작됩니다.
-      </Notice>
-    )
-  }
-
-  return (
-    <DetailCard title="계약 이행 확인" note={note}>
-      {banner}
-      <DutyList className="mt-4">
-        <DutyRow
-          label={mine ? "내가 확인한 대상" : "내가 확인할 대상"}
-          sub={`${brandName}의 의무 — ${dutyText(myTarget)}`}
-          value={mineValue.value}
-          valueTone={mineValue.tone}
-        />
-        <DutyRow
-          readOnly
-          label={theirs ? "브랜드가 확인한 대상" : "브랜드가 확인할 대상"}
-          sub={`내 의무 — ${dutyText(theirTarget)}`}
-          value={theirsValue.value}
-          valueTone={theirsValue.tone}
-        />
-      </DutyList>
-      {!mine ? (
-        <>
-          <Notice tone="neutral" className="mt-3">
-            확인 기한은 <B>{d(dueAt)}</B>입니다.
-            {fulfillment.autoConfirmOnTimeout ? (
-              <>
-                {" "}
-                기한까지 답하지 않으면 <B>이행으로 처리</B>되어 정산이 자동으로
-                진행됩니다 — 문제가 있다면 기한 전에 «미이행»을 선택해 주세요.
-              </>
-            ) : (
-              " 문제가 있다면 기한 전에 «미이행»을 선택해 주세요."
-            )}
-          </Notice>
-          {detail.permissions.canCheckFulfillment && (
-            <div className="mt-4 flex justify-end">
-              <Btn variant="primary" onClick={onCheck}>
-                계약 이행 확인
-              </Btn>
-            </div>
-          )}
-        </>
-      ) : mine.result === "UNFULFILLED" ? (
-        mine.reason && (
-          <Notice tone="neutral" className="mt-3">
-            내가 제출한 내용 — “{mine.reason}”
-          </Notice>
-        )
-      ) : (
-        <Notice tone="neutral" className="mt-3">
-          이행 확인은 <B>되돌릴 수 없습니다</B>. 확인 이후 문제가 발견되면{" "}
-          <B>연결·소통</B>에서 브랜드 · 운영자와 별도로 논의해야 합니다.
-        </Notice>
       )}
     </DetailCard>
   )

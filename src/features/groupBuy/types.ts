@@ -28,12 +28,6 @@ export type GroupBuyPostStatus =
   | "EXPOSED"
   /** 노출 중지 — 운영자 조치(1021 기-08 · 「노출 중지」 · 위험색) */
   | "EXPOSURE_SUSPENDED"
-  /**
-   * 옛 이름(「숨김」 · 경고). 새 백엔드 배포 전 서버가 아직 이 값을 내린다 —
-   * 서비스가 받자마자 `EXPOSURE_SUSPENDED`로 바꾼다(`utils/postStatus.ts`).
-   * TODO: 새 백엔드 배포 확인 뒤 제거
-   */
-  | "HIDDEN"
   | "CLOSED"
 
 /** 시안 A1 5탭 — 종료·정산(ENDED)에 정산완료·중단이 함께 든다(서버도 같은 5탭) */
@@ -46,8 +40,6 @@ export type GroupBuyActorType = "SELLER" | "CREATOR" | "ADMIN" | "SYSTEM"
 
 export type GroupBuyCloseType =
   "COMPLETED" | "EARLY_CLOSED" | "SUSPENDED" | "CONTRACT_TERMINATED"
-
-export type FulfillmentResult = "FULFILLED" | "UNFULFILLED"
 
 export type ExtensionRejectReason =
   | "NEXT_SCHEDULE_BOOKED"
@@ -137,27 +129,6 @@ export interface CreatorGroupBuySummaryResponse {
 
 export type GateKey = "STOCK_CONFIRMED" | "POST_SUBMITTED" | "OPEN_APPROVED"
 export type GateState = "DONE" | "MY_TURN" | "WAITING" | "IN_REVIEW"
-
-export interface FulfillmentCheck {
-  result: FulfillmentResult
-  reason: string | null
-  checkedAt: string
-  auto: boolean
-}
-
-export type FulfillmentDuty =
-  | "ORDER_DELIVERY"
-  | "FIXED_FEE_PAYMENT"
-  | "SHOWROOM_POST"
-  | "FEED"
-  | "REELS"
-  | "STORY"
-
-export interface FulfillmentTarget {
-  party: "BRAND" | "CREATOR"
-  duties: Array<FulfillmentDuty>
-  counts: { feed: number; reels: number; story: number } | null
-}
 
 /**
  * 정지 보류 보조 배지 — 서버 `api/common/sanction/SanctionHoldView`(1017 설계서 8-4 · 8-5).
@@ -368,30 +339,18 @@ export interface CreatorGroupBuyDetailResponse {
     fixedFeeAmount: number | null
     confirmedReward: number | null
     totalBeforeDeduction: number | null
-  } | null
-  afterEnd: {
-    fulfillment: {
-      mine: FulfillmentCheck | null
-      theirs: FulfillmentCheck | null
-      myTarget: FulfillmentTarget
-      theirTarget: FulfillmentTarget
-      dueAt: string | null
-      autoConfirmOnTimeout: boolean
-      onHold: boolean
-      threadId: number | null
-      resolvedAt: string | null
-    } | null
+    /** 정산 상세(스튜디오 12) 링크 */
+    settlementId: number | null
   } | null
   permissions: {
     canWritePost: boolean
     canEditPost: boolean
     canRespondExtension: boolean
     canRequestSuspension: boolean
-    canCheckFulfillment: boolean
     canOpenPairThread: boolean
     /**
      * [게시물 수정]에서 제목도 고칠 수 있는가 — 진행 중이면 false(본문만 · 1021 기-08),
-     * 노출 중지면 true. 새 백엔드 배포 전 응답에는 없어 서비스가 채운다
+     * 노출 중지면 true
      */
     canEditPostTitle: boolean
     /**
@@ -432,9 +391,4 @@ export interface ExtensionRejectBody {
 export interface CreatorSuspensionBody {
   reasonCode: CreatorSuspensionReason
   memo: string
-}
-
-export interface FulfillmentCheckBody {
-  result: FulfillmentResult
-  reason?: string
 }

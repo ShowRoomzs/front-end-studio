@@ -9,7 +9,6 @@ import type {
   CreatorSuspensionBody,
   DetailNavParams,
   ExtensionRejectBody,
-  FulfillmentCheckBody,
   PostBody,
 } from "@/features/groupBuy/types"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -101,11 +100,5 @@ export function useRejectExtension() {
 export function useRequestSuspension() {
   return useGroupBuyAction<CreatorSuspensionBody>(
     creatorGroupBuyService.requestSuspension
-  )
-}
-
-export function useCheckFulfillment() {
-  return useGroupBuyAction<FulfillmentCheckBody>(
-    creatorGroupBuyService.checkFulfillment
   )
 }

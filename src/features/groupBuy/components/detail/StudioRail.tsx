@@ -1,9 +1,11 @@
 import DetailCard, { MetaRow } from "@/common/components/DetailCard/DetailCard"
 import HistoryList from "@/common/components/HistoryList/HistoryList"
+import { usePolicyValues } from "@/common/hooks/usePolicyValues"
 import SanctionHoldBadge from "@/common/components/Suspension/SanctionHoldBadge"
 import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { B, GbBadge } from "@/features/groupBuy/components/shared/GbParts"
+import type { EndedSettlement } from "@/features/groupBuy/hooks/useEndedSettlement"
 import { toGroupBuyHistoryItems } from "@/features/groupBuy/utils/history"
 import {
   type Detail,
@@ -16,6 +18,7 @@ import {
   num,
   won,
 } from "@/features/groupBuy/utils/view"
+import { formatMonthDayTime } from "@/features/settlement/utils/format"
 import type { ReactNode } from "react"
 
 export interface StudioRailActions {
@@ -23,11 +26,9 @@ export interface StudioRailActions {
   onOpenThread: () => void
   /** 내 운영팀 채널 — 노출 중지(B5a) · 직권 중단 소명(B13)의 문의 창구(기-21) */
   onOpenOperatorChannel: () => void
-  onOpenFulfillmentThread: () => void
   onAcceptExtension: () => void
   onRejectExtension: () => void
   onSuspension: () => void
-  onCheckFulfillment: () => void
   onGoSettlement: () => void
 }
 
@@ -61,8 +62,11 @@ export function StudioStatusRail(props: {
   actions: StudioRailActions
   /** [연장 수락]이 계정 이용 정지로 막힘 */
   suspended: boolean
+  /** 종료 공구에 생긴 정산(B11) — 없으면 B7 */
+  settlement: EndedSettlement | null
 }) {
-  const { detail, situation, actions, suspended } = props
+  const { detail, situation, actions, suspended, settlement } = props
+  const policy = usePolicyValues()
   const {
     groupBuy,
     timeline,
@@ -72,7 +76,6 @@ export function StudioStatusRail(props: {
     contract,
     sales,
     orderClosure,
-    afterEnd,
     extension,
     activeRequest,
     adminSuspension,
@@ -389,13 +392,50 @@ export function StudioStatusRail(props: {
       break
     }
     case "ENDED": {
-      const fulfillment = afterEnd?.fulfillment
-      const mine = fulfillment?.mine
-      const theirs = fulfillment?.theirs
-      const disputed =
-        mine?.result === "UNFULFILLED" || theirs?.result === "UNFULFILLED"
+      // 시안 B7 · B11 — 내 액션이 없다. 정산이 생기면(B11) [정산 보기]만 둔다
       rows.push({ label: "종료일시", value: dt(groupBuy.endedAt) })
+      if (settlement) {
+        if (orderClosure) {
+          rows.push({
+            label: "주문 종결",
+            value: `${num(orderClosure.closedCount)} / ${num(orderClosure.totalCount)}건`,
+          })
+        }
+        rows.push(
+          {
+            label: "정산 단계",
+            value: (
+              <GbBadge tone={settlement.statusTone}>
+                {settlement.statusLabel}
+              </GbBadge>
+            ),
+          },
+          { label: "내 리워드", value: sales ? won(sales.myReward) : "—" },
+          { label: "내 게시물", value: postBadge }
+        )
+        buttons.push(
+          <Btn
+            key="settlement"
+            variant="primary"
+            className="w-full"
+            onClick={actions.onGoSettlement}
+          >
+            정산 보기
+          </Btn>
+        )
+        if (settlement.status === "REVIEWING" && settlement.reviewDueAt) {
+          hint = (
+            <Hint>
+              금액이 맞지 않으면 <B>정산 관리</B>에서{" "}
+              <B>{formatMonthDayTime(settlement.reviewDueAt)}까지</B> 정산
+              조정을 요청할 수 있습니다.
+            </Hint>
+          )
+        }
+        break
+      }
       if (orderClosure) {
+        const left = orderClosure.unclosed.total
         rows.push(
           {
             label: "구매확정",
@@ -403,103 +443,23 @@ export function StudioStatusRail(props: {
           },
           {
             label: "미확정",
-            value: <Warn>{num(orderClosure.unclosed.total)}건</Warn>,
+            value: left > 0 ? <Warn>{num(left)}건</Warn> : `${num(left)}건`,
           }
         )
-      }
-      rows.push({
-        label: "이행 확인",
-        value: disputed ? (
-          mine?.result === "UNFULFILLED" ? (
-            <GbBadge tone="DANGER">미이행 제출</GbBadge>
-          ) : (
-            <GbBadge tone="DANGER">브랜드 미이행 제출</GbBadge>
-          )
-        ) : mine && theirs ? (
-          <span className="font-semibold text-sz-success-text">양측 완료</span>
-        ) : mine ? (
-          "브랜드 확인 대기"
-        ) : (
-          <Warn>내 확인 대기</Warn>
-        ),
-      })
-      if (fulfillment?.onHold) {
-        rows.push({ label: "정산", value: <Warn>보류</Warn> })
       }
       rows.push(
         { label: "내 리워드(잠정)", value: sales ? won(sales.myReward) : "—" },
         { label: "내 게시물", value: postBadge }
       )
-      if (permissions.canCheckFulfillment) {
-        buttons.push(
-          <Btn
-            key="check"
-            variant="primary"
-            className="w-full"
-            onClick={actions.onCheckFulfillment}
-          >
-            계약 이행 확인
-          </Btn>
-        )
-      }
-      if (disputed && fulfillment?.threadId) {
-        buttons.push(
-          <Btn
-            key="fthread"
-            variant="primary"
-            className="w-full"
-            onClick={actions.onOpenFulfillmentThread}
-          >
-            연결·소통 열기
-          </Btn>
-        )
-      }
-      // 시안 B7 · B11 · B12 — 정산 관리 이동은 이행 확인 상태와 무관하게 늘 둔다
-      buttons.push(
-        <Btn
-          key="settlement"
-          variant="secondary"
-          className="w-full"
-          onClick={actions.onGoSettlement}
-        >
-          정산 관리 열기 ↗
-        </Btn>
-      )
-      hint = disputed ? (
+      hint = (
         <Hint>
-          스레드에서 <B>합의가 끝나야 정산이 재개</B>됩니다. 합의 내용에 따라{" "}
-          <B>리워드 금액이 조정될 수 있습니다</B> — 금액은 당사자 합의로 정하고,
-          양측이 모두 동의해야 종결됩니다. 공구를 다시 열 수는 없으며, 같은
-          조건으로 이어가려면 <B>브랜드가 새 계약을 보내야</B> 합니다.
-        </Hint>
-      ) : mine && theirs ? (
-        <Hint>
-          이행 확인이 끝났습니다.{" "}
-          <B>배송중 · 반품 처리가 정리되면 실적이 확정</B>
-          되고 정산이 시작됩니다 — 남은 처리는 브랜드 소관입니다. 공구를 다시 열
-          수는 없으며, 같은 조건으로 이어가려면 <B>
-            브랜드가 새 계약을 보내야
-          </B>{" "}
-          합니다.
-        </Hint>
-      ) : (
-        <Hint>
-          {fulfillment?.autoConfirmOnTimeout ? (
-            <>
-              <B>
-                기한({d(fulfillment.dueAt)})까지 답하지 않으면 이행으로 처리
-              </B>
-              되어 정산이 진행됩니다.
-            </>
-          ) : (
-            <>
-              <B>확인 기한({d(fulfillment?.dueAt)})</B>까지 브랜드의 이행을
-              확인해 주세요.
-            </>
-          )}{" "}
-          문제가 있다면 반드시 기한 전에 «미이행»을 선택하세요. 공구를 다시 열
-          수는 없으며, 같은 조건으로 이어가려면 <B>브랜드가 새 계약을 보내야</B>{" "}
-          합니다.
+          지금 할 일은 없습니다. 주문이 모두 종결되면 <B>정산 관리</B>에서
+          금액을 확인하고, 맞지 않으면{" "}
+          <B>
+            {policy.settlementReviewBusinessDays}영업일 안에 정산 조정을 요청
+          </B>
+          할 수 있습니다. 공구를 다시 열 수는 없으며, 같은 조건으로 이어가려면{" "}
+          <B>브랜드가 새 계약을 보내야</B> 합니다.
         </Hint>
       )
       break

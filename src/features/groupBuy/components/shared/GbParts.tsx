@@ -130,57 +130,6 @@ export function Checklist(props: {
   )
 }
 
-// ── 이행 확인 의무 줄(.duty) ─────────────────────────
-
-export function DutyList(props: { children: ReactNode; className?: string }) {
-  return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-[6px] border border-sz-n-200",
-        props.className
-      )}
-    >
-      {props.children}
-    </div>
-  )
-}
-
-export function DutyRow(props: {
-  label: string
-  sub: string
-  /** 상대가 확인하는 줄 — 흐리게(.duty-r.ro) */
-  readOnly?: boolean
-  value: string
-  valueTone?: "none" | "ok" | "bad"
-}) {
-  const { label, sub, readOnly = false, value, valueTone = "none" } = props
-  return (
-    <div className="flex items-center gap-2.5 border-b border-sz-n-100 px-[13px] py-[11px] text-[12px] last:border-b-0">
-      <span className={cn("flex-1", readOnly && "text-sz-n-600")}>
-        {label}
-        <span
-          className={cn(
-            "mt-[2px] block text-[11px]",
-            readOnly ? "text-sz-n-400" : "text-sz-n-500"
-          )}
-        >
-          {sub}
-        </span>
-      </span>
-      <span
-        className={cn(
-          "shrink-0 text-[11px] tabular-nums",
-          valueTone === "none" && "text-sz-n-500",
-          valueTone === "ok" && "font-semibold text-sz-success-text",
-          valueTone === "bad" && "font-semibold text-sz-danger-text"
-        )}
-      >
-        {value}
-      </span>
-    </div>
-  )
-}
-
 // ── 판매 실적 KPI(.kpi) · 진행 막대(.pbar) ────────────
 
 export interface KpiItem {
