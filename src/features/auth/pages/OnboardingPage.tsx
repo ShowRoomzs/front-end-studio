@@ -61,6 +61,8 @@ type OnboardingForm = {
   bankBookImageUrl: string
 }
 
+const EMPTY_RESIDENT_NUMBER: ResidentNumberValue = { front: "", back: "" }
+
 /**
  * ui-studio-03-onboarding (rev.3) — 승인 후 첫 로그인 시 강제 진입하는 활성화 게이트.
  *
@@ -103,7 +105,7 @@ export default function OnboardingPage() {
       businessType: "INDIVIDUAL",
       businessRegistrationNumber: "",
       businessLicenseImageUrl: "",
-      residentNumber: { front: "", back: "" },
+      residentNumber: EMPTY_RESIDENT_NUMBER,
       bankCode: BANK_PLACEHOLDER,
       accountNumber: "",
       bankBookImageUrl: "",
@@ -211,6 +213,8 @@ export default function OnboardingPage() {
 
   // 사업자 필드는 Controller에 shouldUnregister를 걸어, 개인으로 되돌리면
   // 등록 자체가 해제되도록 했다(안 그러면 required가 남아 isValid가 영영 false).
+  // 해제될 때 useForm의 defaultValues도 같이 지워지므로, 다시 나타날 때 쓸 초기값은
+  // 각 Controller의 defaultValue로 준다 — 없으면 값이 undefined로 붙어 주민번호 칸이 멈췄다.
   const canSubmit =
     isValid && !nameUnavailable && !isSubmitting && !!registrationInfo
 
@@ -388,6 +392,7 @@ export default function OnboardingPage() {
               // 개인으로 되돌리면 이 필드는 등록 해제된다 — 남아 있으면 required가
               // 계속 걸려 제출 버튼이 켜지지 않는다.
               shouldUnregister
+              defaultValue=""
               rules={{
                 required: true,
                 validate: validateBusinessRegistrationNumber,
@@ -430,6 +435,7 @@ export default function OnboardingPage() {
               control={control}
               name="businessLicenseImageUrl"
               shouldUnregister
+              defaultValue=""
               rules={{ required: true }}
               render={({ field }) => (
                 <UploadField
@@ -456,6 +462,7 @@ export default function OnboardingPage() {
             control={control}
             name="residentNumber"
             shouldUnregister
+            defaultValue={EMPTY_RESIDENT_NUMBER}
             rules={{
               // 덜 채운 상태는 문구 없이 무효(false), 다 채웠는데 형식이 틀리면 서버와 같은 문구.
               validate: ({ front, back }) => {
