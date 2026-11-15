@@ -214,8 +214,31 @@ export interface CreatorContractItem {
   regularPrice: number | null
   groupBuyPrice: number | null
   myRewardRate: number | null
+  /** 상품(기본 옵션) 개당 리워드 — 옵션가가 있는 옵션은 `options[].unitReward`가 정산과 같은 값이다 */
   expectedUnitReward: number | null
+  /** 브랜드 준비 물량 — 옵션별 준비 물량의 합계 */
   brandSupplyQuantity: number | null
+  /** 옵션별 정가 · 판매가 · 브랜드 준비 물량 · 개당 리워드 */
+  options?: Array<CreatorContractItemOption>
+}
+
+/** 계약 상품 옵션 — 판매가 = 공구가 + 옵션가 */
+export interface CreatorContractItemOption {
+  variantId: number | null
+  /** 옵션명(스냅샷) */
+  variantName: string | null
+  /** 옵션 정가(스냅샷) */
+  regularPrice: number | null
+  /** 옵션가 = 옵션 정가 − 상품 정가 */
+  optionExtraPrice: number | null
+  /** 옵션 판매가 = 공구가 + 옵션가 */
+  salePrice: number | null
+  brandSupplyQuantity: number | null
+  /**
+   * 옵션 개당 리워드 = ⌊옵션 판매가 × 리워드율 ÷ 100⌋ — 정산 · 계약서 PDF와 같은 계산(BE 11-15).
+   * 옛 서버에는 없다
+   */
+  unitReward?: number | null
 }
 
 export interface CreatorContractFixedFee {

@@ -5,10 +5,10 @@ import SanctionHoldBadge from "@/common/components/Suspension/SanctionHoldBadge"
 import SuspendedTooltip from "@/common/components/Suspension/SuspendedTooltip"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { B, GbBadge } from "@/features/groupBuy/components/shared/GbParts"
-import type { EndedSettlement } from "@/features/groupBuy/hooks/useEndedSettlement"
 import { toGroupBuyHistoryItems } from "@/features/groupBuy/utils/history"
 import {
   type Detail,
+  type EndedSettlement,
   type SellingSituation,
   d,
   dt,

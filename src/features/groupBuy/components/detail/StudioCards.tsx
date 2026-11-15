@@ -27,6 +27,7 @@ import {
 } from "@/features/groupBuy/constants/params"
 import {
   type Detail,
+  type EndedSettlement,
   type SellingSituation,
   d,
   dt,
@@ -40,7 +41,6 @@ import {
   quantityText,
   won,
 } from "@/features/groupBuy/utils/view"
-import type { EndedSettlement } from "@/features/groupBuy/hooks/useEndedSettlement"
 import {
   formatFullDate,
   formatMonthDayTime,
@@ -1188,7 +1188,10 @@ export function ItemsCard(props: { detail: Detail }) {
               </B>{" "}
               · 개당 리워드 {won(item.unitReward)}
             </span>
-            {/* 옵션 상품 — 판매가만 다르고 리워드는 상품 공구가 기준이라 옵션마다 같다 */}
+            {/*
+              옵션 상품 — 리워드는 옵션 판매가(공구가 + 옵션가) 기준이라 옵션마다 다를 수 있다(BE 11-15).
+              상품 행의 개당 리워드는 기본 옵션 값이다. 옛 서버라 옵션 값이 없으면 상품 값으로
+            */}
             {(item.options ?? []).some(
               option => option.variantName !== null
             ) && (
@@ -1197,7 +1200,7 @@ export function ItemsCard(props: { detail: Detail }) {
                 {item.options
                   .map(
                     option =>
-                      `${option.variantName ?? "단품"} ${won(option.salePrice)}`
+                      `${option.variantName ?? "단품"} ${won(option.salePrice)}(개당 리워드 ${won(option.unitReward ?? item.unitReward)})`
                   )
                   .join(" / ")}
               </FSub>
