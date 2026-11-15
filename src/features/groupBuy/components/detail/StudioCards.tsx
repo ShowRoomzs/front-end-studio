@@ -1174,39 +1174,45 @@ export function ItemsCard(props: { detail: Detail }) {
       note={`${detail.items.length}건 · 공구가 · 내 리워드율은 계약 확정값`}
     >
       <Terms>
-        {detail.items.map((item, index) => (
-          <TermRow
-            key={`${item.productId ?? "x"}-${index}`}
-            labelWidth={176}
-            label={item.productName}
-          >
-            <span className="tabular-nums">
-              공구가 <B className="text-sz-n-900">{won(item.groupBuyPrice)}</B>{" "}
-              · 내 리워드율{" "}
-              <B className="text-sz-n-900">
-                {formatPercent(item.myRewardRate)}
-              </B>{" "}
-              · 개당 리워드 {won(item.unitReward)}
-            </span>
-            {/*
+        {detail.items.map((item, index) => {
+          // 옵션 상품이면 상품 행 값은 기본 옵션 기준이다 — 라벨에 밝힌다(단품은 그대로)
+          const hasOptions = (item.options ?? []).some(
+            option => option.variantName !== null
+          )
+          return (
+            <TermRow
+              key={`${item.productId ?? "x"}-${index}`}
+              labelWidth={176}
+              label={item.productName}
+            >
+              <span className="tabular-nums">
+                공구가{" "}
+                <B className="text-sz-n-900">{won(item.groupBuyPrice)}</B> · 내
+                리워드율{" "}
+                <B className="text-sz-n-900">
+                  {formatPercent(item.myRewardRate)}
+                </B>{" "}
+                · 개당 리워드{hasOptions && "(기본 옵션)"}{" "}
+                {won(item.unitReward)}
+              </span>
+              {/*
               옵션 상품 — 리워드는 옵션 판매가(공구가 + 옵션가) 기준이라 옵션마다 다를 수 있다(BE 11-15).
               상품 행의 개당 리워드는 기본 옵션 값이다. 옛 서버라 옵션 값이 없으면 상품 값으로
             */}
-            {(item.options ?? []).some(
-              option => option.variantName !== null
-            ) && (
-              <FSub>
-                옵션 —{" "}
-                {item.options
-                  .map(
-                    option =>
-                      `${option.variantName ?? "단품"} ${won(option.salePrice)}(개당 리워드 ${won(option.unitReward ?? item.unitReward)})`
-                  )
-                  .join(" / ")}
-              </FSub>
-            )}
-          </TermRow>
-        ))}
+              {hasOptions && (
+                <FSub>
+                  옵션 —{" "}
+                  {item.options
+                    .map(
+                      option =>
+                        `${option.variantName ?? "단품"} ${won(option.salePrice)}(개당 리워드 ${won(option.unitReward ?? item.unitReward)})`
+                    )
+                    .join(" / ")}
+                </FSub>
+              )}
+            </TermRow>
+          )
+        })}
       </Terms>
       <Notice tone="neutral" className="mt-3">
         공구가와 리워드율은 <B>체결된 계약의 확정값</B>이라 여기서 바꿀 수
