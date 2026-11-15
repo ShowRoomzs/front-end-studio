@@ -1,3 +1,8 @@
+import type {
+  SettlementStatus,
+  SettlementTone,
+} from "@/features/settlement/types"
+
 /*
   공구 관리(쇼룸 스튜디오) — 서버 `/v1/creator/group-buys` 응답을 그대로 옮긴 타입.
   근거: back-end `api/creator/groupbuy/dto/*` · `domain/groupbuy/type/*`.
@@ -191,12 +196,18 @@ export interface CreatorGroupBuyDetailResponse {
     productName: string
     groupBuyPrice: number | null
     myRewardRate: number | null
+    /** 상품(기본 옵션) 개당 리워드 = ⌊공구가 × 리워드율 ÷ 100⌋ — 옵션가가 있는 옵션은 `options[].unitReward`가 정산과 같은 값이다 */
     unitReward: number | null
     /** 옵션별 판매가(공구가 + 옵션가) — 최소 물량은 브랜드 소관이라 오지 않는다 */
     options: Array<{
       variantId: number | null
       variantName: string | null
       salePrice: number | null
+      /**
+       * 옵션 개당 리워드 = ⌊옵션 판매가 × 리워드율 ÷ 100⌋ — 정산 · 계약서 PDF와 같은 계산(BE 11-15).
+       * 옛 서버에는 없다
+       */
+      unitReward?: number | null
     }>
   }>
   fixedFee: {
@@ -260,6 +271,7 @@ export interface CreatorGroupBuyDetailResponse {
     refundedCount: number | null
     itemQuantities: Array<{ productId: number; quantity: number }>
     amount: number
+    /** Σ ⌊주문 단가(공구가 + 옵션가) × 리워드율⌋ × 수량 — 정산과 같은 계산(BE 11-15) */
     myReward: number
     ordersSinceHidden: number | null
   } | null
@@ -334,6 +346,7 @@ export interface CreatorGroupBuyDetailResponse {
       body: string | null
     } | null
   } | null
+  /** 정산이 생긴 뒤(종료 ENDED · 정산완료 SETTLED) — 정산 생성 전이면 null */
   settlement: {
     settledAt: string | null
     fixedFeeAmount: number | null
@@ -341,6 +354,18 @@ export interface CreatorGroupBuyDetailResponse {
     totalBeforeDeduction: number | null
     /** 정산 상세(스튜디오 12) 링크 */
     settlementId: number | null
+    /*
+      아래는 BE 11-15(B-10) — 종료 공구 상세의 「정산으로 이관」(시안 09 B11). 옛 서버에는 없다.
+      상태는 수취자 화면 기준이라 분배 실패는 지급 완료로 접혀 온다
+    */
+    status?: SettlementStatus | null
+    /** 정산 관리 목록과 같은 문구 — 「정산 확인 중」 등 */
+    statusLabel?: string | null
+    statusTone?: SettlementTone | null
+    /** 정산 확인 기한(UTC 순간) */
+    reviewDueAt?: string | null
+    /** 주문 종결 시각 — 정산 상세 `timeline.ordersClosedAt`과 같은 값 */
+    ordersClosedAt?: string | null
   } | null
   permissions: {
     canWritePost: boolean

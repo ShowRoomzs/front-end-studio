@@ -4,6 +4,10 @@ import {
   parseServerDateTime,
 } from "@/common/utils/formatDate"
 import type { CreatorGroupBuyDetailResponse } from "@/features/groupBuy/types"
+import type {
+  SettlementStatus,
+  SettlementTone,
+} from "@/features/settlement/types"
 import dayjs from "dayjs"
 
 export type Detail = CreatorGroupBuyDetailResponse
@@ -177,6 +181,43 @@ export function sellingSituation(detail: Detail): SellingSituation {
     return "extensionPending"
   }
   return "none"
+}
+
+/** 시안 09 B11 「정산으로 이관」 — 종료 공구에 생긴 정산 */
+export interface EndedSettlement {
+  settlementId: number
+  status: SettlementStatus
+  statusLabel: string
+  statusTone: SettlementTone
+  reviewDueAt: string | null
+  ordersClosedAt: string | null
+}
+
+/**
+ * 종료(ENDED) 공구의 정산 — 서버가 정산이 생기면 종료 공구에도 `settlement`(상태 · 라벨 · 톤 · 확인 기한 ·
+ * 주문 종결 시각)를 내린다(BE 11-15 B-10). 라벨 · 톤은 서버 값 그대로 쓴다.
+ * 정산이 아직 없으면(10분 배치 전) null — B7 그대로.
+ */
+export function endedSettlement(detail: Detail): EndedSettlement | null {
+  const settlement = detail.settlement
+  if (
+    detail.groupBuy.status !== "ENDED" ||
+    !settlement ||
+    settlement.settlementId === null ||
+    !settlement.status ||
+    !settlement.statusLabel ||
+    !settlement.statusTone
+  ) {
+    return null
+  }
+  return {
+    settlementId: settlement.settlementId,
+    status: settlement.status,
+    statusLabel: settlement.statusLabel,
+    statusTone: settlement.statusTone,
+    reviewDueAt: settlement.reviewDueAt ?? null,
+    ordersClosedAt: settlement.ordersClosedAt ?? null,
+  }
 }
 
 /**

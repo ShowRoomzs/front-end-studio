@@ -33,8 +33,8 @@ import {
   useSaveDraft,
   useSubmitPost,
 } from "@/features/groupBuy/hooks/useCreatorGroupBuy"
-import { useEndedSettlement } from "@/features/groupBuy/hooks/useEndedSettlement"
 import {
+  endedSettlement as toEndedSettlement,
   headerMeta,
   isSelling,
   sellingSituation,
@@ -80,8 +80,6 @@ export default function GroupBuyDetailPage() {
   const [modal, setModal] = useState<ModalKind>(null)
   // 시안 13 — 연장 수락 · 공구 게시물 등록은 정지 중 막힌다. 서버 permissions가 정지를 보지 않아 계정 상태로 가른다
   const { isSuspended } = useAccountStatus()
-  // 시안 B11 — 종료 공구에 정산이 생겼는지(공구 상세는 정산완료에서만 정산을 준다)
-  const endedSettlement = useEndedSettlement(detail)
 
   const { mutate: saveDraft, isPending: isSaving } = useSaveDraft()
   const { mutate: submitPost, isPending: isSubmitting } = useSubmitPost()
@@ -158,10 +156,11 @@ export default function GroupBuyDetailPage() {
   // 게시물이 승인된 뒤(노출중·노출 중지)의 수정은 PATCH — 재승인 없이 바로 반영된다
   const isEditMode =
     detail.permissions.canEditPost && !detail.permissions.canWritePost
+  // 시안 B11 — 종료 공구에 정산이 생겼는지(서버가 종료 공구에도 정산 상태를 내린다 · BE 11-15)
+  const endedSettlement = toEndedSettlement(detail)
   const meta = headerMeta(detail, endedSettlement !== null)
   // B11 [정산 보기] · B8 [정산 명세 보기] — 그 정산 상세로. id를 모르면 정산 목록
-  const settlementId =
-    endedSettlement?.settlementId ?? detail.settlement?.settlementId ?? null
+  const settlementId = detail.settlement?.settlementId ?? null
   const goSettlement = () =>
     navigate(settlementId ? `/settlement/${settlementId}` : "/settlement")
 
