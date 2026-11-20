@@ -91,7 +91,7 @@ export function CounterModal(props: {
       title="다른 금액을 제안할까요?"
       width={460}
       onClose={onClose}
-      bodyClassName="p-[22px]"
+      bodyClassName="p-5"
       footer={
         <>
           <Btn variant="secondary" onClick={onClose}>
@@ -166,7 +166,7 @@ export function AcceptModal(props: {
       title="이 금액에 동의할까요?"
       width={460}
       onClose={onClose}
-      bodyClassName="p-[22px]"
+      bodyClassName="p-5"
       footer={
         <>
           <Btn variant="secondary" onClick={onClose}>
@@ -216,7 +216,7 @@ export function RejectModal(props: {
       title={`이 ${proposalNoun(proposal.seq)}에 반대할까요?`}
       width={460}
       onClose={onClose}
-      bodyClassName="p-[22px]"
+      bodyClassName="p-5"
       footer={
         <>
           <Btn variant="secondary" onClick={onClose}>
@@ -273,7 +273,7 @@ export function WithdrawModal(props: {
       title="조정 요청을 철회할까요?"
       width={460}
       onClose={onClose}
-      bodyClassName="p-[22px]"
+      bodyClassName="p-5"
       footer={
         <>
           <Btn variant="secondary" onClick={onClose}>

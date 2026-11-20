@@ -3,6 +3,7 @@ import { PERFORMANCE_TONE_VARIANT } from "@/features/performance/constants/param
 import type { PerformanceTone } from "@/features/performance/types"
 import { cn } from "@/lib/utils"
 import type { ReactNode } from "react"
+import { DS_TD_CLASS, DS_TH_CLASS } from "@/common/styles/table"
 
 /*
   ui-studio-10 공용 원자 — 시안 `.page-h` · `.kpi .k` · `.card` · `.grp` · `.mini .m` · `.sum` · `.tip` · `.est`.
@@ -15,10 +16,8 @@ import type { ReactNode } from "react"
 export const PERFORMANCE_PAGE_CLASS = "leading-[1.6]"
 
 /** 시안 `thead td` · `tbody td` */
-export const TH_CLASS =
-  "whitespace-nowrap border-b border-sz-n-200 bg-sz-n-100 px-4 py-[11px] text-left text-[11px] font-semibold tracking-[.2px] text-sz-n-600"
-export const TD_CLASS =
-  "border-t border-sz-n-100 px-4 py-[13px] align-middle text-[12px]"
+export const TH_CLASS = DS_TH_CLASS
+export const TD_CLASS = cn("border-t border-sz-n-200", DS_TD_CLASS)
 export const TD_NUM = cn(TD_CLASS, "text-center tabular-nums")
 
 /** 시안 `.page-h` — 셸 H1 대신 화면이 제목 · 설명을 그린다 */
@@ -82,13 +81,13 @@ export function KpiTile(props: {
   return (
     <div
       className={cn(
-        "min-w-0 rounded-[6px] border px-[14px] py-3",
+        "min-w-0 rounded-[8px] border px-4 py-3",
         hi ? "border-sz-accent-100 bg-sz-accent-50" : "border-sz-n-200 bg-white"
       )}
     >
       <div
         className={cn(
-          "text-[11px]",
+          "text-[12px]",
           hi ? "text-sz-accent-600" : "text-sz-n-600"
         )}
       >
@@ -96,7 +95,7 @@ export function KpiTile(props: {
       </div>
       <div
         className={cn(
-          "mt-1.5 text-[19px] font-semibold leading-[1.2] tracking-[-.02em] tabular-nums",
+          "mt-0.5 text-[17px] font-semibold leading-[1.3] tabular-nums",
           dim ? "text-sz-n-500" : hi ? "text-sz-accent-600" : "text-sz-n-900"
         )}
       >
@@ -126,7 +125,7 @@ export function Card(props: {
       )}
     >
       {title !== undefined && (
-        <div className="flex items-center justify-between gap-2 rounded-t-[8px] border-b border-sz-n-200 bg-sz-n-50 px-4 py-[11px] text-[13px] font-semibold text-sz-n-900">
+        <div className="flex items-center justify-between gap-2 rounded-t-[8px] border-b border-sz-n-200 bg-sz-n-50 px-4 py-3 text-[13px] font-semibold text-sz-n-900">
           <span>{title}</span>
           {note !== undefined && (
             <span className="text-[11px] font-normal text-sz-n-500">
@@ -143,7 +142,9 @@ export function Card(props: {
 
 /** 시안 `.card-b` */
 export function CardBody(props: { children: ReactNode; className?: string }) {
-  return <div className={cn("p-4", props.className)}>{props.children}</div>
+  return (
+    <div className={cn("px-4 py-3", props.className)}>{props.children}</div>
+  )
 }
 
 /** 시안 `.grp` — 유입 · 판매 · 소비자 · 팔로워 · 리워드 묶음 제목(질문 한 줄) */
@@ -166,11 +167,11 @@ export function MiniStat(props: {
   dim?: boolean
 }) {
   return (
-    <div className="min-w-0 rounded-[6px] border border-sz-n-200 px-[13px] py-[11px]">
-      <div className="text-[11px] text-sz-n-600">{props.label}</div>
+    <div className="min-w-0 rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
+      <div className="text-[12px] text-sz-n-600">{props.label}</div>
       <div
         className={cn(
-          "mt-1.5 text-[19px] font-semibold leading-[1.2] tracking-[-.02em] tabular-nums",
+          "mt-0.5 text-[17px] font-semibold leading-[1.3] tabular-nums",
           props.dim ? "text-sz-n-500" : "text-sz-n-900"
         )}
       >

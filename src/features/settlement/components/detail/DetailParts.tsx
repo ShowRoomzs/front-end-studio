@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import type { ReactNode } from "react"
+import { DS_TD_CLASS, DS_TH_CLASS, DS_TR_CLASS } from "@/common/styles/table"
 
 /*
   시안 ui-studio-12의 원자 조각 — 파트너센터 13의 head를 통째로 포크한 마크업이라
@@ -51,7 +52,7 @@ export function Sec(props: {
           {right && <span className="ml-auto flex">{right}</span>}
         </div>
       )}
-      <div className={cn("p-4", bodyClassName)}>{children}</div>
+      <div className={cn("px-4 py-3", bodyClassName)}>{children}</div>
     </section>
   )
 }
@@ -186,12 +187,10 @@ export function MRow(props: {
 
 // ── 링크 표(.ltab) ───────────────────────────────────
 
-/** 시안 `.ltab` 머리 칸 — rev.3 정정: 헤더 500(시스템 헤더 규격) */
-export const LTAB_HEAD =
-  "border-b border-sz-n-200 bg-sz-n-50 px-3 py-[9px] text-left text-[11px] font-medium text-sz-n-600"
-/** 시안 `.ltab` 몸 행 — 첫 행은 위 보더 없음 */
-export const LTAB_ROW = "border-t border-sz-n-100 first:border-t-0"
-export const LTAB_CELL = "px-3 py-2.5"
+/** 링크 표 — 디자인 시스템 표(compact) 규격 */
+export const LTAB_HEAD = DS_TH_CLASS
+export const LTAB_ROW = DS_TR_CLASS
+export const LTAB_CELL = DS_TD_CLASS
 export const LTAB_NUM = "text-right tabular-nums"
 
 // ── 읽기 전용 행(.frow.ro) · 작은 버튼(.act-btn) ──────

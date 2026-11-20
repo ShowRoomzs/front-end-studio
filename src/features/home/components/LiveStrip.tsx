@@ -22,12 +22,12 @@ function Kpi(props: {
   const { label, value, extra, warn = false, extraMuted = false } = props
   return (
     <div className="border-l border-sz-n-100 pl-[18px]">
-      <div className="text-[11px] text-sz-n-500">{label}</div>
+      <div className="text-[12px] text-sz-n-600">{label}</div>
       <div
         className={
           warn
-            ? "mt-0.5 whitespace-nowrap text-[20px] font-semibold tabular-nums text-sz-warning-text"
-            : "mt-0.5 whitespace-nowrap text-[20px] font-semibold tabular-nums text-sz-n-900"
+            ? "mt-0.5 whitespace-nowrap text-[17px] font-semibold tabular-nums text-sz-warning-text"
+            : "mt-0.5 whitespace-nowrap text-[17px] font-semibold tabular-nums text-sz-n-900"
         }
       >
         {value}
@@ -62,7 +62,7 @@ export default function LiveStrip(props: { live: HomeLive; now: number }) {
   const navigate = useNavigate()
 
   return (
-    <div className="mb-4 grid grid-cols-[minmax(0,1.3fr)_repeat(4,minmax(0,1fr))_auto] items-center gap-[18px] rounded-[8px] border border-sz-n-200 bg-white px-[18px] py-3.5">
+    <div className="mb-4 grid grid-cols-[minmax(0,1.3fr)_repeat(4,minmax(0,1fr))_auto] items-center gap-[18px] rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
       <div className="min-w-0">
         <div className="flex items-center gap-[7px] text-[10px] font-semibold text-sz-success-text">
           <i className="inline-block size-[7px] rounded-full bg-sz-success-text" />

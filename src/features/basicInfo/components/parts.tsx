@@ -15,13 +15,13 @@ export function InfoCard(props: {
 }) {
   return (
     <section className="rounded-[8px] border border-sz-n-200 bg-white">
-      <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-[18px] py-[13px]">
+      <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-4 py-3">
         <h2 className="text-[13px] font-semibold text-sz-n-900">
           {props.title}
         </h2>
         {props.badge}
       </div>
-      <div className="p-[18px]">{props.children}</div>
+      <div className="px-4 py-3">{props.children}</div>
     </section>
   )
 }

@@ -66,7 +66,7 @@ export function ModalShell(props: ModalShellProps) {
         className="max-h-[90vh] overflow-hidden rounded-[12px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]"
         style={{ width }}
       >
-        <div className="flex items-center justify-between border-b border-sz-n-200 px-[22px] py-4">
+        <div className="flex items-center justify-between border-b border-sz-n-200 px-5 py-4">
           <h2 className="text-[13px] font-semibold text-sz-n-900">{title}</h2>
           <button
             type="button"
@@ -77,12 +77,10 @@ export function ModalShell(props: ModalShellProps) {
             <X className="size-3.5" aria-hidden />
           </button>
         </div>
-        <div
-          className={bodyClassName ?? "max-h-[70vh] overflow-y-auto p-[22px]"}
-        >
+        <div className={bodyClassName ?? "max-h-[70vh] overflow-y-auto p-5"}>
           {children}
         </div>
-        <div className="flex justify-end gap-2 border-t border-sz-n-200 px-[22px] py-3.5">
+        <div className="flex justify-end gap-2 border-t border-sz-n-200 px-5 py-3.5">
           {footer}
         </div>
       </div>

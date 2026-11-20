@@ -74,12 +74,12 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
       <div className="flex items-start gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           <div className="rounded-[8px] border border-sz-n-200 bg-white">
-            <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-[18px] py-[13px] text-[13px] font-semibold text-sz-n-900">
+            <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-4 py-3 text-[13px] font-semibold text-sz-n-900">
               게시물
               <StatusBadge status={post.status} />
             </div>
 
-            <div className="border-b border-sz-n-200 p-[18px]">
+            <div className="border-b border-sz-n-200 px-4 py-3">
               <div className="mb-2 flex items-center justify-between gap-2 text-[12px] font-semibold text-sz-n-900">
                 <span>
                   사진{" "}
@@ -100,7 +100,7 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
               />
             </div>
 
-            <div className="p-[18px]">
+            <div className="px-4 py-3">
               <div className="mb-2 text-[12px] font-semibold text-sz-n-900">
                 본문
               </div>
@@ -119,10 +119,10 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
 
         <div className="flex w-100 shrink-0 flex-col gap-4">
           <div className="rounded-[8px] border border-sz-n-200 bg-white">
-            <div className="border-b border-sz-n-200 px-[18px] py-[13px] text-[13px] font-semibold text-sz-n-900">
+            <div className="border-b border-sz-n-200 px-4 py-3 text-[13px] font-semibold text-sz-n-900">
               공개 상태
             </div>
-            <div className="p-[18px]">
+            <div className="px-4 py-3">
               <div className="flex gap-3 border-b border-sz-n-100 py-2 text-[12px]">
                 <span className="w-[88px] shrink-0 text-sz-n-500">현재</span>
                 <span className="flex-1">
@@ -155,7 +155,7 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
               서버가 `deletable`로 판정해 내려주므로 상태값으로 다시 따지지 않는다.
             */}
             {post.deletable && (
-              <div className="flex justify-end border-t border-sz-n-200 px-[18px] py-3.5">
+              <div className="flex justify-end border-t border-sz-n-200 px-4 py-3">
                 <Button
                   type="button"
                   size="sm"
@@ -169,13 +169,13 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
           </div>
 
           <div className="rounded-[8px] border border-sz-n-200 bg-white">
-            <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-[18px] py-[13px] text-[13px] font-semibold text-sz-n-900">
+            <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-4 py-3 text-[13px] font-semibold text-sz-n-900">
               미리보기
               <span className="text-[11px] font-normal text-sz-n-500">
                 소비자 쇼룸 기준
               </span>
             </div>
-            <div className="p-[18px]">
+            <div className="px-4 py-3">
               <PreviewCard
                 showroomName={showroom?.showroomName}
                 imageUrls={imageUrls}

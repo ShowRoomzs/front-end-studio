@@ -44,7 +44,7 @@ export default function TaskRow(props: TaskRowProps) {
   return (
     <div
       className={cn(
-        "grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-[8px] border border-sz-n-200 px-4 py-3.5",
+        "grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-[8px] border border-sz-n-200 px-4 py-3",
         done ? "bg-sz-n-50" : "bg-white"
       )}
     >

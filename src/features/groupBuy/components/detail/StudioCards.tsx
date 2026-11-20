@@ -102,13 +102,13 @@ function AlertCard(props: {
 }) {
   return (
     <section className="rounded-[8px] border border-sz-warning-text bg-white">
-      <div className="flex items-center justify-between gap-2 rounded-t-[8px] border-b border-sz-n-200 bg-sz-warning-bg px-4 py-[11px]">
+      <div className="flex items-center justify-between gap-2 rounded-t-[8px] border-b border-sz-n-200 bg-sz-warning-bg px-4 py-3">
         <h2 className="text-[13px] font-semibold text-sz-n-900">
           {props.title}
         </h2>
         <span className="text-[11px] text-sz-n-500">{props.note}</span>
       </div>
-      <div className="p-4">{props.children}</div>
+      <div className="px-4 py-3">{props.children}</div>
     </section>
   )
 }

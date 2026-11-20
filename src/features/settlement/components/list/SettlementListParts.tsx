@@ -116,9 +116,9 @@ export function SettlementKpis(props: {
 /** 시안 `.kc` */
 function Kpi(props: { label: string; value: string; sub: string }) {
   return (
-    <div className="rounded-[8px] border border-sz-n-200 bg-white px-4 py-3.5">
-      <div className="text-[11px] text-sz-n-600">{props.label}</div>
-      <div className="mt-[5px] text-[21px] font-semibold leading-[1.2] tabular-nums text-sz-n-900">
+    <div className="rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
+      <div className="text-[12px] text-sz-n-600">{props.label}</div>
+      <div className="mt-0.5 text-[17px] font-semibold leading-[1.3] tabular-nums text-sz-n-900">
         {props.value}
       </div>
       <div className="mt-1 text-[11px] tabular-nums text-sz-n-500">
@@ -167,7 +167,7 @@ export function SettlementFilters(props: {
   }
 
   return (
-    <div className="mb-3 rounded-[8px] border border-sz-n-200 bg-white px-4 py-3.5">
+    <div className="mb-3 rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
       <div className="flex flex-wrap items-center gap-2.5">
         <FilterLabel>상태</FilterLabel>
         {SETTLEMENT_STATUSES.map(status => (
