@@ -82,7 +82,7 @@ function Section(props: {
   children: React.ReactNode
 }) {
   return (
-    <div className="border-b border-sz-n-200 p-[18px] last:border-b-0">
+    <div className="border-b border-sz-n-200 px-4 py-3 last:border-b-0">
       <div className="mb-2 flex items-center justify-between gap-2 text-[12px] font-semibold text-sz-n-900">
         {props.title}
         {props.hint && (
@@ -112,7 +112,7 @@ export default function InsightPanel(props: {
 
   return (
     <div className="rounded-[8px] border border-sz-n-200 bg-white">
-      <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-[18px] py-[13px]">
+      <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-4 py-3">
         <span className="text-[13px] font-semibold text-sz-n-900">
           인사이트
         </span>
@@ -132,7 +132,7 @@ export default function InsightPanel(props: {
       </div>
 
       {isLoading || !data ? (
-        <div className="p-[18px]">
+        <div className="px-4 py-3">
           <div className="h-20 animate-pulse rounded-[6px] bg-sz-n-100" />
         </div>
       ) : (
@@ -142,7 +142,7 @@ export default function InsightPanel(props: {
             "왜 어제부터 수치가 늘지 않느냐"는 오해가 그대로 남는다.
           */}
           {data.truncatedBySuspension && (
-            <div className="border-b border-sz-n-200 bg-sz-n-50 px-[18px] py-2.5 text-[11px] text-sz-n-600">
+            <div className="border-b border-sz-n-200 bg-sz-n-50 px-4 py-2.5 text-[11px] text-sz-n-600">
               노출이 중지된 게시물이라{" "}
               <b className="text-sz-n-900">{formatDateTime(data.to)}</b>까지만
               집계됩니다.

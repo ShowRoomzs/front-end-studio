@@ -14,6 +14,7 @@ import { toneToVariant } from "@/features/contracts/utils/statusBadge"
 import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 import type { ReactNode } from "react"
+import { DS_TD_CLASS, DS_TH_CLASS } from "@/common/styles/table"
 
 interface ContractTableProps {
   rows: Array<CreatorContractListItem>
@@ -24,9 +25,8 @@ interface ContractTableProps {
 }
 
 /** 시안 S1 컬럼 폭 — 공구명(나머지) · 브랜드 150 · 상품 수 82 · 공구 기간 280 · 내 서명 기한 150 · 상태 124 */
-const HEAD_CLASS =
-  "whitespace-nowrap border-b border-sz-n-200 bg-sz-n-100 px-4 py-[11px] text-left text-[11px] font-semibold tracking-[.2px] text-sz-n-600"
-const CELL_CLASS = "px-4 py-[13px] text-[12px] align-middle"
+const HEAD_CLASS = DS_TH_CLASS
+const CELL_CLASS = DS_TD_CLASS
 
 /**
  * 시안 `.tcard table` — 스튜디오엔 공용 Table이 없어 시안 마크업 그대로의 경량 표를 둔다.
@@ -63,7 +63,7 @@ export default function ContractTable(props: ContractTableProps) {
               <tr
                 key={row.contractId}
                 onClick={() => onRowClick(row)}
-                className="group cursor-pointer border-t border-sz-n-100 first:border-t-0 hover:bg-sz-accent-50"
+                className="group cursor-pointer border-t border-sz-n-200 first:border-t-0 hover:bg-sz-n-50"
               >
                 <td className={CELL_CLASS}>
                   {/* 시안 13 — 행 높이를 늘리지 않도록 보류 보조 배지는 이름 칸에 붙인다(서버 `sanctionHold`) */}

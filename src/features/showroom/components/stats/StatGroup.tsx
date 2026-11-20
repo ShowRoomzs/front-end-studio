@@ -26,7 +26,7 @@ export default function StatGroup(props: {
         <div
           key={item.label}
           className={cn(
-            "flex-1 rounded-[6px] border p-[13px]",
+            "flex-1 rounded-[8px] border px-4 py-3",
             item.emphasized
               ? "border-sz-accent-100 bg-sz-accent-50"
               : "border-sz-n-200 bg-sz-n-50"
@@ -34,7 +34,7 @@ export default function StatGroup(props: {
         >
           <div
             className={cn(
-              "text-[19px] font-semibold tabular-nums",
+              "text-[17px] font-semibold tabular-nums",
               item.emphasized ? "text-sz-accent-600" : "text-sz-n-900"
             )}
           >
@@ -42,8 +42,8 @@ export default function StatGroup(props: {
           </div>
           <div
             className={cn(
-              "mt-0.5 text-[11px]",
-              item.emphasized ? "text-sz-accent-600/80" : "text-sz-n-500"
+              "mt-0.5 text-[12px]",
+              item.emphasized ? "text-sz-accent-600/80" : "text-sz-n-600"
             )}
           >
             {item.label}

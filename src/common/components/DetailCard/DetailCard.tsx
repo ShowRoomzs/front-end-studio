@@ -19,11 +19,13 @@ export default function DetailCard(props: DetailCardProps) {
     <section
       className={cn("rounded-[8px] border border-sz-n-200 bg-white", className)}
     >
-      <div className="flex items-center justify-between rounded-t-[8px] border-b border-sz-n-200 bg-sz-n-50 px-4 py-[11px]">
+      <div className="flex items-center justify-between rounded-t-[8px] border-b border-sz-n-200 bg-sz-n-50 px-4 py-3">
         <h2 className="text-[13px] font-semibold text-sz-n-900">{title}</h2>
         {note && <span className="text-[11px] text-sz-n-500">{note}</span>}
       </div>
-      <div className={flushBody ? "px-4 pb-3 pt-2" : "p-4"}>{children}</div>
+      <div className={flushBody ? "px-4 pb-3 pt-2" : "px-4 py-3"}>
+        {children}
+      </div>
     </section>
   )
 }

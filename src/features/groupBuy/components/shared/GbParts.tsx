@@ -144,12 +144,12 @@ export function KpiRow(props: { items: Array<KpiItem> }) {
       {props.items.map(item => (
         <div
           key={item.label}
-          className="min-w-0 flex-1 rounded-[6px] border border-sz-n-200 bg-white px-3.5 py-3"
+          className="min-w-0 flex-1 rounded-[8px] border border-sz-n-200 bg-white px-4 py-3"
         >
-          <div className="text-[19px] font-semibold tabular-nums text-sz-n-900">
+          <div className="text-[17px] font-semibold tabular-nums text-sz-n-900">
             {item.value}
           </div>
-          <div className="mt-[3px] text-[11px] text-sz-n-600">{item.label}</div>
+          <div className="mt-0.5 text-[12px] text-sz-n-600">{item.label}</div>
           {/* 상품명이 길면 「세럼 130 · 크림 88」 한 줄을 넘는다 — 줄바꿈 대신 말줄임(전체는 title) */}
           <div
             className="mt-[2px] truncate text-[10px] tabular-nums text-sz-n-400"

@@ -21,7 +21,7 @@ export function ShowroomCard(props: {
     <section
       className={cn("rounded-[8px] border border-sz-n-200 bg-white", className)}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-[18px] py-[13px]">
+      <div className="flex items-center justify-between gap-2 border-b border-sz-n-200 px-4 py-3">
         <h2 className="text-[13px] font-semibold text-sz-n-900">{title}</h2>
         {typeof note === "string" ? (
           <span className="text-[11px] font-normal text-sz-n-500">{note}</span>
@@ -44,7 +44,7 @@ export function CardSection(props: {
   return (
     <div
       className={cn(
-        "border-b border-sz-n-200 p-[18px] last:border-b-0",
+        "border-b border-sz-n-200 px-4 py-3 last:border-b-0",
         className
       )}
     >
@@ -56,7 +56,7 @@ export function CardSection(props: {
 /** 시안 `.btn-row` — 카드 맨 아래 액션 줄(우측 정렬) */
 export function CardActions(props: { children: ReactNode }) {
   return (
-    <div className="flex justify-end gap-2 border-t border-sz-n-200 px-[18px] py-[14px]">
+    <div className="flex justify-end gap-2 border-t border-sz-n-200 px-4 py-3">
       {props.children}
     </div>
   )

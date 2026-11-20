@@ -796,7 +796,7 @@ function HighlightCard(props: {
   estimated: boolean
 }) {
   return (
-    <div className="min-w-0 rounded-[6px] border border-sz-n-200 px-[13px] py-[11px]">
+    <div className="min-w-0 rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
       <div className="text-[11px] text-sz-n-600">
         {props.title}
         {props.estimated && <EstTag />}

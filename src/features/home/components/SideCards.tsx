@@ -15,7 +15,7 @@ function SideCard(props: {
 }) {
   const { title, link, linkLabel, children } = props
   return (
-    <div className="rounded-[8px] border border-sz-n-200 bg-white px-4 py-3.5">
+    <div className="rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
       <div className="mb-2.5 flex items-center text-[12px] font-semibold text-sz-n-900">
         {title}
         <Link

@@ -40,7 +40,7 @@ function readLinkCopied() {
 function GuideSteps() {
   const policy = usePolicyValues()
   return (
-    <div className="mt-4 rounded-[8px] border border-sz-n-200 bg-white px-[18px] py-4">
+    <div className="mt-4 rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
       <div className="text-[12px] font-semibold text-sz-n-900">
         공구는 이렇게 진행돼요
       </div>

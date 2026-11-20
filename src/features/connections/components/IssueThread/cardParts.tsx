@@ -25,7 +25,7 @@ export function ResCard(props: {
 }) {
   const { badgeVariant = "neutral", footerSpread = false } = props
   return (
-    <div className="self-stretch rounded-[8px] border border-sz-n-200 bg-white px-4 py-3.5">
+    <div className="self-stretch rounded-[8px] border border-sz-n-200 bg-white px-4 py-3">
       <div className="mb-[9px] flex items-center gap-2 text-[12px] font-semibold text-sz-n-900">
         <StatusBadge variant={badgeVariant}>{props.badge}</StatusBadge>
         <span className="min-w-0">{props.head}</span>
