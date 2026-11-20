@@ -159,8 +159,7 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
-                  className="text-sz-danger-text hover:bg-sz-danger-bg"
+                  variant="destructive"
                   onClick={() => setIsDeleteOpen(true)}
                 >
                   삭제

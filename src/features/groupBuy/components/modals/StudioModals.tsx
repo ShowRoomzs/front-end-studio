@@ -310,7 +310,7 @@ export function PostEditorModal(
       <MLabel required>제목</MLabel>
       <input
         className={cn(
-          "h-[34px] w-full rounded-[6px] border border-sz-n-300 bg-white px-2.5 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50",
+          "h-8 w-full rounded-[6px] border border-sz-n-300 bg-white px-2.5 py-1.5 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50",
           isTitleLocked &&
             "cursor-not-allowed bg-sz-n-50 text-sz-n-500 focus:border-sz-n-300 focus:ring-0"
         )}

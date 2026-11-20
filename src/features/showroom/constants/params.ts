@@ -1,3 +1,4 @@
+import { DS_SELECT_CHEVRON_STYLE } from "@/common/styles/formControls"
 import type { StatsPeriod, TopContentSort } from "@/features/showroom/types"
 
 /** 기간 7종 — 기본 30일. 화면 전체에 하나로 적용된다 */
@@ -55,9 +56,4 @@ export const ERROR_MESSAGE = {
 } as const
 
 /** 시안 `.sel-sm` 갈매기표 — 셀렉트 배경 이미지 */
-export const SELECT_CHEVRON_STYLE = {
-  backgroundImage:
-    "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%237B7F89' stroke-width='2.2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")",
-  backgroundRepeat: "no-repeat",
-  backgroundPosition: "right 10px center",
-}
+export const SELECT_CHEVRON_STYLE = DS_SELECT_CHEVRON_STYLE

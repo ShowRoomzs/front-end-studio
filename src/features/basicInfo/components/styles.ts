@@ -1,3 +1,4 @@
+import { DS_SELECT_CHEVRON_STYLE } from "@/common/styles/formControls"
 import { cn } from "@/lib/utils"
 
 /*
@@ -37,7 +38,7 @@ export function buttonClass(
 /** 시안 `.inp` — 36px · 12px 좌우 패딩 · 오류면 위험색 테두리(`.inp.bad`) */
 export function inputClass(hasError?: boolean, extra?: string) {
   return cn(
-    "h-9 w-full rounded-[6px] border bg-white px-3 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400",
+    "h-8 w-full rounded-[6px] border bg-white px-2.5 py-1.5 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400",
     hasError
       ? "border-sz-danger-text"
       : "border-sz-n-300 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50",
@@ -46,9 +47,4 @@ export function inputClass(hasError?: boolean, extra?: string) {
 }
 
 /** 시안 `.inp.sel` 화살표 */
-export const SELECT_CHEVRON_STYLE = {
-  backgroundImage:
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237B7F89' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
-  backgroundRepeat: "no-repeat",
-  backgroundPosition: "right 12px center",
-}
+export const SELECT_CHEVRON_STYLE = DS_SELECT_CHEVRON_STYLE

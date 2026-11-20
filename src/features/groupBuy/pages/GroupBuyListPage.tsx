@@ -1,3 +1,4 @@
+import { DS_SELECT_CLASS } from "@/common/styles/formControls"
 import { usePaginationInfo } from "@/common/hooks/usePaginationInfo"
 import { useParams } from "@/common/hooks/useParams"
 import { SELECT_CHEVRON_STYLE } from "@/features/contracts/constants/params"
@@ -26,8 +27,7 @@ import type {
 import { useCallback, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
-const SELECT_SM_CLASS =
-  "h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+const SELECT_SM_CLASS = DS_SELECT_CLASS
 
 /**
  * A1·A2 — 공구 목록(쇼룸 스튜디오). 공구는 계약 체결 시 자동 생성되어 [+ 공구 생성]이 없다.

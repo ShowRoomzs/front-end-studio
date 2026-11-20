@@ -1,3 +1,4 @@
+import { DS_SELECT_CLASS } from "@/common/styles/formControls"
 import { usePaginationInfo } from "@/common/hooks/usePaginationInfo"
 import { useParams } from "@/common/hooks/useParams"
 import ContractEmptyState from "@/features/contracts/components/ContractEmptyState/ContractEmptyState"
@@ -138,7 +139,7 @@ export default function ContractListPage() {
                     })
                   }
                   style={SELECT_CHEVRON_STYLE}
-                  className="h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+                  className={DS_SELECT_CLASS}
                 >
                   {CREATOR_CONTRACT_SORT_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>
@@ -154,7 +155,7 @@ export default function ContractListPage() {
                     updateParams({ size: Number(event.target.value), page: 1 })
                   }
                   style={SELECT_CHEVRON_STYLE}
-                  className="h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+                  className={DS_SELECT_CLASS}
                 >
                   {CREATOR_CONTRACT_PAGE_SIZES.map(size => (
                     <option key={size} value={size}>

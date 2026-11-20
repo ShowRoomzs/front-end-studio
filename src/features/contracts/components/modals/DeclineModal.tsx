@@ -79,7 +79,7 @@ export default function DeclineModal(props: DeclineModalProps) {
 
       <ModalLabel required>사유 구분</ModalLabel>
       <select
-        className={cn(SELECT_CLASS, "h-[34px] w-full")}
+        className={cn(SELECT_CLASS, "w-full")}
         style={FORM_SELECT_CHEVRON_STYLE}
         value={reasonCode}
         onChange={event =>

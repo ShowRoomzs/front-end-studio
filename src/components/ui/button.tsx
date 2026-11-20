@@ -14,8 +14,8 @@ const buttonVariants = cva(
           디자인시스템 `.btn-primary` / `.btn-secondary` / `.btn-danger-solid`.
           shadcn 기본 토큰(--accent/--border/--destructive)은 --sz-*와 별개
           (회색 oklch·다른 빨강)라 실제 색이 어긋난다. 제네릭 토큰으로 되돌리지 말 것.
-          크기도 디자인시스템 `button`(12px/500 · 모서리 6px) · 시안 `.btn`(32px · 좌우 14px) ·
-          `.btn-lg`(38px · 13px)에 맞춘다 — 쓰는 곳에서 className으로 덮어쓰지 않는다.
+          크기도 디자인시스템 `button`(12px/500 · 모서리 6px · 패딩 7/14 ≒ 32px)에 맞춘다.
+          lg는 좌우만 넓다 — 쓰는 곳에서 className으로 덮어쓰지 않는다.
         */
         default: "bg-sz-accent-500 text-white hover:bg-sz-accent-600",
         destructive: "bg-sz-danger-text text-white hover:bg-[#8f2828]",
@@ -27,7 +27,7 @@ const buttonVariants = cva(
       size: {
         default: "h-8 px-3.5 has-[>svg]:px-3",
         sm: "h-8 px-3.5 has-[>svg]:px-3",
-        lg: "h-[38px] px-5 text-[13px] has-[>svg]:px-4",
+        lg: "h-8 px-5 has-[>svg]:px-4",
         icon: "size-9",
         "icon-sm": "size-8",
         "icon-lg": "size-10",

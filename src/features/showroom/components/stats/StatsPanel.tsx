@@ -1,3 +1,4 @@
+import { DS_SELECT_CLASS } from "@/common/styles/formControls"
 import {
   CardSection,
   NoteBox,
@@ -22,6 +23,7 @@ import {
   formatVisitCount,
   toComparisonLabel,
 } from "@/features/showroom/utils/formatStats"
+import { cn } from "@/lib/utils"
 
 interface StatsPanelProps {
   stats: ShowroomStats
@@ -167,7 +169,7 @@ export default function StatsPanel(props: StatsPanelProps) {
                 onSortChange(event.target.value as TopContentSort)
               }
               style={SELECT_CHEVRON_STYLE}
-              className="h-7 shrink-0 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2.5 pr-[28px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+              className={cn(DS_SELECT_CLASS, "shrink-0")}
             >
               {TOP_CONTENT_SORT_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>

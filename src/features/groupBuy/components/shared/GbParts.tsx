@@ -409,9 +409,9 @@ export function MWarn(props: { children: ReactNode; danger?: boolean }) {
 }
 
 const MFIELD_BASE =
-  "w-full rounded-[6px] border border-sz-n-300 bg-white px-2.5 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+  "w-full rounded-[6px] border border-sz-n-300 bg-white px-2.5 py-1.5 text-[13px] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
 
-/** 시안 `.msel` — 34px */
+/** 디자인 시스템 셀렉트 — 32px */
 export function MSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
   const { className, style, ...rest } = props
   return (
@@ -420,7 +420,7 @@ export function MSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
       style={{ ...FORM_SELECT_CHEVRON_STYLE, ...style }}
       className={cn(
         MFIELD_BASE,
-        "h-[34px] cursor-pointer appearance-none py-1.5 pr-8",
+        "h-8 cursor-pointer appearance-none pr-8",
         className
       )}
     />

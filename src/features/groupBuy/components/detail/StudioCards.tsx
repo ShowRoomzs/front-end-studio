@@ -406,11 +406,7 @@ export function ReadinessCard(props: {
                 ? "나 · 임시저장됨 · 아직 등록하지 않음"
                 : "나 · 아직 작성하지 않음",
             right: permissions.canWritePost ? (
-              <Btn
-                variant="primary"
-                className="h-7 shrink-0"
-                onClick={onWritePost}
-              >
+              <Btn variant="primary" className="shrink-0" onClick={onWritePost}>
                 {rejected
                   ? "게시물 수정"
                   : post.status === "WRITING"

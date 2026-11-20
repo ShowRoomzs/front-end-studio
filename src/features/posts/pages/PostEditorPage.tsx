@@ -220,8 +220,8 @@ export default function PostEditorPage(props: { post?: PostDetailResponse }) {
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
-                className="mr-auto text-sz-danger-text hover:bg-sz-danger-bg"
+                variant="destructive"
+                className="mr-auto"
                 onClick={() => setIsDeleteOpen(true)}
               >
                 삭제

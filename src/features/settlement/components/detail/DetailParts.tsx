@@ -226,7 +226,7 @@ export function ReadRow(props: {
   )
 }
 
-/** 시안 `.act-btn` — 바 · 카드 우측 끝의 작은 버튼 */
+/** 시안 `.act-btn` 자리 — 디자인 시스템 `.btn-secondary`(12px/500 · 32px) */
 export function ActBtn(props: {
   children: ReactNode
   disabled?: boolean
@@ -237,7 +237,7 @@ export function ActBtn(props: {
       type="button"
       disabled={props.disabled}
       onClick={props.onClick}
-      className="inline-flex h-[26px] items-center justify-center whitespace-nowrap rounded-[6px] border border-sz-n-300 bg-white px-[11px] text-[11px] font-medium text-sz-n-700 hover:border-sz-n-400 hover:bg-sz-n-100 disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
+      className="inline-flex h-8 cursor-pointer items-center justify-center whitespace-nowrap rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:bg-sz-n-100 disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
     >
       {props.children}
     </button>

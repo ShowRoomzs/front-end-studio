@@ -212,7 +212,7 @@ export default function ProfileForm(props: { profile: ShowroomProfile }) {
             <button
               type="button"
               onClick={() => void handleCopyUrl()}
-              className="inline-flex h-9 shrink-0 items-center rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:bg-sz-n-100"
+              className="inline-flex h-8 shrink-0 cursor-pointer items-center rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:bg-sz-n-100"
             >
               복사
             </button>
