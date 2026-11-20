@@ -228,10 +228,7 @@ export default function ProfileForm(props: { profile: ShowroomProfile }) {
             onChange={event =>
               setValues(prev => ({ ...prev, introduction: event.target.value }))
             }
-            className={inputClass(
-              false,
-              "h-[70px] resize-none py-[9px] leading-[1.6]"
-            )}
+            className={inputClass(false, "h-[70px] resize-none leading-[1.6]")}
           />
           {/* 상한에서 입력이 막히므로 초과 상태가 없다 — 에러 문구도 없다 */}
           <div

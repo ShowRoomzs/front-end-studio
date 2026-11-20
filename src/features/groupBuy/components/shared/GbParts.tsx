@@ -435,7 +435,7 @@ export function MTextarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
       {...rest}
       className={cn(
         MFIELD_BASE,
-        "min-h-[76px] resize-y pb-1.5 pt-2 leading-[1.6]",
+        "min-h-[76px] resize-y leading-[1.6]",
         className
       )}
     />
