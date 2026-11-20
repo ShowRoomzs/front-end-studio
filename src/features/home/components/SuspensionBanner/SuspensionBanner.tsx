@@ -103,13 +103,7 @@ export default function SuspensionBanner(props: {
               {expanded ? "접기" : "자세히"}
             </button>
           )}
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={appeal}
-            className="rounded-[6px] px-3.5 text-[12px] font-medium shadow-none"
-          >
+          <Button type="button" size="sm" variant="outline" onClick={appeal}>
             운영팀에 소명하기
           </Button>
         </div>

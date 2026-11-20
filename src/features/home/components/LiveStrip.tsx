@@ -113,7 +113,6 @@ export default function LiveStrip(props: { live: HomeLive; now: number }) {
         size="sm"
         variant="outline"
         onClick={() => navigate(HOME_PATHS.groupBuy(live.groupBuyId))}
-        className="rounded-[6px] px-3.5 text-[12px] font-medium shadow-none"
       >
         공구 보기
       </Button>

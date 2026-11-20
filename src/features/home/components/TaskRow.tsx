@@ -76,7 +76,6 @@ export default function TaskRow(props: TaskRowProps) {
         variant={secondary || locked ? "outline" : "default"}
         disabled={locked || disabled}
         onClick={onAction}
-        className="rounded-[6px] px-3.5 text-[12px] font-medium shadow-none"
       >
         {actionLabel}
       </Button>

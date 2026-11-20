@@ -117,7 +117,6 @@ export default function HomePage() {
           size="sm"
           variant="outline"
           onClick={() => refetch()}
-          className="rounded-[6px] px-3.5 text-[12px] shadow-none"
         >
           다시 시도
         </Button>

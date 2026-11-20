@@ -10,6 +10,11 @@ export interface PaginationProps extends Omit<PageInfo, "content"> {
   onPageChange?: (page: number) => void
 }
 
+/** 시안 `.page-item` — 26px · 12px · 모서리 6px · 테두리 없음 · hover n-100 · 현재 쪽 액센트 */
+const PAGE_ITEM_CLASS =
+  "inline-flex h-[26px] min-w-[26px] cursor-pointer items-center justify-center rounded-[6px] px-1.5 text-[12px] text-sz-n-600 transition-colors"
+const ELLIPSIS_CLASS = "px-1 text-[12px] text-sz-n-400"
+
 export default function Pagination(props: PaginationProps) {
   const { currentPage, totalPages, onPageChange } = props
   // 내부 상태로 현재 페이지를 관리하여 즉각 반응 (1-based)
@@ -36,10 +41,10 @@ export default function Pagination(props: PaginationProps) {
         <button
           key={`page-${page}`}
           className={cn(
-            "min-w-[30px] min-h-[30px] rounded-[4px] text-[14px] px-[5px] font-medium transition-colors",
+            PAGE_ITEM_CLASS,
             isActive
-              ? "bg-sz-accent-500 text-white"
-              : "bg-white text-sz-n-600 hover:bg-sz-n-50 border border-sz-n-300"
+              ? "bg-sz-accent-500 font-medium text-white"
+              : "hover:bg-sz-n-100"
           )}
           onClick={() => handlePageChange(page)}
         >
@@ -59,7 +64,7 @@ export default function Pagination(props: PaginationProps) {
       // totalPages가 INITIAL_DISPLAY_COUNT보다 클 때만 ... totalPages 표시
       if (totalPages > INITIAL_DISPLAY_COUNT) {
         buttons.push(
-          <span key="ellipsis" className="text-sz-n-400 px-2">
+          <span key="ellipsis" className={ELLIPSIS_CLASS}>
             ...
           </span>
         )
@@ -77,7 +82,7 @@ export default function Pagination(props: PaginationProps) {
       // 1과 첫 번째 중간 페이지 사이에 페이지가 있을 때만 ... 표시
       if (leftmostPage > 2) {
         buttons.push(
-          <span key="ellipsis-start" className="text-sz-n-400 px-2">
+          <span key="ellipsis-start" className={ELLIPSIS_CLASS}>
             ...
           </span>
         )
@@ -95,7 +100,7 @@ export default function Pagination(props: PaginationProps) {
         // ... 표시 (rightmostPage와 totalPages 사이에 페이지가 있을 때)
         if (rightmostPage < totalPages - 1) {
           buttons.push(
-            <span key="ellipsis-end" className="text-sz-n-400 px-2">
+            <span key="ellipsis-end" className={ELLIPSIS_CLASS}>
               ...
             </span>
           )
@@ -130,21 +135,21 @@ export default function Pagination(props: PaginationProps) {
   }
 
   return (
-    <div className="flex flex-row items-center gap-[8px]">
+    <div className="flex flex-row items-center gap-1">
       {/* 이전 버튼 */}
       <button
         className={cn(
-          "w-[30px] h-[30px] rounded-[4px] bg-white border border-sz-n-300 flex items-center justify-center transition-colors",
+          PAGE_ITEM_CLASS,
           isPreviousDisabled
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:bg-sz-n-50"
+            ? "cursor-not-allowed text-sz-n-300"
+            : "hover:bg-sz-n-100"
         )}
         onClick={handleClickPrevious}
         disabled={isPreviousDisabled}
       >
         <svg
-          width="8"
-          height="12"
+          width="6"
+          height="9"
           viewBox="0 0 8 12"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -163,15 +168,17 @@ export default function Pagination(props: PaginationProps) {
       {/* 다음 버튼 */}
       <button
         className={cn(
-          "w-[30px] h-[30px] rounded-[4px] bg-white border border-sz-n-300 flex items-center justify-center transition-colors",
-          isNextDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-sz-n-50"
+          PAGE_ITEM_CLASS,
+          isNextDisabled
+            ? "cursor-not-allowed text-sz-n-300"
+            : "hover:bg-sz-n-100"
         )}
         onClick={handleClickNext}
         disabled={isNextDisabled}
       >
         <svg
-          width="8"
-          height="12"
+          width="6"
+          height="9"
           viewBox="0 0 8 12"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
