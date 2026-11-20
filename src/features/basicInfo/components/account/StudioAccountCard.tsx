@@ -81,7 +81,7 @@ export default function StudioAccountCard(props: { account: AccountResponse }) {
                 type="button"
                 disabled={acknowledgeRejection.isPending}
                 onClick={() => acknowledgeRejection.mutate(rejection.requestId)}
-                className={buttonClass("secondary", "sm")}
+                className={buttonClass("secondary")}
               >
                 확인
               </button>
@@ -119,7 +119,7 @@ export default function StudioAccountCard(props: { account: AccountResponse }) {
             type="button"
             disabled={cancelWithdrawal.isPending}
             onClick={() => cancelWithdrawal.mutate(pendingRequest.requestId)}
-            className={buttonClass("quiet")}
+            className={buttonClass("secondary")}
           >
             요청 취소
           </button>
@@ -128,7 +128,7 @@ export default function StudioAccountCard(props: { account: AccountResponse }) {
             type="button"
             disabled={state !== "AVAILABLE"}
             onClick={() => setIsRequestOpen(true)}
-            className={buttonClass("quiet")}
+            className={buttonClass("danger")}
           >
             탈퇴 승인 요청
           </button>

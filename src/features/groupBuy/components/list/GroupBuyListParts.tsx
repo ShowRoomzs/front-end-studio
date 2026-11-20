@@ -34,7 +34,7 @@ export function GroupBuyStatusTabs(props: {
             type="button"
             onClick={() => onTabChange(item.value)}
             className={cn(
-              "mr-[22px] flex items-center gap-1.5 whitespace-nowrap border-b-2 px-0.5 py-[9px] text-[12px]",
+              "mr-4 flex items-center gap-1.5 whitespace-nowrap border-b-2 px-1 py-2 text-[12px]",
               isActive
                 ? "border-sz-accent-500 font-medium text-sz-accent-500"
                 : "border-transparent text-sz-n-500 hover:text-sz-n-700"

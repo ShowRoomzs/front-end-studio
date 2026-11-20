@@ -312,12 +312,12 @@ export function GbModal(props: {
 
   return (
     // 바깥 클릭으로 닫지 않는다 — 입력한 사유가 빗나간 클릭 한 번에 날아가면 안 된다
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.4)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.45)]">
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="flex max-h-[90vh] flex-col overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]"
+        className="flex max-h-[90vh] flex-col overflow-hidden rounded-[12px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]"
         style={{ width }}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-sz-n-200 px-5 py-3.5">

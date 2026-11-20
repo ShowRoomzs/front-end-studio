@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { useRef, useState } from "react"
 
 const ACTION_BUTTON_CLASS =
-  "inline-flex h-7 items-center rounded-[6px] border border-sz-n-300 bg-white px-2.5 text-[11px] font-medium text-sz-n-900 hover:enabled:bg-sz-n-100 disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
+  "inline-flex h-8 cursor-pointer items-center rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:enabled:bg-sz-n-100 disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
 
 interface AvatarUploaderProps {
   /** 현재 값 — 빈 문자열이면 이미지 없음(삭제 상태) */

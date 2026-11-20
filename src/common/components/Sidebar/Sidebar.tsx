@@ -74,7 +74,7 @@ export default function Sidebar(props: SidebarProps) {
               disabled={isPlaceholder}
               onClick={() => item.path && navigate(item.path)}
               className={cn(
-                "mb-0.5 flex w-full items-center gap-2 rounded-[6px] px-2.5 py-[9px] text-left text-[12px]",
+                "mb-0.5 flex w-full items-center gap-2 rounded-[6px] px-2.5 py-[7px] text-left text-[12px]",
                 isActive
                   ? "bg-sz-accent-500 font-medium text-white"
                   : "text-sz-n-600",
