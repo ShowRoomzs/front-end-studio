@@ -75,7 +75,7 @@ export default function AttachmentRenderer(props: AttachmentRendererProps) {
           type="button"
           onClick={handleBulkDownload}
           className={cn(
-            "mt-1.5 inline-flex h-7 w-fit items-center gap-1.5 rounded-[6px] border border-sz-n-300 bg-white px-2.5 text-[11px] font-medium text-sz-n-600 hover:bg-sz-n-100 hover:text-sz-n-900",
+            "mt-1.5 inline-flex h-8 w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:bg-sz-n-100",
             isMine ? "ml-auto" : "mr-auto"
           )}
         >

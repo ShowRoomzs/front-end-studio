@@ -165,7 +165,7 @@ function RequestButtons(props: {
           <button
             type="button"
             onClick={() => copyIssueInfo(copyTarget)}
-            className={buttonClass("secondary", "sm")}
+            className={buttonClass("secondary")}
           >
             발행 정보 복사
           </button>
@@ -174,7 +174,7 @@ function RequestButtons(props: {
           type="button"
           disabled={!!blockedReason}
           onClick={() => onRequest(target)}
-          className={buttonClass("secondary", "sm")}
+          className={buttonClass("secondary")}
         >
           {target === "BUSINESS"
             ? "개인사업자로 변경 요청"
@@ -220,7 +220,7 @@ function ChangeRequestPanel(props: {
                 type="button"
                 disabled={isCancelling}
                 onClick={onCancel}
-                className={buttonClass("secondary", "sm")}
+                className={buttonClass("secondary")}
               >
                 요청 취소
               </button>
@@ -267,7 +267,7 @@ function ChangeRequestPanel(props: {
               type="button"
               disabled={isAcknowledging}
               onClick={onAcknowledge}
-              className={buttonClass("secondary", "sm")}
+              className={buttonClass("secondary")}
             >
               확인
             </button>

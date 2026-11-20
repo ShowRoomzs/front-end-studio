@@ -85,7 +85,7 @@ export default function BusinessEmailCard(props: {
           type="button"
           disabled={!canSave || isPending}
           onClick={save}
-          className={buttonClass("primary", "sm")}
+          className={buttonClass("primary")}
         >
           저장
         </button>

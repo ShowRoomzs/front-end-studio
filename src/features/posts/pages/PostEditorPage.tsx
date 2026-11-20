@@ -207,7 +207,7 @@ export default function PostEditorPage(props: { post?: PostDetailResponse }) {
               maxLength={POST_CONTENT_MAX}
               onChange={event => setContent(event.target.value)}
               placeholder="사진과 함께 하고 싶은 이야기를 자유롭게 적어주세요."
-              className="h-[150px] w-full resize-none rounded-[6px] border border-sz-n-300 px-3 py-[9px] text-[13px] leading-[1.6] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500"
+              className="h-[150px] w-full resize-none rounded-[6px] border border-sz-n-300 bg-white px-2.5 py-1.5 text-[13px] leading-[1.6] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
             />
             <div className="mt-1 text-right text-[11px] text-sz-n-400 tabular-nums">
               {content.length.toLocaleString("ko-KR")} /{" "}
@@ -220,8 +220,8 @@ export default function PostEditorPage(props: { post?: PostDetailResponse }) {
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
-                className="mr-auto text-sz-danger-text hover:bg-sz-danger-bg"
+                variant="destructive"
+                className="mr-auto"
                 onClick={() => setIsDeleteOpen(true)}
               >
                 삭제

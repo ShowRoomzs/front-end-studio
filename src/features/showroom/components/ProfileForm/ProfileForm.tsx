@@ -212,7 +212,7 @@ export default function ProfileForm(props: { profile: ShowroomProfile }) {
             <button
               type="button"
               onClick={() => void handleCopyUrl()}
-              className="inline-flex h-9 shrink-0 items-center rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:bg-sz-n-100"
+              className="inline-flex h-8 shrink-0 cursor-pointer items-center rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:bg-sz-n-100"
             >
               복사
             </button>
@@ -228,10 +228,7 @@ export default function ProfileForm(props: { profile: ShowroomProfile }) {
             onChange={event =>
               setValues(prev => ({ ...prev, introduction: event.target.value }))
             }
-            className={inputClass(
-              false,
-              "h-[70px] resize-none py-[9px] leading-[1.6]"
-            )}
+            className={inputClass(false, "h-[70px] resize-none leading-[1.6]")}
           />
           {/* 상한에서 입력이 막히므로 초과 상태가 없다 — 에러 문구도 없다 */}
           <div

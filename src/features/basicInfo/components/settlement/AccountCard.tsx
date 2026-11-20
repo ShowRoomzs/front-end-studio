@@ -167,10 +167,7 @@ function AccountFooter(props: {
           type="button"
           disabled={!actions.accountChange}
           onClick={onStartChange}
-          className={buttonClass(
-            changeRequired ? "primary" : "secondary",
-            "sm"
-          )}
+          className={buttonClass(changeRequired ? "primary" : "secondary")}
         >
           계좌 변경
         </button>
@@ -216,7 +213,7 @@ function PendingChangeView(props: {
             type="button"
             disabled={isCancelling}
             onClick={onCancel}
-            className={buttonClass("secondary", "sm")}
+            className={buttonClass("secondary")}
           >
             요청 취소
           </button>

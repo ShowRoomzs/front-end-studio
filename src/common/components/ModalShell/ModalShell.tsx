@@ -61,9 +61,9 @@ export function ModalShell(props: ModalShellProps) {
     // 바깥 영역을 눌러도 닫지 않는다 — 체크·입력·파일 업로드까지 마친 폼이
     // 실수로 한 번 빗나간 클릭에 전부 날아가면 처음부터 다시 해야 한다.
     // 닫는 경로는 헤더 X · [취소] 버튼 · Esc 세 가지로 충분하다.
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.45)]">
       <div
-        className="max-h-[90vh] overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]"
+        className="max-h-[90vh] overflow-hidden rounded-[12px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]"
         style={{ width }}
       >
         <div className="flex items-center justify-between border-b border-sz-n-200 px-[22px] py-4">

@@ -314,7 +314,7 @@ function ApprovalForm(props: {
         <input
           className={cn(
             INPUT_CLASS,
-            "h-[34px] flex-1 tabular-nums",
+            "flex-1 tabular-nums",
             errorText && INPUT_ERROR_CLASS
           )}
           placeholder={APPROVAL_PLACEHOLDER}

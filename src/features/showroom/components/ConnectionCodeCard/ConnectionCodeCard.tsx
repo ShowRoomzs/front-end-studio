@@ -9,7 +9,7 @@ import { useState } from "react"
 import toast from "react-hot-toast"
 
 const CODE_BUTTON_CLASS =
-  "inline-flex h-7 items-center rounded-[6px] border border-sz-n-300 bg-white px-2.5 text-[11px] font-medium text-sz-n-900 hover:enabled:bg-sz-n-100 disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
+  "inline-flex h-8 cursor-pointer items-center rounded-[6px] border border-sz-n-300 bg-white px-3.5 text-[12px] font-medium text-sz-n-900 hover:enabled:bg-sz-n-100 disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
 
 /**
  * 연결코드 카드 — 코드값 + 복사·재발급 + 안내 2줄.

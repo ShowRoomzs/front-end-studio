@@ -133,7 +133,7 @@ export function CounterModal(props: {
         <ModalLabel>사유</ModalLabel>
         <textarea
           aria-label="사유"
-          className="min-h-[88px] w-full resize-y rounded-[6px] border border-sz-n-300 px-[11px] py-[9px] text-[12px] leading-[1.6] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+          className="min-h-[96px] w-full resize-none rounded-[6px] border border-sz-n-300 bg-white px-2.5 py-1.5 text-[13px] leading-[1.6] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
           placeholder="제안 금액의 근거를 적어주세요."
           maxLength={REASON_MAX}
           value={reason}

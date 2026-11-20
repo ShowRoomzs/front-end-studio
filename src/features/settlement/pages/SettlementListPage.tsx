@@ -1,3 +1,4 @@
+import { DS_SELECT_CLASS } from "@/common/styles/formControls"
 import Pagination from "@/common/components/Pagination/Pagination"
 import { usePaginationInfo } from "@/common/hooks/usePaginationInfo"
 import { useParams } from "@/common/hooks/useParams"
@@ -36,8 +37,7 @@ import { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 /** 시안 `.sel-sm` — 목록 툴바 셀렉트(채운 삼각형) */
-const SELECT_SM_CLASS =
-  "h-7 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+const SELECT_SM_CLASS = DS_SELECT_CLASS
 
 /**
  * 정산 관리 목록(ui-studio-12 L1 · L2).

@@ -159,8 +159,7 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
-                  className="text-sz-danger-text hover:bg-sz-danger-bg"
+                  variant="destructive"
                   onClick={() => setIsDeleteOpen(true)}
                 >
                   삭제
@@ -216,7 +215,7 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
             maxLength={APPEAL_CONTENT_MAX}
             onChange={event => setAppealContent(event.target.value)}
             placeholder="어떤 점이 사실과 다른지 구체적으로 적어주세요."
-            className="h-24 w-full resize-none rounded-[6px] border border-sz-n-300 px-3 py-[9px] text-[13px] leading-[1.6] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500"
+            className="h-24 w-full resize-none rounded-[6px] border border-sz-n-300 bg-white px-2.5 py-1.5 text-[13px] leading-[1.6] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
           />
           <div className="mt-1 text-right text-[11px] text-sz-n-400 tabular-nums">
             {appealContent.length} / {APPEAL_CONTENT_MAX}

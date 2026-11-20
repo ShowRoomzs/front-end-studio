@@ -183,7 +183,7 @@ export function SettlementFilters(props: {
       <div className="mt-2.5 flex flex-wrap items-center gap-2.5 border-t border-sz-n-100 pt-2.5">
         <FilterLabel>검색</FilterLabel>
         <input
-          className={cn(INPUT_CLASS, "h-8 w-[320px]")}
+          className={cn(INPUT_CLASS, "w-[320px]")}
           placeholder="공구명 · 브랜드명 검색"
           aria-label="공구명 · 브랜드명 검색"
           value={keyword}

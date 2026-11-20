@@ -32,7 +32,7 @@ export default function FilterTabs(props: {
             type="button"
             onClick={() => onChange(tab.status)}
             className={cn(
-              "mr-5 cursor-pointer border-b-2 px-0.5 py-[9px] text-[12px] transition-colors",
+              "mr-4 cursor-pointer border-b-2 px-1 py-2 text-[12px] transition-colors",
               isActive
                 ? "border-sz-accent-500 font-medium text-sz-accent-500"
                 : "border-transparent text-sz-n-500 hover:text-sz-n-700"

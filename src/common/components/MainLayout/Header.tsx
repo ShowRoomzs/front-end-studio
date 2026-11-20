@@ -1,7 +1,5 @@
 import { HEADER_HEIGHT } from "@/common/components/MainLayout/config"
-import { Button } from "@/components/ui/button"
 import NotificationBell from "@/features/home/components/NotificationBell/NotificationBell"
-import { LogOut } from "lucide-react"
 
 interface HeaderProps {
   /** 현재 화면명 (시안 `.crumb`) — GNB 라벨 */
@@ -72,35 +70,37 @@ export default function Header(props: HeaderProps) {
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3">
+      {/* 시안 `.sz-tr` — 알림 종 · 브랜드 칩 간격 14px */}
+      <div className="flex shrink-0 items-center gap-3.5">
         {/* 시안 14 H1a — 모든 페이지 공통 알림 종 */}
         <NotificationBell />
-        {showroomName && (
-          <div className="flex items-center gap-[7px] text-[12px] text-sz-n-600">
-            <span className="max-w-[180px] truncate">{showroomName}</span>
-            {/* 시안 상태 배지 — 계정 상태 API(`/creator/account-status`) 기준 활성 · 정지(ui-studio-13) */}
-            {isSuspended ? (
-              <span className="rounded-[10px] bg-sz-danger-bg px-2.5 py-0.5 text-[11px] font-medium text-sz-danger-text">
-                정지
-              </span>
-            ) : (
-              <span className="rounded-[10px] bg-sz-success-bg px-2.5 py-0.5 text-[11px] font-medium text-sz-success-text">
-                활성
-              </span>
-            )}
-          </div>
-        )}
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onLogout}
-          className="h-8 shrink-0 px-2.5 text-sz-n-700 hover:bg-sz-n-100 hover:text-sz-n-900"
-        >
-          <LogOut className="size-4" aria-hidden />
-          로그아웃
-        </Button>
+        <div className="flex items-center gap-[7px] text-[12px] text-sz-n-600">
+          {showroomName && (
+            <>
+              <span className="max-w-[180px] truncate">{showroomName}</span>
+              {/* 시안 상태 배지 — 계정 상태 API(`/creator/account-status`) 기준 활성 · 정지(ui-studio-13) */}
+              {isSuspended ? (
+                <span className="rounded-[10px] bg-sz-danger-bg px-2.5 py-0.5 text-[11px] font-medium text-sz-danger-text">
+                  정지
+                </span>
+              ) : (
+                <span className="rounded-[10px] bg-sz-success-bg px-2.5 py-0.5 text-[11px] font-medium text-sz-success-text">
+                  활성
+                </span>
+              )}
+              {/* 시안 `.sz-sep` */}
+              <span aria-hidden className="mx-1.5 h-3.5 w-px bg-sz-n-200" />
+            </>
+          )}
+          {/* 시안 `.sz-logout` — 11px · n-500 · 테두리 n-200 · 패딩 4/9 */}
+          <button
+            type="button"
+            onClick={onLogout}
+            className="shrink-0 cursor-pointer rounded-[6px] border border-sz-n-200 bg-white px-[9px] py-1 text-[11px] text-sz-n-500 transition-colors hover:bg-sz-n-100 hover:text-sz-n-700"
+          >
+            로그아웃
+          </button>
+        </div>
       </div>
     </header>
   )

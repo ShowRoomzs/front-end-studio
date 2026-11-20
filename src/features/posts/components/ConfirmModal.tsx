@@ -39,14 +39,14 @@ export default function ConfirmModal(props: {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-sz-n-900/45"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.45)]"
       onMouseDown={event => {
         if (event.target === event.currentTarget) {
           onClose()
         }
       }}
     >
-      <div className="w-[440px] overflow-hidden rounded-[8px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]">
+      <div className="w-[440px] overflow-hidden rounded-[12px] bg-white shadow-[0_8px_24px_rgba(26,27,31,0.12),0_2px_6px_rgba(26,27,31,0.08)]">
         <div className="flex items-center justify-between border-b border-sz-n-200 px-5 py-[15px] text-[13px] font-semibold text-sz-n-900">
           {title}
           <button

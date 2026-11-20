@@ -80,7 +80,7 @@ export default function DocumentUpload(props: {
       type="button"
       disabled={disabled || uploading}
       onClick={() => inputRef.current?.click()}
-      className={buttonClass("secondary", "sm")}
+      className={buttonClass("secondary")}
     >
       {value || rejected ? "다시 선택" : "파일 선택"}
     </button>

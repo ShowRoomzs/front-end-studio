@@ -1,3 +1,4 @@
+import { DS_FIELD_CLASS, DS_SELECT_CLASS } from "@/common/styles/formControls"
 import Btn from "@/features/contracts/components/shared/Btn"
 import { SELECT_CHEVRON_STYLE } from "@/features/contracts/constants/params"
 import {
@@ -35,11 +36,7 @@ import { Check } from "lucide-react"
 import type { ReactNode } from "react"
 
 /** 시안 `.sel-sm` — 표 머리 정렬 셀렉트 */
-export const SELECT_SM_CLASS =
-  "h-7 cursor-pointer appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-2 pr-[22px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
-
-/** 시안 `.btn.sm` — 필터 패널 [검색] · [초기화] */
-const BTN_SM = "h-[30px] px-[15px]"
+export const SELECT_SM_CLASS = DS_SELECT_CLASS
 
 /** 시안 `.period` — 목록 머리 기간 셀렉트(「최근 6개월」) */
 export function PeriodSelect(props: {
@@ -51,11 +48,8 @@ export function PeriodSelect(props: {
       aria-label="조회 기간"
       value={props.value}
       onChange={event => props.onChange(Number(event.target.value))}
-      style={{
-        ...SELECT_CHEVRON_STYLE,
-        backgroundPosition: "right 12px center",
-      }}
-      className="h-8 shrink-0 cursor-pointer appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-3 pr-[30px] text-[12px] text-sz-n-700 outline-none focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+      style={SELECT_CHEVRON_STYLE}
+      className={cn(DS_SELECT_CLASS, "shrink-0")}
     >
       {PERFORMANCE_MONTH_OPTIONS.map(option => (
         <option key={option.value} value={option.value}>
@@ -220,7 +214,7 @@ export function PerformanceFilters(props: {
       </FilterRow>
       <FilterRow label="검색">
         <input
-          className="h-[30px] w-[300px] rounded-[6px] border border-sz-n-300 bg-white px-[11px] text-[12px] text-sz-n-900 outline-none placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50"
+          className={cn(DS_FIELD_CLASS, "w-[300px]")}
           placeholder="공구명 · 브랜드명 검색"
           aria-label="공구명 · 브랜드명 검색"
           value={keyword}
@@ -230,10 +224,10 @@ export function PerformanceFilters(props: {
           }}
         />
         <span className="flex gap-[7px]">
-          <Btn variant="primary" className={BTN_SM} onClick={onSearch}>
+          <Btn variant="primary" onClick={onSearch}>
             검색
           </Btn>
-          <Btn variant="secondary" className={BTN_SM} onClick={onReset}>
+          <Btn variant="secondary" onClick={onReset}>
             초기화
           </Btn>
         </span>

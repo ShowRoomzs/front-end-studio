@@ -1,3 +1,4 @@
+import { DS_SELECT_CLASS } from "@/common/styles/formControls"
 import {
   SELECT_CHEVRON_STYLE,
   STATS_PERIOD_OPTIONS,
@@ -43,7 +44,7 @@ export default function ShowroomTabs(props: ShowroomTabsProps) {
             type="button"
             onClick={() => onTabChange(item.value)}
             className={cn(
-              "mr-5 border-b-2 px-0.5 py-[9px] text-[12px]",
+              "mr-4 border-b-2 px-1 py-2 text-[12px]",
               isActive
                 ? "border-sz-accent-500 font-medium text-sz-accent-500"
                 : "border-transparent text-sz-n-500 hover:text-sz-n-700"
@@ -60,7 +61,7 @@ export default function ShowroomTabs(props: ShowroomTabsProps) {
           value={period}
           onChange={event => onPeriodChange(event.target.value as StatsPeriod)}
           style={SELECT_CHEVRON_STYLE}
-          className="mb-1.5 ml-auto h-8 appearance-none rounded-[6px] border border-sz-n-300 bg-white py-0 pl-3 pr-[30px] text-[12px] text-sz-n-700 outline-none hover:border-sz-n-400 focus:border-sz-accent-500"
+          className={cn(DS_SELECT_CLASS, "mb-1.5 ml-auto")}
         >
           {STATS_PERIOD_OPTIONS.map(option => (
             <option key={option.value} value={option.value}>

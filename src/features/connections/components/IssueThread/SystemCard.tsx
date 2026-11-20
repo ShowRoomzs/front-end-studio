@@ -149,7 +149,6 @@ export default function SystemCard(props: {
               {withdrawable && adjustment.proposalId !== undefined && (
                 <Btn
                   variant="secondary"
-                  className="h-7 px-2.5 text-[11px]"
                   disabled={pendingResponse}
                   onClick={() =>
                     adjustment.proposalId !== undefined &&

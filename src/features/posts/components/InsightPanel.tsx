@@ -1,3 +1,5 @@
+import { DS_SELECT_CLASS } from "@/common/styles/formControls"
+import { SELECT_CHEVRON_STYLE } from "@/features/contracts/constants/params"
 import { INSIGHT_PERIODS } from "@/features/posts/constants/params"
 import { useGetPostInsights } from "@/features/posts/hooks/useGetPostInsights"
 import type {
@@ -117,7 +119,9 @@ export default function InsightPanel(props: {
         <select
           value={period}
           onChange={event => onPeriodChange(event.target.value as StatsPeriod)}
-          className="h-7 cursor-pointer rounded-[6px] border border-sz-n-300 bg-white px-2 text-[11px] text-sz-n-700"
+          // 디자인 시스템 셀렉트
+          style={SELECT_CHEVRON_STYLE}
+          className={DS_SELECT_CLASS}
         >
           {INSIGHT_PERIODS.map(item => (
             <option key={item.value} value={item.value}>
