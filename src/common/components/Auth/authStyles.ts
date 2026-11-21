@@ -57,7 +57,7 @@ export const authReadonlyBoxClass = (size: ControlSize = "md") =>
     "bg-sz-n-100 px-3 text-[13px] text-sz-n-700"
   )
 
-/** 큰 버튼 — 주(`--sz-auth-action` = 인디고) / DS `.btn-secondary` 색 · 38px */
+/** 큰 버튼 — 주(`--sz-auth-action` = 시안 검정) / DS `.btn-secondary` 색 · 38px */
 export const authButtonClass = (
   variant: "primary" | "line",
   extra?: string,
