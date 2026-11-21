@@ -282,7 +282,7 @@ export function PostEditorModal(
         </>
       }
     >
-      <div className="rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-[13px] py-[11px] text-[11px] leading-[1.7] text-sz-n-600">
+      <div className="rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[9px] text-[11px] leading-[1.7] text-sz-n-600">
         계약에서 넘어온 값이라 <B className="text-sz-n-900">바꿀 수 없습니다</B>{" "}
         — 공구 기간{" "}
         <B className="text-sz-n-900">

@@ -204,7 +204,7 @@ export default function InsightPanel(props: {
 
           <Section title="본 사람" hint="집계값만 · 개인 식별 정보 없음">
             {data.viewers.ratioSuppressed ? (
-              <div className="rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3.5 py-3 text-[11px] leading-[1.7] text-sz-n-600">
+              <div className="rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[9px] text-[11px] leading-[1.7] text-sz-n-600">
                 본 사람이 아직 적어 구성 비율을 표시하지 않습니다
                 {data.viewers.minimumSampleSize !== null && (
                   <>

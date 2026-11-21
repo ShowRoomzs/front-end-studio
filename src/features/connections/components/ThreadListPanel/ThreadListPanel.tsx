@@ -64,7 +64,7 @@ export default function ThreadListPanel(props: ThreadListPanelProps) {
           placeholder="브랜드명 검색"
         />
 
-        {/* 시안 `.cs-tabs` */}
+        {/* 2단 탭 — 디자인 시스템 v1.3 `.subtabs` 필형(세 웹 앱 공통 · 11-21) */}
         <div className="mt-2.5 flex gap-1.5">
           {(
             [
@@ -84,20 +84,15 @@ export default function ThreadListPanel(props: ThreadListPanelProps) {
                 type="button"
                 onClick={() => onChangeTab(tab.value)}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-[5px] rounded-[6px] border px-1 py-[7px] text-[11px] font-medium",
+                  "inline-flex h-[30px] cursor-pointer items-center gap-1.5 rounded-[15px] border px-[13px] text-[12px]",
                   isOn
-                    ? "border-sz-accent-500 bg-sz-accent-500 text-white"
-                    : "border-sz-n-300 bg-white text-sz-n-600 hover:bg-sz-n-50"
+                    ? "border-sz-accent-500 bg-sz-accent-500 font-medium text-white"
+                    : "border-sz-n-300 bg-white text-sz-n-600 hover:bg-sz-n-100"
                 )}
               >
                 {tab.label}
                 {tab.badge > 0 && (
-                  <span
-                    className={cn(
-                      "flex h-[15px] min-w-[15px] items-center justify-center rounded-lg px-1 text-[10px] text-white",
-                      isOn ? "bg-white/35" : "bg-sz-danger-text"
-                    )}
-                  >
+                  <span className="text-[11px] font-normal tabular-nums opacity-75">
                     {tab.badge}
                   </span>
                 )}

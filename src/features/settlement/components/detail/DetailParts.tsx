@@ -114,27 +114,31 @@ export function MNote(props: { children: ReactNode; inline?: boolean }) {
 export type MRowKind = "base" | "sub" | "rate" | "mid" | "tot"
 
 /**
- * 시안은 `.mtab`이 전역 `tbody td`(border-top n-100 · 첫 행 없음)를 물려받아 행마다 옅은 구분선이 있다.
- * 소계 · 총계는 그 위에 더 진한 상단 보더를 덮어쓴다.
+ * 디자인 시스템 v1.3(파트너센터) `.calc` 계산 명세표의 색 · 선 — 세 웹 앱 공통(11-21).
+ * 칸 여백은 시안 `.mtab`(10px 12px)을 따른다(표 여백은 시안 우선 · 11-21 사용자 결정).
+ * 바깥 테두리 없음 · 아래 선 n-100 · 라벨 n-600 · 값 n-900 오른쪽 정렬.
+ * sub = 하위 행(10px 더 들여쓰기 · 11px n-500) · tot = 합계(위 1.5px n-300 · 16px/600).
+ * mid(소계)는 `.calc`에 없어 기본 행에 600만 더한다. rate는 기본 행과 같다.
  */
-const MROW_BASE = "border-t border-sz-n-100 first:border-t-0"
+const MCELL = "border-b border-sz-n-100 px-3 py-2.5"
 
-const MROW_CLASS: Record<MRowKind, string> = {
-  base: "",
-  sub: "text-sz-n-600",
+const MLABEL_CLASS: Record<MRowKind, string> = {
+  base: "text-sz-n-600",
+  sub: "pl-[22px] text-[11px] text-sz-n-500",
   rate: "text-sz-n-600",
-  mid: "border-sz-n-300 bg-sz-n-50 font-semibold",
-  tot: "border-t-[1.5px] border-sz-n-400 bg-sz-n-50 text-[17px] font-semibold text-sz-n-900",
+  mid: "font-semibold text-sz-n-900",
+  tot: "border-b-0 border-t-[1.5px] border-t-sz-n-300 pt-2.5 text-[16px] font-semibold text-sz-n-900",
 }
 
 const MAMOUNT_CLASS: Record<MRowKind, string> = {
-  base: "",
-  sub: "text-sz-n-700",
-  rate: "text-sz-n-700",
-  mid: "",
-  tot: "",
+  base: "text-sz-n-900",
+  sub: "text-[11px] text-sz-n-500",
+  rate: "text-sz-n-900",
+  mid: "font-semibold text-sz-n-900",
+  tot: "border-b-0 border-t-[1.5px] border-t-sz-n-300 pt-2.5 text-[16px] font-semibold text-sz-n-900",
 }
 
+/** `.calc` — 표 하나. 바깥 테두리 · 머리가 없다 */
 export function MTable(props: { children: ReactNode; className?: string }) {
   return (
     <table
@@ -146,8 +150,8 @@ export function MTable(props: { children: ReactNode; className?: string }) {
 }
 
 /**
- * 시안 `.mtab` 한 줄 — 금액 칸은 우측 정렬 · tabular-nums.
- * `textValue`는 금액이 아닌 값(요청자 · 시각)이라 좌측 정렬로 둔다(시안 D2 조정 내역).
+ * `.calc` 한 줄 — 금액 칸은 우측 정렬 · tabular-nums.
+ * `textValue`는 금액이 아닌 값(요청자 · 시각)이라 좌측 정렬로 둔다(조정 내역).
  */
 export function MRow(props: {
   kind?: MRowKind
@@ -166,14 +170,14 @@ export function MRow(props: {
     valueClassName,
   } = props
   return (
-    <tr className={cn(MROW_BASE, MROW_CLASS[kind])}>
-      <td className="px-3 py-2.5">
+    <tr>
+      <td className={cn(MCELL, MLABEL_CLASS[kind])}>
         {label}
         {note && <MNote>{note}</MNote>}
       </td>
       <td
         className={cn(
-          "px-3 py-2.5",
+          MCELL,
           textValue ? "text-left" : "text-right tabular-nums",
           MAMOUNT_CLASS[kind],
           valueClassName

@@ -88,10 +88,10 @@ export function ModalShell(props: ModalShellProps) {
   )
 }
 
-/** 시안 `.notice` — 모달 최상단 파란 안내 박스 */
+/** 안내 상자 · 정보 — DS v1.3 `.notice.info`(11px · 줄간 1.6 · 11px 13px · 테두리 없음) */
 export function ModalNotice({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-4 flex gap-2 rounded-[6px] bg-sz-info-bg p-3.5 text-[11px] leading-[1.65] text-sz-n-700">
+    <div className="mb-4 flex gap-2 rounded-[6px] bg-sz-info-bg px-[13px] py-[11px] text-[11px] leading-[1.6] text-sz-info-text [&_b]:font-semibold">
       <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sz-info-text text-[10px] font-bold text-white">
         i
       </span>

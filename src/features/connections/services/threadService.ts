@@ -88,7 +88,7 @@ export interface ThreadListItem {
    *
    * 파트너센터는 `connectionStatus`로 버튼을 **비활성**시키지만, 스튜디오는
    * 계약을 확인하는 쪽이라 없으면 볼 것이 없어 **버튼 자체를 숨긴다**.
-   * 계약 도메인이 아직 없어 서버가 항상 false로 내려준다.
+   * 서버는 그 브랜드와 계약이 있을 때 true를 준다(운영자 채널 · 공구 스레드는 false).
    */
   hasContract: boolean
   lastMessagePreview: string | null

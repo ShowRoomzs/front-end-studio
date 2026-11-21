@@ -144,9 +144,11 @@
   --sz-logo-color: var(--sz-brand-500);
   --sz-logo-dark: var(--sz-n-900);
   --sz-logo-white: #ffffff;
-  /* Auth 전용 주 액션 (accent-500이 아닌 검정 — 로그인·가입 화면 확정 예외) */
-  --sz-auth-action: #1a1b1f;
-  --sz-auth-action-hover: #3a3d45;
+  /* Auth(로그인 · 신청 · 온보딩) 주 액션 · 선택 표시 색.
+     예전엔 검정(#1a1b1f · hover #3a3d45)이 확정 예외였다. 11-21 세 웹 앱이 DS v1.2
+     「인디고가 유일한 주 액션색」으로 맞췄다 — 검정으로 되돌리려면 이 두 값만 바꾼다. */
+  --sz-auth-action: var(--sz-accent-500);
+  --sz-auth-action-hover: var(--sz-accent-600);
 
   /* ── 스튜디오 로그인 화면 전용 예외 (유지 확정) ──
      ui-studio-01-login §3: 다른 인증 화면(가입·온보딩)은 워드마크가 검정이지만

@@ -94,7 +94,7 @@ async function toSettlementApiError(error: unknown) {
 }
 
 /**
- * ⚠️ 운영 서버 CORS가 Content-Disposition을 노출하지 않아 브라우저에서는 이 헤더가 비어 온다 —
+ * 서버 파일명(Content-Disposition)을 먼저 읽고, 헤더가 비어 오면(옛 서버는 CORS가 이 헤더를 숨겼다)
  * 대체 이름을 서버 규칙과 같게 만든다(`SettlementStatementExcel` · `WithholdingReceiptGenerator`
  * · `CreatorSettlementDocumentService`).
  */

@@ -114,7 +114,7 @@ export default function LoginPage() {
       {result?.kind === "error" && (
         <div
           role="alert"
-          className="mb-5 rounded-[6px] bg-sz-warning-bg px-3.5 py-3 text-[12px] text-sz-n-700"
+          className="mb-5 rounded-[6px] bg-sz-warning-bg px-[13px] py-[11px] text-[11px] leading-[1.6] text-sz-warning-text"
         >
           {result.message || SERVER_ERROR_MESSAGE}
         </div>

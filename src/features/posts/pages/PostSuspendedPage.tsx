@@ -136,7 +136,7 @@ export default function PostSuspendedPage(props: { post: PostDetailResponse }) {
                 </span>
               </div>
 
-              <div className="mt-3 flex items-start gap-[9px] rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[11px] text-[11px] leading-[1.7] text-sz-n-600">
+              <div className="mt-3 flex items-start gap-2 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[9px] text-[11px] leading-[1.7] text-sz-n-600">
                 <span className="mt-px flex size-4 shrink-0 items-center justify-center rounded-full bg-sz-n-600 text-[10px] text-white">
                   i
                 </span>
