@@ -15,7 +15,7 @@ import type {
 import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 import type { ReactNode } from "react"
-import { DS_TD_CLASS, DS_TH_CLASS } from "@/common/styles/table"
+import { LIST_TD_CLASS, LIST_TH_CLASS } from "@/common/styles/table"
 
 /** 시안 `.tabs` — 상태 탭 5종. 건수는 검색어와 무관한 내 전체 기준(summary) */
 export function GroupBuyStatusTabs(props: {
@@ -142,8 +142,8 @@ export function GroupBuyEmptyState(props: {
   )
 }
 
-const HEAD_CLASS = DS_TH_CLASS
-const CELL_CLASS = DS_TD_CLASS
+const HEAD_CLASS = LIST_TH_CLASS
+const CELL_CLASS = LIST_TD_CLASS
 
 /**
  * 시안 A1 표 — 스튜디오엔 공용 Table이 없어 시안 마크업 그대로의 경량 표를 둔다.
@@ -186,7 +186,7 @@ export function GroupBuyTable(props: {
               <tr
                 key={row.groupBuyId}
                 onClick={() => onRowClick(row)}
-                className="group cursor-pointer border-t border-sz-n-200 first:border-t-0 hover:bg-sz-n-50"
+                className="group cursor-pointer border-t border-sz-n-100 first:border-t-0 hover:bg-sz-accent-50"
               >
                 <td className={CELL_CLASS}>
                   {/*
