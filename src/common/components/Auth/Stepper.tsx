@@ -25,7 +25,7 @@ export function Stepper({ steps, current }: StepperProps) {
                 aria-hidden
                 className={cn(
                   "absolute top-[13px] left-[-50%] z-0 h-px w-full",
-                  state === "done" ? "bg-sz-success-text" : "bg-sz-n-300"
+                  state === "done" ? "bg-sz-n-500" : "bg-sz-n-300"
                 )}
               />
             )}
@@ -33,10 +33,10 @@ export function Stepper({ steps, current }: StepperProps) {
               className={cn(
                 "relative z-[1] mx-auto mb-1.5 flex h-[26px] w-[26px] items-center justify-center",
                 "rounded-full border text-[12px] font-semibold",
-                state === "done" &&
-                  "border-sz-success-text bg-sz-success-text text-white",
-                state === "active" && "border-sz-n-900 bg-sz-n-900 text-white",
-                state === "todo" && "border-sz-n-300 bg-sz-n-100 text-sz-n-500"
+                state === "done" && "border-sz-n-500 bg-sz-n-500 text-white",
+                state === "active" &&
+                  "border-sz-auth-action bg-sz-auth-action text-white",
+                state === "todo" && "border-sz-n-300 bg-white text-sz-n-500"
               )}
             >
               {state === "done" ? "✓" : i + 1}

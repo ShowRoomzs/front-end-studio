@@ -96,7 +96,7 @@ export default function MessageInput(props: MessageInputProps) {
         </div>
       )}
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
         <input
           ref={fileInputRef}
           type="file"
@@ -112,13 +112,13 @@ export default function MessageInput(props: MessageInputProps) {
           onClick={() => fileInputRef.current?.click()}
           aria-label="파일 첨부"
           disabled={Boolean(lockedText)}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] border border-sz-n-300 text-sz-n-500 hover:bg-sz-n-100 disabled:cursor-not-allowed disabled:text-sz-n-300 disabled:hover:bg-transparent"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-[6px] border border-sz-n-300 bg-white text-sz-n-600 hover:bg-sz-n-100 disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
         >
           <AttachIcon />
         </button>
 
         {lockedText ? (
-          <div className="flex h-10 flex-1 items-center rounded-[20px] border border-sz-n-300 bg-sz-n-100 px-4 text-[13px] text-sz-n-400">
+          <div className="flex min-h-8 flex-1 items-center rounded-[6px] border border-sz-n-200 bg-sz-n-100 px-2.5 py-[5px] text-[13px] leading-5 text-sz-n-400">
             {lockedText}
           </div>
         ) : (
@@ -134,7 +134,7 @@ export default function MessageInput(props: MessageInputProps) {
             }}
             rows={1}
             placeholder="메시지 입력…"
-            className="h-10 flex-1 resize-none rounded-[20px] border border-sz-n-300 px-4 py-[9px] text-[13px] text-sz-n-900 placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:outline-none"
+            className="h-8 flex-1 resize-none rounded-[6px] border border-sz-n-300 bg-white px-2.5 py-[5px] text-[13px] leading-5 text-sz-n-900 [scrollbar-width:none] placeholder:text-sz-n-400 focus:border-sz-accent-500 focus:outline-none focus:ring-[3px] focus:ring-sz-accent-50"
           />
         )}
 
@@ -143,7 +143,7 @@ export default function MessageInput(props: MessageInputProps) {
           disabled={!canSend}
           onClick={handleSend}
           aria-label="전송"
-          className="h-10 w-10 shrink-0 rounded-full p-0"
+          className="size-8 shrink-0 rounded-[6px] p-0"
         >
           <SendIcon />
         </Button>

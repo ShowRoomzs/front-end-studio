@@ -35,7 +35,7 @@ export function Wordmark({
       <path
         d={PATH_D}
         fill={
-          tone === "studio" ? "var(--sz-logo-studio)" : "var(--sz-auth-action)"
+          tone === "studio" ? "var(--sz-logo-studio)" : "var(--sz-logo-dark)"
         }
       />
     </svg>

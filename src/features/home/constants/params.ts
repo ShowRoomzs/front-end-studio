@@ -31,7 +31,7 @@ export const NOTIFICATION_MOCK_SCENARIOS = [
   "notif-empty",
 ] as const
 
-/** 라우트 — 기본정보 관리(`/basic-info`)는 다른 작업이 붙이는 중이다(menu.ts path 미정) */
+/** 홈에서 이동하는 라우트 */
 export const HOME_PATHS = {
   CONNECTION_REQUESTS: "/connections?tab=requests",
   thread: (threadId: number) => `/connections?threadId=${threadId}`,

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
-/** 시안 `.notice` — info-bg 배경 + 원형 `i` 배지(16px). */
+/** 안내 상자 · 정보 — DS v1.3 `.notice.info`(11px · 줄간 1.6 · 11px 13px · 테두리 없음) + 원형 `i` 배지(16px) */
 export function NoticeBox({
   className,
   children,
@@ -12,7 +12,7 @@ export function NoticeBox({
   return (
     <div
       className={cn(
-        "flex gap-2 rounded-[6px] bg-sz-info-bg px-3.5 py-3 text-left text-[12px] leading-[1.6] text-sz-n-700",
+        "flex gap-2 rounded-[6px] bg-sz-info-bg px-[13px] py-[11px] text-left text-[11px] leading-[1.6] text-sz-info-text [&_b]:font-semibold",
         className
       )}
     >

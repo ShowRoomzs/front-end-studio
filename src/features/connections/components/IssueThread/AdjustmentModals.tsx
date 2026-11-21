@@ -23,7 +23,7 @@ const REASON_MAX = 1000
 /** 시안 `.mdl-tgt` — 무엇에 대한 결정인지 먼저 보여 주는 회색 상자 */
 function Target(props: { children: ReactNode }) {
   return (
-    <div className="mb-3.5 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-2.5 text-[11px] leading-[1.7] text-sz-n-600 [&_b]:text-sz-n-900">
+    <div className="mb-3.5 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[9px] text-[11px] leading-[1.7] text-sz-n-600 [&_b]:text-sz-n-900">
       {props.children}
     </div>
   )

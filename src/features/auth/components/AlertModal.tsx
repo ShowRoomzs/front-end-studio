@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
 /**
- * 시안 `.overlay` + `.modal-alert` — 360px, radius 8px, shadow-popover, padding 24/20/20.
+ * 알림형 모달 — 360px · 디자인 시스템 `.modal`(radius 12px · padding 20 · 덮개 0.45 · shadow-popover).
  *
  * 로그인 상태 B·C·D와 신청 Step1의 연령 미충족은 전부 별도 페이지가 아니라
  * 기본 화면 위에 얹히는 오버레이다(기능요구사항 §7-1). 라우팅을 만들지 말 것.
@@ -36,10 +36,10 @@ export function AlertModal({
       role="dialog"
       aria-modal="true"
       aria-label={title}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.4)] px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.45)] px-4"
     >
       <div
-        className="w-[360px] max-w-full rounded-[8px] bg-white px-5 pt-6 pb-5 text-center"
+        className="w-[360px] max-w-full rounded-[12px] bg-white p-5 text-center"
         style={{ boxShadow: "var(--sz-shadow-popover)" }}
       >
         <div
@@ -62,7 +62,7 @@ export function AlertModal({
   )
 }
 
-/** 시안 모달 전용 `.btn` — 40px */
+/** 모달 버튼 — DS `.btn` 32px · 12px/500 (모달은 큰 컨트롤을 쓰지 않는다) */
 export function ModalButton({
   variant,
   onClick,
@@ -80,11 +80,11 @@ export function ModalButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-10 cursor-pointer items-center justify-center rounded-[6px] border text-[13px] font-medium transition-colors",
+        "flex h-8 cursor-pointer items-center justify-center rounded-[6px] border px-3.5 text-[12px] font-medium transition-colors",
         wide ? "flex-none px-8" : "flex-1",
         variant === "primary"
           ? "border-sz-auth-action bg-sz-auth-action text-white hover:border-sz-auth-action-hover hover:bg-sz-auth-action-hover"
-          : "border-sz-n-300 bg-white text-sz-n-700 hover:bg-sz-n-100"
+          : "border-sz-n-300 bg-white text-sz-n-900 hover:bg-sz-n-100"
       )}
     >
       {children}

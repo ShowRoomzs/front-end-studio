@@ -160,7 +160,7 @@ export default function AdjustmentRequestModal(props: {
         <MHint>0원 ~ {formatWon(max)} 안에서 입력할 수 있습니다</MHint>
       )}
 
-      <div className="mt-2.5 overflow-hidden rounded-[6px] border border-sz-n-200">
+      <div className="mt-2.5">
         <MTable>
           <MRow label="요청 리워드">
             {amount === null ? dash : formatWon(amount)}

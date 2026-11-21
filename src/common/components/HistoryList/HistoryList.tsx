@@ -59,7 +59,7 @@ export default function HistoryList(props: HistoryListProps) {
                 .join(" · ")}
             </div>
             {item.detail && (
-              <div className="mt-1.5 rounded-[6px] bg-sz-n-50 px-2.5 py-2 text-[11px] leading-relaxed text-sz-n-600">
+              <div className="mt-1.5 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[9px] text-[11px] leading-[1.7] text-sz-n-600">
                 <b className="font-semibold text-sz-n-700">
                   {item.detail.title}
                 </b>{" "}

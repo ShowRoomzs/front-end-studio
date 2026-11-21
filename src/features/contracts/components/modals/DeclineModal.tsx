@@ -105,7 +105,7 @@ export default function DeclineModal(props: DeclineModalProps) {
         />
       </div>
 
-      <div className="mt-4 flex gap-2 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-[13px] py-[11px] text-[11px] leading-[1.7] text-sz-n-700">
+      <div className="mt-4 flex gap-2 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[9px] text-[11px] leading-[1.7] text-sz-n-600">
         <div>
           <b className="font-semibold text-sz-n-900">
             거절하면 이 계약은 종결되고 되돌릴 수 없습니다.

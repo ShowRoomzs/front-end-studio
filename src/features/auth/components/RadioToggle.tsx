@@ -35,9 +35,9 @@ export function RadioToggle<T extends string>({
           <label
             key={option.value}
             className={cn(
-              "flex h-10 flex-1 cursor-pointer items-center gap-2 rounded-[6px] border px-3.5 text-[13px]",
+              "flex h-[38px] flex-1 cursor-pointer items-center gap-2 rounded-[6px] border px-3 text-[13px]",
               selected
-                ? "border-sz-n-900 bg-sz-n-50 font-medium text-sz-n-900"
+                ? "border-sz-auth-action bg-sz-n-50 font-medium text-sz-n-900"
                 : "border-sz-n-300 text-sz-n-700",
               disabled && "cursor-not-allowed opacity-60"
             )}
@@ -55,11 +55,11 @@ export function RadioToggle<T extends string>({
               aria-hidden
               className={cn(
                 "relative h-[15px] w-[15px] shrink-0 rounded-full border-[1.5px]",
-                selected ? "border-sz-n-900" : "border-sz-n-300"
+                selected ? "border-sz-auth-action" : "border-sz-n-300"
               )}
             >
               {selected && (
-                <span className="absolute inset-[3px] rounded-full bg-sz-n-900" />
+                <span className="absolute inset-[3px] rounded-full bg-sz-auth-action" />
               )}
             </span>
             {option.label}

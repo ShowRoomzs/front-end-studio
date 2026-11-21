@@ -144,7 +144,7 @@ function SettlementMethod(props: { settlement: CreatorContractSettlement }) {
   const won = (value: number) => value.toLocaleString("ko-KR")
 
   return (
-    <div className="mt-3 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-[13px] py-[11px]">
+    <div className="mt-3 rounded-[6px] border border-sz-n-200 bg-sz-n-50 px-3 py-[9px]">
       <div className="flex items-center gap-[7px] text-[12px] font-semibold text-sz-n-900">
         정산 방식
         <StatusBadge variant="neutral">

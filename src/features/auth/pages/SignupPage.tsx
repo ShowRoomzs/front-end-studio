@@ -204,7 +204,7 @@ export default function SignupPage() {
       {serverError && (
         <div
           role="alert"
-          className="mb-5 rounded-[6px] bg-sz-warning-bg px-3.5 py-3 text-[12px] text-sz-n-700"
+          className="mb-5 rounded-[6px] bg-sz-warning-bg px-[13px] py-[11px] text-[11px] leading-[1.6] text-sz-warning-text"
         >
           {serverError}
         </div>
@@ -597,7 +597,7 @@ export default function SignupPage() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-sz-n-200 px-5 py-3.5">
-              <h3 className="text-[14px] font-semibold text-sz-n-900">
+              <h3 className="text-[13px] font-semibold text-sz-n-900">
                 {viewingTerm.label}
               </h3>
               <button

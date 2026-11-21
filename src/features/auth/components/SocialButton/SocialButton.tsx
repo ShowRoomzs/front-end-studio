@@ -150,9 +150,9 @@ export default function SocialButton({
       disabled={disabled || loading}
       style={style}
       className={cn(
-        "relative flex h-12 w-full cursor-pointer items-center justify-center gap-2.5",
-        "rounded-[6px] border text-[14px] font-semibold tracking-[-0.1px]",
-        "shadow-[0_1px_2px_rgba(26,27,31,0.06)] transition-[filter,background-color]",
+        "relative flex h-[38px] w-full cursor-pointer items-center justify-center gap-2.5",
+        "rounded-[6px] border text-[13px] font-medium",
+        "transition-[filter,background-color]",
         "hover:enabled:brightness-[0.96] disabled:cursor-not-allowed disabled:opacity-60",
         className
       )}

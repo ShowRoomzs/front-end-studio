@@ -1,18 +1,18 @@
 import { cn } from "@/lib/utils"
 
 /**
- * 컨트롤 높이는 화면마다 다르다 — 각 시안이 서로 다른 값을 확정했다.
- *   md(44px) = 신청(ui-studio-02-signup)
- *   sm(40px) = 온보딩(ui-studio-03-onboarding rev.2, 파트너센터와 동일)
- * 로그인 소셜 버튼(48px)은 SocialButton이 자체적으로 갖는다.
+ * 로그인 · 신청 · 온보딩의 폼 컨트롤은 「큰 컨트롤」 38px · 13px 하나다.
+ * 디자인 시스템 v1.2에는 32px 기본 크기만 있다. 단독 주 행동 화면의 큰 크기는
+ * 세 웹 앱(파트너센터 · 스튜디오 · 어드민)이 함께 정했다(11-21, 시안 .btn-lg 값).
+ * 시안이 화면마다 달랐던 40 · 44px는 쓰지 않는다. 소셜 버튼(SocialButton)도 같은 높이다.
  *
- * 기본값을 md로 둬서 기존 신청 화면 호출부는 그대로 둔다.
+ * size 인자는 호출부 호환용으로만 남긴다. 두 값 모두 같은 높이다.
  */
 export type ControlSize = "sm" | "md"
 
 const HEIGHT_CLASS: Record<ControlSize, string> = {
-  sm: "h-10",
-  md: "h-11",
+  sm: "h-[38px]",
+  md: "h-[38px]",
 }
 
 /** 시안 `.inp` — 폼 컨트롤 공통 스타일 */
@@ -28,7 +28,7 @@ export const authInputClass = (
     "disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400",
     hasError
       ? "border-sz-danger-text focus:border-sz-danger-text focus:ring-[3px] focus:ring-sz-danger-bg"
-      : "border-sz-n-300 hover:enabled:border-sz-n-400 focus:border-sz-n-900 focus:ring-[3px] focus:ring-sz-n-200",
+      : "border-sz-n-300 hover:enabled:border-sz-n-400 focus:border-sz-accent-500 focus:ring-[3px] focus:ring-sz-accent-50",
     extra
   )
 
@@ -57,7 +57,7 @@ export const authReadonlyBoxClass = (size: ControlSize = "md") =>
     "bg-sz-n-100 px-3 text-[13px] text-sz-n-700"
   )
 
-/** 시안 `.btn` — `.btn-primary` / `.btn-line` 두 종류 */
+/** 큰 버튼 — 주(`--sz-auth-action` = 인디고) / DS `.btn-secondary` 색 · 38px */
 export const authButtonClass = (
   variant: "primary" | "line",
   extra?: string,
@@ -73,7 +73,7 @@ export const authButtonClass = (
           "disabled:cursor-not-allowed disabled:border-sz-n-200 disabled:bg-sz-n-100 disabled:text-sz-n-400"
         )
       : cn(
-          "border-sz-n-300 bg-white text-sz-n-700",
+          "border-sz-n-300 bg-white text-sz-n-900",
           "hover:enabled:bg-sz-n-100",
           "disabled:cursor-not-allowed disabled:opacity-60"
         ),
