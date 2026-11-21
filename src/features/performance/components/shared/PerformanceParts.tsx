@@ -3,7 +3,7 @@ import { PERFORMANCE_TONE_VARIANT } from "@/features/performance/constants/param
 import type { PerformanceTone } from "@/features/performance/types"
 import { cn } from "@/lib/utils"
 import type { ReactNode } from "react"
-import { DS_TD_CLASS, DS_TH_CLASS } from "@/common/styles/table"
+import { LIST_TD_CLASS, LIST_TH_CLASS } from "@/common/styles/table"
 
 /*
   ui-studio-10 공용 원자 — 시안 `.page-h` · `.kpi .k` · `.card` · `.grp` · `.mini .m` · `.sum` · `.tip` · `.est`.
@@ -16,8 +16,8 @@ import { DS_TD_CLASS, DS_TH_CLASS } from "@/common/styles/table"
 export const PERFORMANCE_PAGE_CLASS = "leading-[1.6]"
 
 /** 시안 `thead td` · `tbody td` */
-export const TH_CLASS = DS_TH_CLASS
-export const TD_CLASS = cn("border-t border-sz-n-200", DS_TD_CLASS)
+export const TH_CLASS = LIST_TH_CLASS
+export const TD_CLASS = cn("border-t border-sz-n-100", LIST_TD_CLASS)
 export const TD_NUM = cn(TD_CLASS, "text-center tabular-nums")
 
 /** 시안 `.page-h` — 셸 H1 대신 화면이 제목 · 설명을 그린다 */
