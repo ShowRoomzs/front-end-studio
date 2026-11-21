@@ -16,10 +16,10 @@ import {
   formatWon,
 } from "@/features/settlement/utils/format"
 import { cn } from "@/lib/utils"
-import { DS_TD_CLASS, DS_TH_CLASS } from "@/common/styles/table"
+import { LIST_TD_CLASS, LIST_TH_CLASS } from "@/common/styles/table"
 
-const HEAD_CLASS = DS_TH_CLASS
-const CELL_CLASS = DS_TD_CLASS
+const HEAD_CLASS = LIST_TH_CLASS
+const CELL_CLASS = LIST_TD_CLASS
 const NUM_CELL = cn(CELL_CLASS, "text-center tabular-nums")
 
 /**
@@ -94,7 +94,7 @@ export default function SettlementTable(props: {
                   onRowClick(row)
                 }
               }}
-              className="group cursor-pointer border-t border-sz-n-200 outline-none first:border-t-0 hover:bg-sz-n-50 focus-visible:bg-sz-n-50 focus-visible:shadow-[inset_0_0_0_2px_var(--color-sz-accent-500)]"
+              className="group cursor-pointer border-t border-sz-n-100 outline-none first:border-t-0 hover:bg-sz-accent-50 focus-visible:bg-sz-accent-50 focus-visible:shadow-[inset_0_0_0_2px_var(--color-sz-accent-500)]"
             >
               <td className={CELL_CLASS}>
                 <span className="block truncate font-medium text-sz-n-900 group-hover:text-sz-accent-600">
