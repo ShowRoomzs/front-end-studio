@@ -22,6 +22,14 @@ export type VerifiedIdentity = {
 export const MIN_AGE = 19
 
 /**
+ * 목업 인증은 개발 서버에서만 쓴다. 배포본에서 시안 예시 값(실제 사람과 무관한 고정 이름 · 번호)을
+ * 「인증 결과」처럼 보여 주면 안 된다 — 서버는 신청할 때 소비자 가입(C0-1) 본인인증 값을
+ * users에서 그대로 복사하므로, 배포본 Step1은 그 사실을 안내하고 확인만 받는다.
+ * 이 값을 조회하는 API는 없다(11-21 back-end main 확인).
+ */
+export const IDENTITY_MOCK_ENABLED = import.meta.env.DEV
+
+/**
  * 시안에 적힌 예시 값을 그대로 쓴다.
  *
  * 연령 미충족 모달(state C)을 확인하려면 URL에 `?mockAge=under19`를 붙인다 —

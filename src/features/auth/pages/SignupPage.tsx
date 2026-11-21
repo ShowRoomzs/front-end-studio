@@ -25,6 +25,7 @@ import { authService } from "@/features/auth/services/authService"
 import { useCookie } from "@/common/hooks/useCookie"
 import { COOKIE_NAME } from "@/common/constants/cookie"
 import {
+  IDENTITY_MOCK_ENABLED,
   MIN_AGE,
   verifyIdentity,
   type VerifiedIdentity,
@@ -119,6 +120,10 @@ export default function SignupPage() {
   if (!accessToken) {
     return null
   }
+
+  /** 배포본은 값을 조회할 수 없어 「가입 정보로 자동 입력」으로 둔다 */
+  const identityValue = (value: string | undefined) =>
+    value ?? (IDENTITY_MOCK_ENABLED ? "인증 후 표시" : "가입 정보로 자동 입력")
 
   const handleVerify = async () => {
     setVerifying(true)
@@ -216,7 +221,13 @@ export default function SignupPage() {
             <h2 className="mb-1.5 text-[16px] font-semibold text-sz-n-900">
               본인 인증
             </h2>
-            {identity ? (
+            {!IDENTITY_MOCK_ENABLED ? (
+              <p className="mb-4 text-[12px] leading-[1.7] text-sz-n-600">
+                신청서의 이름 · 생년월일 · 휴대폰 번호는
+                <br />
+                SHOWROOMZ 가입 때 본인 인증한 정보로 자동 입력됩니다.
+              </p>
+            ) : identity ? (
               <p className="mb-4 text-[12px] leading-[1.7] font-medium text-sz-success-text">
                 ✓ 본인 인증이 완료되었습니다.
               </p>
@@ -233,23 +244,23 @@ export default function SignupPage() {
               rows={[
                 {
                   label: "이름",
-                  value: identity?.maskedName ?? "인증 후 표시",
+                  value: identityValue(identity?.maskedName),
                   placeholder: !identity,
                 },
                 {
                   label: "생년월일",
-                  value: identity?.birthDate ?? "인증 후 표시",
+                  value: identityValue(identity?.birthDate),
                   placeholder: !identity,
                 },
                 {
                   label: "휴대폰 번호",
-                  value: identity?.maskedPhone ?? "인증 후 표시",
+                  value: identityValue(identity?.maskedPhone),
                   placeholder: !identity,
                 },
               ]}
             />
 
-            {!identity && (
+            {IDENTITY_MOCK_ENABLED && !identity && (
               <button
                 type="button"
                 onClick={handleVerify}
@@ -264,11 +275,15 @@ export default function SignupPage() {
             )}
           </section>
 
-          {identity && (
+          {(identity || !IDENTITY_MOCK_ENABLED) && (
             <ConfirmCheckRow
               checked={identityConfirmed}
               onChange={setIdentityConfirmed}
-              label="[필수] 본인의 인증 정보가 맞습니다."
+              label={
+                IDENTITY_MOCK_ENABLED
+                  ? "[필수] 본인의 인증 정보가 맞습니다."
+                  : "[필수] SHOWROOMZ 가입 때 인증한 본인 정보로 신청합니다."
+              }
             />
           )}
 
@@ -282,7 +297,9 @@ export default function SignupPage() {
             </button>
             <button
               type="button"
-              disabled={!identity || !identityConfirmed}
+              disabled={
+                (IDENTITY_MOCK_ENABLED && !identity) || !identityConfirmed
+              }
               onClick={() => setStep(1)}
               className={authButtonClass("primary", "flex-1")}
             >
