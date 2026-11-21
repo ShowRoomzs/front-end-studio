@@ -5,7 +5,7 @@ import { CheckIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 /**
- * 디자인 시스템 `.fp-box` — 15×15, radius 4px, border 1.5px n-300, 체크 시 `--sz-auth-action`(= accent-500).
+ * 디자인 시스템 `.fp-box` — 15×15, radius 4px, border 1.5px n-300, 체크 시 `--sz-auth-action`(= 시안 검정 n-900).
  * 세 웹 앱 공통 값(11-21). 시안 `.cbox`(18px · n-900)는 쓰지 않는다.
  */
 function Checkbox({
