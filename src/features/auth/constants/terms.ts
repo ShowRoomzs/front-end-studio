@@ -1,90 +1,43 @@
 import type { Term, TermNotice } from "@/common/components/Auth/TermsAgreement"
+import type { TermsType } from "@/common/services/termsService"
 
 /**
- * 기능요구사항 §8-3 — 필수 3 + 선택 1.
+ * 기능요구사항 §8-3 — 필수 3 + 선택 1. 원문은 서버 문서(GET /v1/common/terms?target=INFLUENCER)다.
  * 개인정보처리방침은 동의 체크 항목이 **아니라** 고지(보기) 문서다.
+ *
+ * `termsType` — 「보기」가 여는 서버 문서 종류. 서버에는 「개인정보 수집 및 이용 동의」 전용 종류가 없어
+ * 개인정보처리방침(PRIVACY_POLICY)을 연다(고지 행과 같은 문서).
+ * 동의 값은 `agree*` 불리언으로만 보낸다 — 서버가 문서 · 버전을 따로 받지 않는다(CreatorApplicationRequest).
  */
-export const SIGNUP_TERMS: Term[] = [
+export const SIGNUP_TERMS: (Term & { termsType: TermsType })[] = [
   {
     key: "agreeTermsOfService",
     label: "서비스 이용약관",
-    content: `(임시 문안) 본 약관은 SHOWROOMZ 쇼룸 스튜디오 이용에 관한 조건과 절차를 규정합니다.
-
-제1조(목적)
-- 크리에이터와 회사 간의 권리·의무 및 책임사항을 정합니다.
-
-제2조(계정)
-- 크리에이터는 신청 심사 승인 후 쇼룸 스튜디오를 이용할 수 있습니다.
-
-제3조(금지행위)
-- 허위 정보 등록, 타인 명의 도용, 서비스 운영 방해 행위를 금지합니다.
-
-※ 본 문안은 임시 예시이며 실제 약관으로 대체될 예정입니다.`,
+    termsType: "TERMS_OF_SERVICE",
   },
   {
     key: "agreeOperationalPolicy",
     label: "서비스 운영정책",
-    content: `(임시 문안) 본 정책은 원활한 쇼룸 스튜디오 운영을 위한 기준을 정합니다.
-
-제1조(채널·콘텐츠 등록)
-- 활동 채널 및 팔로워 수 등 신청 정보는 사실에 근거하여 정확히 등록해야 합니다.
-
-제2조(심사)
-- 신청 심사는 회사가 정한 기준과 절차에 따라 진행되며, 결과는 등록된 업무 이메일로 안내합니다.
-
-제3조(제재)
-- 정책 위반 시 노출 제한·이용 정지 등의 조치가 있을 수 있습니다.
-
-※ 본 문안은 임시 예시이며 실제 약관으로 대체될 예정입니다.`,
+    termsType: "OPERATION_POLICY",
   },
   {
     key: "agreePrivacyPolicy",
     label: "개인정보 수집 및 이용 동의",
-    content: `(임시 문안) SHOWROOMZ 쇼룸 스튜디오는 크리에이터 신청자의 개인정보를 아래와 같이 처리합니다.
-
-제1조(수집 항목)
-- 필수: 본인인증 정보(이름·생년월일·휴대폰 번호), 활동 채널 정보, 업무 이메일
-
-제2조(이용 목적)
-- 크리에이터 신청 심사, 심사 결과 안내, 정산 및 고객 문의 대응
-
-제3조(보유 기간)
-- 회원 탈퇴 시까지. 단, 관계 법령에 따른 보존 의무가 있는 경우 해당 기간 동안 보관합니다.
-
-※ 본 문안은 임시 예시이며 실제 약관으로 대체될 예정입니다.`,
+    termsType: "PRIVACY_POLICY",
   },
   {
     key: "agreeMarketingPolicy",
     label: "마케팅 목적의 개인정보 수집 및 이용 동의",
     required: false,
-    content: `(임시 문안) 동의 시 신규 캠페인·이벤트 등 마케팅 정보를 이메일·문자 등으로 받아보실 수 있습니다.
-
-- 수집 항목: 이메일, 휴대폰 번호
-- 이용 목적: 이벤트·혜택 안내
-- 보유 기간: 동의 철회 시까지
-
-본 동의는 선택 사항이며, 동의하지 않아도 신청에 제한이 없습니다.
-
-※ 본 문안은 임시 예시이며 실제 약관으로 대체될 예정입니다.`,
+    termsType: "MARKETING_CONSENT",
   },
 ]
 
-export const SIGNUP_TERM_NOTICES: TermNotice[] = [
+export const SIGNUP_TERM_NOTICES: (TermNotice & { termsType: TermsType })[] = [
   {
     key: "privacyPolicyDocument",
     label: "개인정보처리방침",
-    content: `(임시 문안) SHOWROOMZ 개인정보처리방침 전문입니다.
-
-제1조(총칙)
-- 회사는 관계 법령에 따라 이용자의 개인정보를 보호하기 위해 노력합니다.
-
-제2조(수집·이용 목적)
-- 서비스 제공, 회원 관리, 크리에이터 심사 및 정산
-
-제3조(제3자 제공)
-- 원칙적으로 이용자의 개인정보를 외부에 제공하지 않으며, 제공이 필요한 경우 별도 동의를 받습니다.
-
-※ 본 문안은 임시 예시이며 실제 약관으로 대체될 예정입니다.`,
+    termsType: "PRIVACY_POLICY",
   },
 ]
 
