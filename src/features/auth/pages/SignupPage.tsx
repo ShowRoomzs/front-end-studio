@@ -16,6 +16,8 @@ import { ConfirmCheckRow } from "@/features/auth/components/ConfirmCheckRow"
 import { InfoRows } from "@/features/auth/components/InfoRows"
 import { NoticeBox } from "@/features/auth/components/NoticeBox"
 import { NumberField } from "@/features/auth/components/NumberField"
+import { TermsViewModal } from "@/features/auth/components/TermsViewModal"
+import type { TermsType } from "@/common/services/termsService"
 import {
   REQUIRED_TERM_KEYS,
   SIGNUP_TERMS,
@@ -84,7 +86,7 @@ export default function SignupPage() {
   const [agreements, setAgreements] = useState<Record<string, boolean>>({})
   const [viewingTerm, setViewingTerm] = useState<{
     label: string
-    content: string
+    termsType: TermsType
   } | null>(null)
 
   // 완료(H) — 제출 시점에 고정해 둔다
@@ -159,18 +161,14 @@ export default function SignupPage() {
 
   const allRequiredTermsChecked = REQUIRED_TERM_KEYS.every(k => agreements[k])
 
-  // "보기" 버튼 → 약관 원문 모달 노출 (front-end-partners RegisterPage와 동일한 패턴)
+  // "보기" 버튼 → 서버 약관 원문 모달(TermsViewModal)
   const termsWithView = SIGNUP_TERMS.map(t => ({
     ...t,
-    onView: t.content
-      ? () => setViewingTerm({ label: t.label, content: t.content! })
-      : undefined,
+    onView: () => setViewingTerm({ label: t.label, termsType: t.termsType }),
   }))
   const noticesWithView = SIGNUP_TERM_NOTICES.map(n => ({
     ...n,
-    onView: n.content
-      ? () => setViewingTerm({ label: n.label, content: n.content! })
-      : undefined,
+    onView: () => setViewingTerm({ label: n.label, termsType: n.termsType }),
   }))
 
   const onSubmit = async (values: ChannelForm) => {
@@ -603,43 +601,13 @@ export default function SignupPage() {
         </AlertModal>
       )}
 
-      {/* 약관 원문 보기 모달 (front-end-partners RegisterPage와 동일한 패턴) */}
+      {/* 약관 원문 보기 모달 — 서버 문서(target=INFLUENCER) */}
       {viewingTerm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,27,31,0.4)] p-4"
-          onClick={() => setViewingTerm(null)}
-        >
-          <div
-            className="flex max-h-[80vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[8px] bg-white shadow-lg"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-sz-n-200 px-5 py-3.5">
-              <h3 className="text-[13px] font-semibold text-sz-n-900">
-                {viewingTerm.label}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setViewingTerm(null)}
-                aria-label="닫기"
-                className="flex h-7 w-7 items-center justify-center rounded text-sz-n-500 hover:bg-sz-n-100 hover:text-sz-n-900"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="overflow-y-auto whitespace-pre-line px-5 py-4 text-[13px] leading-relaxed text-sz-n-700">
-              {viewingTerm.content}
-            </div>
-            <div className="border-t border-sz-n-200 px-5 py-3">
-              <button
-                type="button"
-                onClick={() => setViewingTerm(null)}
-                className={authButtonClass("primary", "w-full")}
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
+        <TermsViewModal
+          label={viewingTerm.label}
+          termsType={viewingTerm.termsType}
+          onClose={() => setViewingTerm(null)}
+        />
       )}
     </AuthShell>
   )

@@ -5,4 +5,6 @@ export const QUERY_KEYS = {
   SHOWROOM_NAME: "showroomName",
   SHOWROOM_PROFILE: "showroomProfile",
   SHOWROOM_STATS: "showroomStats",
+  TERMS_LIST: "termsList",
+  TERMS_DETAIL: "termsDetail",
 }
